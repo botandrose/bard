@@ -15,7 +15,7 @@ end
 
 Then /^the "([^\"]*)" branch should match the "([^\"]*)" branch$/ do |local_branch, remote_branch|
   local_sha = @repo.commits(local_branch).first.id
-  remote_sha = @repo.commits(remote_sha).first.id
+  remote_sha = @repo.commits(remote_branch).first.id
   local_sha.should == remote_sha
 end
 

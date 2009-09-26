@@ -23,6 +23,8 @@ Feature: Deployment for beginners
     #ensure tests pass via ci
     #(ensure) fast-forward onto origin/master
     #deploy
+    #rebase bugfix onto origin/integration
+    #push to origin/integration
     #delete bugfix-... branch
     #checkout integration HEAD
 
