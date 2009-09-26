@@ -1,5 +1,3 @@
-
-
 Given /^a shared test project$/ do
   `rm -rf bard_test_fixture`
   `git clone staging@staging.botandrose.com:bard_test_fixture`
