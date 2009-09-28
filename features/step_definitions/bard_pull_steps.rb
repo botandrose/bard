@@ -1,7 +1,10 @@
 Given /^the remote integration branch has had a commit that includes a new submodule$/ do
   Dir.chdir "#{ROOT}/tmp/origin" do 
     type "git checkout integration"
-    type "git submodule add -b master #{ROOT}/tmp/submodule submodule"
+    type "git submodule add #{ROOT}/tmp/submodule submodule"
+    Dir.chdir "#{ROOT}/tmp/origin/submodule" do
+      type "grb track master"
+    end
     type "git add ."
     type "git commit -m 'added submodule'"
   end
