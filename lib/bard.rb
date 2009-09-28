@@ -1,5 +1,4 @@
 require 'systemu'
-require 'grit'
 
 module Bard
   class Pull < Thor::Group
@@ -15,15 +14,11 @@ module Bard
 
       run_crucial "git pull --rebase origin integration"
       
-      submodules = git_submodules
-      if submodules.size > 0
-        run_crucial "git submodule update --init"
-        # TODO:
-          #migrate database
-          #install gems
-          #restart
-      end
-
+      # TODO
+      #submodule init sync update
+      #migrate database
+      #install gems
+      #restart
     end
   end
 
@@ -70,12 +65,6 @@ module BardGit
   def find_common_ancestor(head1, head2)
     run_crucial "git merge-base #{head1} #{head2}"
   end
-
-  def git_submodules
-      repo = Grit::Repo.new '.'
-      Grit::Submodule.config( repo, repo.head.name )
-  end
-
 end
 
 module BardError
