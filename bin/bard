@@ -5,7 +5,9 @@ require 'rubygems'
 require 'thor'
 require 'thor/runner'
 
-require File.join(File.dirname(__FILE__), '..', 'lib', 'bard')
+THIS_FILE = File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
+
+require File.join(File.dirname(THIS_FILE), '..', 'lib', 'bard')
 
 args = ARGV
 args[0] = "bard:#{args[0]}"

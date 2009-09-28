@@ -83,7 +83,7 @@ module BardError
 
   def run_crucial(command)
     status, stdout, stderr = systemu command
-    fatal stderr if status.to_i.nonzero?
+    fatal "Running command: #{YELLOW}#{command}#{DEFAULT}: #{stderr}" if status.to_i.nonzero?
     stdout.chomp
   end
 end

@@ -2,6 +2,11 @@
 
 Description goes here.
 
+== Requirements
+    gem install git_remote_branch
+    gem install thor
+
+
 == Note on Patches/Pull Requests
  
 * Fork the project.
