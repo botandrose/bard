@@ -2,11 +2,32 @@ require 'systemu'
 require 'grit'
 
 module Bard
+  class Pull < Thor::Group
+    desc "pull integration branch changes to your local branch"
+    def pull
+      unless `git status`.include? "working directory clean"
+        fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push."
+      end
+
+      unless fast_forward_merge?
+        warn "Someone has pushed some changes since you last pulled.\n  Please ensure that your changes didnt break stuff."
+      end
+
+      run_crucial "git pull --rebase origin integration"
+      
+      # TODO
+      #submodule init sync update
+      #migrate database
+      #install gems
+      #restart
+    end
+  end
+
   class Push < Thor::Group
     desc "upload local changes onto the integration branch"
     def push
       unless `git status`.include? "working directory clean"
-        fatal "Cannot upload blah blah: You have uncommitted changes!"
+        fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push."
       end
 
       unless fast_forward_merge?
@@ -14,21 +35,10 @@ module Bard
       end
 
       run_crucial "git push origin integration"
-
+      
+      # TODO
+      #stage
     end
-
-    private
-      def fast_forward_merge? 
-        run_crucial "git fetch origin"
-        repo = Grit::Repo.new "."
-        remote_integration_head = repo.remotes.find { |r| r.name == "origin/integration" }
-        common_ancestor = find_common_ancestor repo.heads.first.commit.id, remote_integration_head.commit.id
-        common_ancestor == remote_integration_head.commit.id
-      end
-
-      def find_common_ancestor(head1, head2)
-        run_crucial("git merge-base #{head1} #{head2}").chomp
-      end
   end 
 
   class Bugfix < Thor
@@ -44,10 +54,29 @@ module Bard
 
 end
 
+module BardGit
+  def fast_forward_merge? 
+    run_crucial "git fetch origin"
+    repo = Grit::Repo.new "."
+    remote_integration_head = repo.remotes.find { |r| r.name == "origin/integration" }
+    common_ancestor = find_common_ancestor repo.heads.first.commit.id, remote_integration_head.commit.id
+    common_ancestor == remote_integration_head.commit.id
+  end
+
+  def find_common_ancestor(head1, head2)
+    run_crucial("git merge-base #{head1} #{head2}").chomp
+  end
+end
+
 module BardError
-  GREEN = "\033[1;32m"    
-  RED = "\033[1;31m"
+  RED     = "\033[1;31m"
+  YELLOW  = "\033[1;33m"
+  GREEN   = "\033[1;32m"    
   DEFAULT = "\033[0m"
+
+  def warn(message)
+    $stderr.puts "#{YELLOW}!!!#{DEFAULT} #{message}"
+  end
 
   def fatal(message)
     raise Thor::Error, "#{RED}!!!#{DEFAULT} #{message}"
@@ -62,7 +91,9 @@ end
 
 Thor.class_eval do
   include BardError
+  include BardGit
 end
 Thor::Group.class_eval do
   include BardError
+  include BardGit
 end

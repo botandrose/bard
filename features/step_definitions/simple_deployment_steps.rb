@@ -15,9 +15,12 @@ Given /^a shared test project$/ do
   end
 end
 
-Given /^I have committed a set of changes to my local integration branch$/ do
+Given /^I am on the integration branch$/ do
   type "git checkout integration"
-  type "cat 'fuck shit' > fuck_file"
+end
+
+Given /^I have committed a set of changes to my local integration branch$/ do
+  type "echo 'fuck shit' > fuck_file"
   type "git add ."
   type "git commit -am'test commit to local integration branch.'"
 end
@@ -25,14 +28,14 @@ end
 Given /^the remote integration branch has had a commit since I last pulled$/ do
   Dir.chdir "#{ROOT}/tmp/test_repo_origin" do 
     type "git checkout integration"
-    type "cat 'zomg' > origin_change_file"
+    type "echo 'zomg' > origin_change_file"
     type "git add ."
     type "git commit -am 'testing origin change'"
   end
 end
 
 Given /^a dirty working directory$/ do
-  File.open("new_file", "w") { |f| f.puts "blah blah blah" }
+  File.open("dirty_file", "w") { |f| f.puts "dirty dirty" }
 end
 
 When /^I type "([^\"]*)"$/ do |command|
@@ -44,6 +47,7 @@ Then /^I should be on the "([^\"]*)" branch$/ do |branch|
 end
 
 Then /^the "([^\"]*)" branch (should|should not) match the "([^\"]*)" branch$/ do |local_branch, which, remote_branch|
+  type "git fetch origin"
   local_sha = @repo.commits(local_branch).first.id
   remote_sha = @repo.commits(remote_branch).first.id
   which = which.gsub(/ /, '_').to_sym
@@ -52,6 +56,21 @@ end
 
 Then /^I should see the fatal error "([^\"]*)"$/ do |error_message|
   @stderr.should include(error_message)
+end
+
+Then /^I should see the warning "([^\"]*)"$/ do |warning_message|
+  @stderr.should include(warning_message) 
+end
+
+Then /^the "([^\"]*)" branch should be a fast\-forward from the "([^\"]*)" branch$/ do |local_branch, remote_branch|
+  local_sha = @repo.commits(local_branch).first.id
+  remote_sha = @repo.commits(remote_branch).first.id
+  common_ancestor = find_common_ancestor local_sha, remote_sha
+  common_ancestor.should  == remote_sha
+end
+
+def find_common_ancestor(head1, head2)
+  `git merge-base #{head1} #{head2}`.chomp
 end
 
 Then /^there should not be a "([^\"]*)" branch$/ do |branch_name|
