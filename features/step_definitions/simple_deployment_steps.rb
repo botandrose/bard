@@ -6,9 +6,10 @@ Given /^a shared test project$/ do
   # SETUP
   Dir.chdir ROOT
   Dir.mkdir 'tmp'
-  type "cp -R fixtures/test_repo_source tmp/test_repo_origin"
-  type "git clone tmp/test_repo_origin tmp/test_repo_local"
-  Dir.chdir 'tmp/test_repo_local'
+  type "cp -R fixtures/repo tmp/origin"
+  type "cp -R fixtures/repo tmp/submodule"
+  type "git clone tmp/origin tmp/local"
+  Dir.chdir 'tmp/local'
   @repo = Grit::Repo.new "."
   type "git checkout -b integration"
   type "grb share integration"
@@ -21,7 +22,7 @@ Given /^I have committed a set of changes to my local integration branch$/ do
 end
 
 Given /^the remote integration branch has had a commit since I last pulled$/ do
-  Dir.chdir "#{ROOT}/tmp/test_repo_origin" do 
+  Dir.chdir "#{ROOT}/tmp/origin" do 
     type "git checkout integration"
     type "echo 'zomg' > origin_change_file"
     type "git add ."
