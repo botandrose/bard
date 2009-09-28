@@ -1,0 +1,3 @@
+[submodule "fixtures/test_repo_source"]
+	path = fixtures/test_repo_source
+	url = staging@staging.botandrose.com:fuelcafe
