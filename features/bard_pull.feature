@@ -45,3 +45,10 @@ Feature: bard pull
     Then I should see the fatal error "You have uncommitted changes!"
     And the "integration" branch should not match the "origin/integration" branch
 
+  Scenario: Trying to bard pull when not on the integration branch
+    Given the remote integration branch has had a commit since I last pulled
+    And I am on a non-integration branch
+    When I type "bard pull"
+    Then I should see the fatal error "not on the integration branch"
+    And the "integration" branch should not match the "origin/integration" branch
+

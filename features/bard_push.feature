@@ -1,12 +1,18 @@
 Feature: bard push
   Background:
     Given a shared test project
-    # TODO what about non-integration branch scenarios
 
   Scenario: Uploading local changes onto the remote integration branch
     Given I have committed a set of changes to my local integration branch
     When I type "bard push"
     Then the "integration" branch should match the "origin/integration" branch
+
+  Scenario: Trying to bard push when not on the integration branch
+    Given I have committed a set of changes to my local integration branch
+    And I am on a non-integration branch
+    When I type "bard push"
+    Then I should see the fatal error "not on the integration branch"
+    And the "integration" branch should not match the "origin/integration" branch
 
   Scenario: Trying to bard push with a dirty working directory
     Given I have committed a set of changes to my local integration branch

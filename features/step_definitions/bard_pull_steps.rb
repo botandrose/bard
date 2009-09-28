@@ -1,3 +1,7 @@
+Given /^I am on a non\-integration branch$/ do
+  type "git checkout -b bad_bad_bad"
+end
+
 Given /^the remote integration branch has had a commit that includes a new submodule$/ do
   Dir.chdir "#{ROOT}/tmp/origin" do 
     type "git checkout integration"

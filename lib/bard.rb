@@ -5,6 +5,10 @@ module Bard
   class Pull < Thor::Group
     desc "pull integration branch changes to your local branch"
     def pull
+      unless `git name-rev --name-only HEAD`.chomp == "integration"
+        fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
+      end
+
       unless `git status`.include? "working directory clean"
         fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push."
       end
@@ -27,6 +31,10 @@ module Bard
   class Push < Thor::Group
     desc "upload local changes onto the integration branch"
     def push
+      unless `git name-rev --name-only HEAD`.chomp == "integration"
+        fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
+      end
+
       unless `git status`.include? "working directory clean"
         fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push."
       end
