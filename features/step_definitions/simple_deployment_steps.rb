@@ -10,10 +10,8 @@ Given /^a shared test project$/ do
   type "git clone tmp/test_repo_origin tmp/test_repo_local"
   Dir.chdir 'tmp/test_repo_local'
   @repo = Grit::Repo.new "."
-  @repo.remote_branches.each do |remote_branch|
-    type "grb track #{remote_branch}"
-  end
-  type "git checkout integration"
+  type "git checkout -b integration"
+  type "git push origin integration"
 end
 
 Given /^I have committed a set of changes to my local integration branch$/ do
@@ -73,3 +71,4 @@ end
 Then /^there should not be a "([^\"]*)" branch$/ do |branch_name|
   @repo.branches.any? { |branch| branch.name == branch_name }
 end
+
