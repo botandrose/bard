@@ -3,6 +3,7 @@ Given /^the remote integration branch has had a commit that includes a new submo
     type "git checkout integration"
     type "git submodule add #{ROOT}/tmp/submodule submodule"
     Dir.chdir "#{ROOT}/tmp/origin/submodule" do
+      type "git checkout -b master"
       type "grb track master"
     end
     type "git add ."
