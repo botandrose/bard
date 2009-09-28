@@ -11,7 +11,7 @@ Given /^a shared test project$/ do
   Dir.chdir 'tmp/test_repo_local'
   @repo = Grit::Repo.new "."
   type "git checkout -b integration"
-  type "git push origin integration"
+  type "grb share integration"
 end
 
 Given /^I have committed a set of changes to my local integration branch$/ do
