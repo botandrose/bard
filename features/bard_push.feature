@@ -21,3 +21,19 @@ Feature: bard push
     When I type "bard push"
     Then I should see the fatal error "Someone has pushed some changes"
     And the "integration" branch should not match the "origin/integration" branch
+
+  Scenario: Trying to bard push with an uncommitted change to a submodule
+    Given a submodule
+    And I have committed a set of changes to my local integration branch
+    And the submodule working directory is dirty
+    When I type "bard push"
+    Then I should see the fatal error "Micah"
+    And the "integration" branch should not match the "origin/integration" branch
+
+  Scenario: Trying to bard push with a committed but unpushed change to a submodule
+    Given a submodule
+    And I have committed a set of changes to the submodule
+    And I have committed a set of changes to my local integration branch
+    When I type "bard push"
+    Then I should see the fatal error "Micah"
+    And the "integration" branch should not match the "origin/integration" branch

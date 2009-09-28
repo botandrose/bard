@@ -5,4 +5,8 @@ Grit::Repo.class_eval do
     branches.collect! { |r| r.name.split('/')[1] }
     branches.reject!  { |b| b == "HEAD" }
   end
+
+  def submodules
+    Grit::Submodule.config self, self.head.name
+  end
 end
