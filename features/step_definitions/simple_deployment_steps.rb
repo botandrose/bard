@@ -8,6 +8,7 @@ Given /^a shared test project$/ do
   Dir.mkdir 'tmp'
   type "cp -R fixtures/repo tmp/origin"
   type "cp -R fixtures/repo tmp/submodule"
+  type "cp -R fixtures/repo tmp/submodule2"
   type "git clone tmp/origin tmp/local"
   Dir.chdir 'tmp/local'
   @repo = Grit::Repo.new "."

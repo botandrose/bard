@@ -13,9 +13,10 @@ module Bard
       end
 
       run_crucial "git pull --rebase origin integration"
-      
+      run_crucial "git submodule init"
+      run_crucial "git submodule sync"
+      run_crucial "git submodule update"
       # TODO
-      #submodule init sync update
       #migrate database
       #install gems
       #restart
