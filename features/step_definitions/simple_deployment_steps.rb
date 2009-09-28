@@ -1,4 +1,6 @@
 Given /^a shared test project$/ do
+  Dir.mkdir 'tmp' rescue Errno::EEXIST
+  Dir.chdir 'tmp'
   `rm -rf bard_test_fixture`
   `git clone staging@staging.botandrose.com:bard_test_fixture`
   Dir.chdir 'bard_test_fixture'
@@ -6,7 +8,7 @@ Given /^a shared test project$/ do
 end
 
 When /^I type "([^\"]*)"$/ do |command|
-  system command
+  @status, @stdout, @stderr = systemu command
 end
 
 Then /^I should be on the "([^\"]*)" branch$/ do |branch|
@@ -19,3 +21,14 @@ Then /^the "([^\"]*)" branch should match the "([^\"]*)" branch$/ do |local_bran
   local_sha.should == remote_sha
 end
 
+Given /^a dirty working directory$/ do
+  FileUtils.touch "new_file"
+end
+
+Then /^I should see the fatal error "([^\"]*)"$/ do |error_message|
+  @stderr.should include(error_message)
+end
+
+Then /^there should not be a "([^\"]*)" branch$/ do |branch_name|
+  @repo.branches.any? { |branch| branch.name == branch_name }
+end

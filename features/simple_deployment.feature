@@ -7,13 +7,11 @@ Feature: Deployment for beginners
     Then I should be on the "bugfix-typo" branch
     And the "bugfix-typo" branch should match the "origin/master" branch
 
-  #Scenario: Starting a new bugfix with a dirty working tree
-    #When I type "thor git:bugfix:new typo"
-
-    #check for current bard gem
-    #ensure clean working directory
-    #prompt for branch_name if none specified
-    #branch from origin/master into "bugfix-#{branch_name}"
+  Scenario: Starting a new bugfix with a dirty working directory
+    Given a dirty working directory
+    When I type "bard bugfix:new typo"
+    Then I should see the fatal error "You have uncommitted changes!"
+    And there should not be a "bugfix-typo" branch
 
   #Scenario: Deploying a new bugfix
     #check for current bard gem
