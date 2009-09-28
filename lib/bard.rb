@@ -5,14 +5,7 @@ class Bard < Thor
   desc "pull", "pull changes to your local machine"
   def pull
     ensure_integration_branch!
-
-    unless `git name-rev --name-only HEAD`.chomp == "integration"
-      fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
-    end
-
-    unless `git status`.include? "working directory clean"
-      fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push."
-    end
+    ensure_clean_working_directory!
 
     unless fast_forward_merge?
       warn "Someone has pushed some changes since you last pulled.\n  Please ensure that your changes didnt break stuff."
@@ -22,6 +15,7 @@ class Bard < Thor
     run_crucial "git submodule init"
     run_crucial "git submodule sync"
     run_crucial "git submodule update"
+    
     # TODO
     #migrate database
     #install gems
@@ -30,13 +24,8 @@ class Bard < Thor
 
   desc "push", "push local changes out to the remote"
   def push
-    unless `git name-rev --name-only HEAD`.chomp == "integration"
-      fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
-    end
-
-    unless `git status`.include? "working directory clean"
-      fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push."
-    end
+    ensure_integration_branch!
+    ensure_clean_working_directory!
 
     if submodule_dirty?
       fatal "Cannot upload changes: You have uncommitted changes to a submodule!\n  Please see Micah about this."
@@ -58,9 +47,13 @@ class Bard < Thor
 
   private
     def ensure_integration_branch!
-      unless `git name-rev --name-only HEAD`.chomp == "integration"
-        fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
-      end
+      return if `git name-rev --name-only HEAD`.chomp == "integration"
+      fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
+    end
+
+    def ensure_clean_working_directory!
+      return if`git status`.include? "working directory clean"
+      fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push or pull."
     end
 
     def fast_forward_merge? 
