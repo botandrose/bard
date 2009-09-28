@@ -1,5 +1,4 @@
 require 'systemu'
-require 'grit'
 
 module Bard
   class Pull < Thor::Group
@@ -57,14 +56,14 @@ end
 module BardGit
   def fast_forward_merge? 
     run_crucial "git fetch origin"
-    repo = Grit::Repo.new "."
-    remote_integration_head = repo.remotes.find { |r| r.name == "origin/integration" }
-    common_ancestor = find_common_ancestor repo.heads.first.commit.id, remote_integration_head.commit.id
-    common_ancestor == remote_integration_head.commit.id
+    head = run_crucial "git rev-parse HEAD"
+    remote_head = run_crucial "git rev-parse origin/integration"
+    common_ancestor = find_common_ancestor head, remote_head
+    common_ancestor == remote_head
   end
 
   def find_common_ancestor(head1, head2)
-    run_crucial("git merge-base #{head1} #{head2}").chomp
+    run_crucial "git merge-base #{head1} #{head2}"
   end
 end
 
@@ -85,7 +84,7 @@ module BardError
   def run_crucial(command)
     status, stdout, stderr = systemu command
     fatal stderr if status.to_i.nonzero?
-    stdout
+    stdout.chomp
   end
 end
 

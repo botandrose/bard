@@ -1,7 +1,6 @@
 Feature: bard pull
   Background:
     Given a shared test project
-    And I am on the integration branch
     # TODO what about non-integration branch scenarios
 
   Scenario: Pulling down the latest changes from the remote integration branch

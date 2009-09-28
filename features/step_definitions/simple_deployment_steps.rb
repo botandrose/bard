@@ -13,9 +13,6 @@ Given /^a shared test project$/ do
   @repo.remote_branches.each do |remote_branch|
     type "grb track #{remote_branch}"
   end
-end
-
-Given /^I am on the integration branch$/ do
   type "git checkout integration"
 end
 

@@ -1,7 +1,6 @@
 Feature: bard push
   Background:
     Given a shared test project
-    And I am on the integration branch
     # TODO what about non-integration branch scenarios
 
   Scenario: Uploading local changes onto the remote integration branch
