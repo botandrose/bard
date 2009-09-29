@@ -72,4 +72,4 @@ Feature: bard pull
   Scenario: Pulling in a change should restart the rails server
     Given the remote integration branch has had a commit since I last pulled
     When I type "bard pull"
-    Then I should see that "rake restart" has been run
+    Then passenger should have been restarted

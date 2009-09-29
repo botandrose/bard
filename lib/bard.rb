@@ -37,10 +37,8 @@ class Bard < Thor
     if changed_files.any? { |f| f =~ %r(\bconfig/environment\b) }
       run_crucial "rake gems:install"
     end
-    # TODO
-    #require 'fileutils'
-    #FileUtils.touch 'tmp/restart.txt'
-    #install gems
+
+    run_crucial "touch tmp/restart.txt"
   end
 
   desc "push", "push local changes out to the remote"

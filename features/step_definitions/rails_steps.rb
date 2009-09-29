@@ -59,3 +59,6 @@ Then /^the test gem should be installed$/ do
   type("gem list rake-dotnet").should include "rake-dotnet (0.0.1)"
 end
 
+Then /^passenger should have been restarted$/ do
+  File.exist?("tmp/restart.txt").should be_true
+end
