@@ -1,6 +1,6 @@
 = BARD gem
 
-  This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah and Michael. And Nick too, certainly.
+  This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.
 
 == Requirements
     gem install thor
