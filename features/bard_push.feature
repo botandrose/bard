@@ -1,6 +1,6 @@
 Feature: bard push
   Background:
-    Given a shared test project
+    Given a shared rails project
 
   Scenario: Uploading local changes onto the remote integration branch
     Given I have committed a set of changes to my local integration branch

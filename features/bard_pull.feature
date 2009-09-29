@@ -1,7 +1,6 @@
 Feature: bard pull
   Background:
-    Given a shared test project
-    # TODO what about non-integration branch scenarios
+    Given a shared rails project
 
   Scenario: Pulling down the latest changes from the remote integration branch
     Given the remote integration branch has had a commit since I last pulled
