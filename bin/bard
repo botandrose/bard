@@ -6,9 +6,12 @@ require 'thor'
 require 'thor/runner'
 
 THIS_FILE = File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
-
 require File.join(File.dirname(THIS_FILE), '..', 'lib', 'bard')
 
 args = ARGV
-args[0] = "bard:#{args[0]}"
+if args[0] =~ /^[a-z]/i
+  args[0] = "bard:#{args[0]}"
+else
+  args.unshift "bard"
+end
 Thor::Runner.start args 
