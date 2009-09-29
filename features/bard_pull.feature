@@ -51,16 +51,23 @@ Feature: bard pull
     Then I should see the fatal error "not on the integration branch"
     And the "integration" branch should not match the "origin/integration" branch
 
-  Scenario: Pulling in a change that includes a migration
+  Scenario: Pulling in a change that includes a migration on a dev machine
+    Given the remote integration branch has had a commit that includes a new migration
+    And I have a development environment set up locally
+    When I type "bard pull"
+    Then the development database should include that migration
+
+  Scenario: Pulling in a change that includes a migration on a dev and testing machine
     Given the remote integration branch has had a commit that includes a new migration
     And I have development and test environments set up locally
     When I type "bard pull"
     Then both the development and test databases should include that migration
 
   Scenario: Pulling in a change that includes a gem dependency change
-    Given the remote integration branch has had a commit that includes a gem dependency change
+    Given I dont have the test gem installed
+    And the remote integration branch has had a commit that adds the test gem as a dependency
     When I type "bard pull"
-    Then I should see that "rake gems:install" has been run
+    Then the test gem should be installed
 
   Scenario: Pulling in a change should restart the rails server
     Given the remote integration branch has had a commit since I last pulled

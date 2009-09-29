@@ -1,6 +1,5 @@
 Given /^the remote integration branch has had a commit that includes a new migration$/ do
   Dir.chdir "#{ROOT}/tmp/origin" do
-    type "cp config/database.yml.sample config/database.yml"
     type "git checkout integration"
     type "script/generate migration test_migration"
     type "git add ."
@@ -8,11 +7,25 @@ Given /^the remote integration branch has had a commit that includes a new migra
   end
 end
 
+Given /^I have a development environment set up locally$/ do
+  Dir.chdir "#{ROOT}/tmp/local" do
+    type "rake db:create"
+    type "rake db:migrate"
+  end
+end
+
 Given /^I have development and test environments set up locally$/ do
   Dir.chdir "#{ROOT}/tmp/local" do
-    type "cp config/database.yml.sample config/database.yml"
     type "rake db:create && rake db:create RAILS_ENV=test"
     type "rake db:migrate && rake db:migrate RAILS_ENV=test"
+  end
+end
+
+Then /^the development database should include that migration$/ do
+  Dir.chdir "#{ROOT}/tmp/local" do
+    db_version = type("rake db:version")[/[0-9]{14}/]
+    test_migration_version = type("ls db/migrate/*_test_migration.rb")[/[0-9]{14}/]
+    db_version.should == test_migration_version
   end
 end
 
@@ -26,11 +39,23 @@ Then /^both the development and test databases should include that migration$/ d
   end
 end
 
-Given /^the remote integration branch has had a commit that includes a gem dependency change$/ do
-  pending
+Given /^I dont have the test gem installed$/ do
+  type "gem uninstall rake-dotnet -v=0.0.1 -x"
 end
 
-Then /^I should see that "([^\"]*)" has been run$/ do |arg1|
-  pending
+Given /^the remote integration branch has had a commit that adds the test gem as a dependency$/ do
+  Dir.chdir "#{ROOT}/tmp/origin" do
+    type "git checkout integration"
+    file_inject "config/environment.rb", "
+Rails::Initializer.run do |config|", <<-RUBY
+  config.gem "rake-dotnet", :version => "0.0.1"
+RUBY
+    type "git add ."
+    type "git commit -am'added test gem dependency.'"
+  end
+end
+
+Then /^the test gem should be installed$/ do
+  type("gem list rake-dotnet").should include "rake-dotnet (0.0.1)"
 end
 

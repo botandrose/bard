@@ -34,6 +34,9 @@ class Bard < Thor
     end
     run_crucial "git submodule update"
    
+    if changed_files.any? { |f| f =~ %r(\bconfig/environment\b) }
+      run_crucial "rake gems:install"
+    end
     # TODO
     #require 'fileutils'
     #FileUtils.touch 'tmp/restart.txt'
