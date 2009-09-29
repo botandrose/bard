@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "bard.gemspec",
      "bin/bard",
      "features/bard_pull.feature",
      "features/bard_push.feature",
