@@ -20,14 +20,24 @@ class Bard < Thor
     end
 
     run_crucial "git pull --rebase origin integration"
-    run_crucial "git submodule init"
-    run_crucial "git submodule sync"
+
+    changed_files = `git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-status`.split("\n") 
+   
+    if changed_files.any? { |f| f =~ %r(\bdb/migrate/.+) }
+      run_crucial "rake db:migrate"
+      run_crucial "rake db:migrate RAILS_ENV=test"
+    end
+     
+    if changed_files.any? { |f| f =~ %r(\b.gitmodules\b) }
+      run_crucial "git submodule sync"
+      run_crucial "git submodule init"
+    end
     run_crucial "git submodule update"
-    
+   
     # TODO
-    #migrate database
+    #require 'fileutils'
+    #FileUtils.touch 'tmp/restart.txt'
     #install gems
-    #restart
   end
 
   desc "push", "push local changes out to the remote"

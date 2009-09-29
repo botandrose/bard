@@ -14,8 +14,8 @@ module BardGit
       run_crucial "git fetch origin"
       head = run_crucial "git rev-parse HEAD"
       remote_head = run_crucial "git rev-parse origin/integration"
-      common_ancestor = find_common_ancestor head, remote_head
-      common_ancestor == remote_head
+      @common_ancestor = find_common_ancestor head, remote_head
+      @common_ancestor == remote_head
     end
 
     def find_common_ancestor(head1, head2)
