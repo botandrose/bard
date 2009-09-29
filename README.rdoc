@@ -1,6 +1,6 @@
-= bard
+= BARD gem
 
-Description goes here.
+  This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah and Michael. And Nick too, We suppose.
 
 == Requirements
     gem install thor
