@@ -1,3 +1,4 @@
+require 'term/ansicolor'
 require 'systemu'
 require 'grit'
 
@@ -90,22 +91,18 @@ class Bard < Thor
       end
     end
 
-    RED     = "\033[1;31m"
-    YELLOW  = "\033[1;33m"
-    GREEN   = "\033[1;32m"    
-    DEFAULT = "\033[0m"
-
+    include Term::ANSIColor
     def warn(message)
-      $stderr.puts "#{YELLOW}!!!#{DEFAULT} #{message}"
+      $stderr.puts yellow("!!! ") + message
     end
 
     def fatal(message)
-      raise Thor::Error, "#{RED}!!!#{DEFAULT} #{message}"
+      raise Thor::Error, red("!!! ") + message
     end
 
     def run_crucial(command)
       status, stdout, stderr = systemu command
-      fatal "Running command: #{YELLOW}#{command}#{DEFAULT}: #{stderr}" if status.to_i.nonzero?
+      fatal "Running command: #{yellow(command)}: #{stderr}" if status.to_i.nonzero?
       stdout.chomp
     end
 end
