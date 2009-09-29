@@ -5,14 +5,20 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "bard"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
-    gem.email = "originofstorms@gmail.com"
-    gem.homepage = "http://github.com/originofstorms/bard"
-    gem.authors = ["Micah Geisel"]
+    gem.summary = %Q{Tools for collaborating with Bot and Rose Design.}
+    gem.description = %Q{This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.}
+    gem.email = "info@botandrose.com"
+    gem.homepage = "http://github.com/botandrose/bard"
+    gem.authors = ["Micah Geisel", "Nick Hogle"]
+    gem.add_development_dependency "ruby-debug"
     gem.add_development_dependency "rspec"
     gem.add_development_dependency "cucumber"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.add_dependency(%q<rubygems-update>, [">= 1.3.2"])
+    gem.add_dependency(%q<thor>, [">= 0.11.7"])
+    gem.add_dependency(%q<grit>, [">= 1.1.1"])
+    gem.add_dependency(%q<git_remote_branch>, [">= 0.3.0"])
+    gem.add_dependency(%q<systemu>, [">= 1.2.0"])
+    gem.add_dependency(%q<term-ansicolor>, [">= 1.0.3"])
   end
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
