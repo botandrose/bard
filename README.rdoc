@@ -3,9 +3,11 @@
 Description goes here.
 
 == Requirements
-    gem install git_remote_branch
     gem install thor
-
+    gem install systemu
+    gem install term-ansicolor
+    gem install git_remote_branch
+    git --version >= 1.6.0
 
 == Note on Patches/Pull Requests
  
