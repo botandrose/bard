@@ -21,7 +21,7 @@ class Bard < Thor
 
     run_crucial "git pull --rebase origin integration"
 
-    changed_files = `git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-status`.split("\n") 
+    changed_files = run_crucial "git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-status".split("\n") 
    
     if changed_files.any? { |f| f =~ %r(\bdb/migrate/.+) }
       run_crucial "rake db:migrate"
