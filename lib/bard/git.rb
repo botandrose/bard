@@ -38,7 +38,7 @@ module BardGit
       submodules.any? do |name, submodule|
         Dir.chdir submodule["path"] do
           branch = `git name-rev --name-only HEAD`.chomp
-          `git fetch`
+          `git fetch origin`
           submodule["id"] != `git rev-parse origin/#{branch}`.chomp
         end
       end
