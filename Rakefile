@@ -20,6 +20,7 @@ begin
     gem.add_dependency(%q<systemu>, [">= 1.2.0"])
     gem.add_dependency(%q<term-ansicolor>, [">= 1.0.3"])
   end
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
