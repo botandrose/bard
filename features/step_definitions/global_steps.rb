@@ -29,6 +29,9 @@ BASH
 end
 
 When /^I type "([^\"]*)"$/ do |command|
+  if command =~ /^bard/
+    command = "#{ROOT}/bin/#{command}"
+  end
   type command
 end
 

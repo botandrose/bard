@@ -10,6 +10,29 @@ class Bard < Thor
   include BardGit
   include BardIO
 
+  desc "check", "check environment for missing dependencies"
+  def check
+    required = Hash.new
+    required['bard'] = `gem list bard --remote`[/[0-9]+\.[0-9]+\.[0-9]+/]
+    required['git'] = '1.6.0'
+    required['rubygems'] = '1.3.4'
+    required['ruby'] = '1.8.6'
+
+    actual = Hash.new
+    actual['bard'] = `gem list bard`[/[0-9]+\.[0-9]+\.[0-9]+/]
+    actual['git'] = `git --version`[/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/]
+    actual['rubygems'] = `gem --version`.chomp
+    actual['ruby'] = `ruby --version`[/[0-9]+\.[0-9]+\.[0-9]+/]
+
+    %w(bard git rubygems ruby).each do |pkg|
+      if actual[pkg] < required[pkg]
+        puts red("#{pkg.ljust(9)} (#{actual[pkg]}) ... NEED (#{required[pkg]})")
+      else
+        puts green("#{pkg.ljust(9)} (#{actual[pkg]})")
+      end
+    end
+  end
+
   desc "pull", "pull changes to your local machine"
   def pull
     ensure_integration_branch!
@@ -91,7 +114,7 @@ class Bard < Thor
         run_crucial "rake db:migrate RAILS_ENV=staging"
         run_crucial "rake db:migrate RAILS_ENV=test"
       end
-      puts changed_files.inspect 
+       
       if changed_files.any? { |f| f == ".gitmodules" }
         run_crucial "git submodule sync"
         run_crucial "git submodule init"
