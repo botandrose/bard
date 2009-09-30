@@ -91,7 +91,7 @@ class Bard < Thor
         run_crucial "rake db:migrate RAILS_ENV=staging"
         run_crucial "rake db:migrate RAILS_ENV=test"
       end
-       
+      puts changed_files.inspect 
       if changed_files.any? { |f| f == ".gitmodules" }
         run_crucial "git submodule sync"
         run_crucial "git submodule init"

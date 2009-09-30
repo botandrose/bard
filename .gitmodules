@@ -1,3 +1,3 @@
 [submodule "fixtures/repo"]
 	path = fixtures/repo
-	url = staging@staging.botandrose.com:fuelcafe
+	url = staging@staging.botandrose.com:bard/fixtures/repo

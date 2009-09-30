@@ -3,7 +3,8 @@ Given /^a submodule$/ do
   Dir.chdir "#{ROOT}/tmp/local" do
     type "git checkout integration"
     type "git pull --rebase"
-    type "git submodule update --init"
+    type "git submodule init"
+    type "git submodule update"
     @submodule_url = File.read(".gitmodules").match(/url = (.*)$/)[1]
     @submodule_commit = type "git submodule status"
   end

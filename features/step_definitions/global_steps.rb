@@ -11,7 +11,7 @@ Given /^a shared rails project$/ do
     File.open ".git/hooks/post-receive", "w" do |f|
       f.puts <<-BASH
 #!/bin/bash
-RAILS_ENV=staging #{ROOT}/bin/bard stage
+RAILS_ENV=staging #{ROOT}/bin/bard stage $@
 BASH
       f.chmod 0775
     end
