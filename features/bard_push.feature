@@ -7,6 +7,50 @@ Feature: bard push
     When I type "bard push"
     Then the "integration" branch should match the "origin/integration" branch
 
+  Scenario: Pushing a change that includes a migration
+    Given I have committed a set of changes that includes a new migration
+    And the staging server has a staging and test environment set up
+    When I type "bard push"
+    Then the both the staging and test databases should include that migration
+
+  Scenario: Pushing a change that includes a gem dependency change
+    Given I dont have the test gem installed
+    And I have committed a set of changes that adds the test gem as a dependency
+    When I type "bard push"
+    Then the test gem should be installed
+
+  Scenario: Pushing a change should advance the staging HEAD and restart the staging rails server
+    Given I have committed a set of changes to my local integration branch
+    When I type "bard push"
+    Then the remote directory should not be dirty
+    And the staging passenger should have been restarted
+
+  Scenario: Pushing a change that includes a submodule addition
+    Given I have committed a set of changes that includes a new submodule
+    When I type "bard push"
+    Then there should be one new submodule on the remote
+    And the remote submodule should be checked out
+  
+  Scenario: Pushing a change that includes a submodule update
+    Given a submodule
+    And I have committed a set of changes that includes a submodule update
+    When I type "bard push"
+    Then the remote submodule should be updated
+
+  Scenario: Pushing a change that includes a submodule url change
+    Given a submodule
+    Given I have committed a set of changes that includes a submodule url change
+    When I type "bard push"
+    Then the remote submodule url should be changed
+    And the remote submodule should be checked out
+
+  # TODO
+  #Scenario: Pushing a change that includes a submodule deletion
+  #  Given a submodule
+  #  Given I have committed a set of changes that includes a submodule deletion
+  #  When I type "bard push"
+  #  Then the remote submodule should be deleted
+
   Scenario: Trying to bard push when not on the integration branch
     Given I have committed a set of changes to my local integration branch
     And I am on a non-integration branch

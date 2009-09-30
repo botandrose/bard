@@ -21,24 +21,25 @@ class Bard < Thor
 
     run_crucial "git pull --rebase origin integration"
 
-    changed_files = run_crucial "git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-status".split("\n") 
+    changed_files = run_crucial("git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-only").split("\n") 
+    puts changed_files.inspect
    
-    if changed_files.any? { |f| f =~ %r(\bdb/migrate/.+) }
+    if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
       run_crucial "rake db:migrate"
       run_crucial "rake db:migrate RAILS_ENV=test"
     end
      
-    if changed_files.any? { |f| f =~ %r(\b.gitmodules\b) }
+    if changed_files.any? { |f| f == ".gitmodules" }
       run_crucial "git submodule sync"
       run_crucial "git submodule init"
     end
     run_crucial "git submodule update"
    
-    if changed_files.any? { |f| f =~ %r(\bconfig/environment\b) }
+    if changed_files.any? { |f| f =~ %r(^config/environment.+) }
       run_crucial "rake gems:install"
     end
 
-    run_crucial "touch tmp/restart.txt"
+    system "touch tmp/restart.txt"
   end
 
   desc "push", "push local changes out to the remote"
@@ -58,9 +59,50 @@ class Bard < Thor
       fatal "Someone has pushed some changes since you last pulled.\n  Kindly run bard pull, ensure that your your changes still work.\n  Then run bard push again."
     end
 
-    run_crucial "git push origin integration"
+    run_crucial "git push origin integration", true
     
-    # TODO
-    #stage
+    # git post-receive hook runs stage task below
+  end
+
+  if ENV['RAILS_ENV'] == "staging"
+    desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
+    def stage
+      if ENV['GIT_DIR'] == '.'
+        # this means the script has been called as a hook, not manually.
+        # get the proper GIT_DIR so we can descend into the working copy dir;
+        # if we don't then `git reset --hard` doesn't affect the working tree.
+        Dir.chdir '..' 
+        ENV['GIT_DIR'] = '.git'
+      end
+
+      run_crucial "git reset --hard"
+
+      # find out the current branch
+      head = File.read('.git/HEAD').chomp
+      # abort if we're on a detached head
+      exit unless head.sub! 'ref: ', ''
+
+      revs = gets.split ' '  
+      old_rev, new_rev = revs if head == revs.pop
+
+      changed_files = run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 
+
+      if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
+        run_crucial "rake db:migrate RAILS_ENV=staging"
+        run_crucial "rake db:migrate RAILS_ENV=test"
+      end
+       
+      if changed_files.any? { |f| f == ".gitmodules" }
+        run_crucial "git submodule sync"
+        run_crucial "git submodule init"
+      end
+      system "git submodule update"
+     
+      if changed_files.any? { |f| f =~ %r(^config/environment.+) }
+        run_crucial "rake gems:install"
+      end
+
+      system "touch tmp/restart.txt"
+    end
   end
 end

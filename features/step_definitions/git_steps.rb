@@ -21,6 +21,16 @@ Given /^the remote integration branch has had a commit since I last pulled$/ do
   end
 end
 
+Then /^the directory should not be dirty$/ do
+  type("git status").should include "working directory clean"
+end
+
+Then /^the remote directory should not be dirty$/ do
+  Dir.chdir "#{ROOT}/tmp/origin" do 
+    type("git status").should include "working directory clean"
+  end
+end
+
 Then /^I should be on the "([^\"]*)" branch$/ do |branch|
   @repo.head.name.should == branch
 end

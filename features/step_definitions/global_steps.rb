@@ -7,15 +7,25 @@ Given /^a shared rails project$/ do
   Dir.chdir ROOT
   Dir.mkdir 'tmp'
   type "cp -R fixtures/repo tmp/origin"
-  type "cp tmp/origin/config/database.yml.sample tmp/origin/config/database.yml"
+  Dir.chdir 'tmp/origin' do
+    File.open ".git/hooks/post-receive", "w" do |f|
+      f.puts <<-BASH
+#!/bin/bash
+RAILS_ENV=staging #{ROOT}/bin/bard stage
+BASH
+      f.chmod 0775
+    end
+    type "cp config/database.yml.sample config/database.yml"
+    type "git checkout -b integration"
+  end
   type "cp -R fixtures/repo tmp/submodule"
   type "cp -R fixtures/repo tmp/submodule2"
   type "git clone tmp/origin tmp/local"
   Dir.chdir 'tmp/local'
   @repo = Grit::Repo.new "."
-  type "git checkout -b integration"
+  type "grb fetch integration"
+  type "git checkout integration"
   type "cp config/database.yml.sample config/database.yml"
-  type "grb share integration"
 end
 
 When /^I type "([^\"]*)"$/ do |command|
