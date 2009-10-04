@@ -12,17 +12,18 @@ class Bard < Thor
 
   desc "check", "check environment for missing dependencies"
   def check
-    required = Hash.new
-    required['bard'] = `gem list bard --remote`[/[0-9]+\.[0-9]+\.[0-9]+/]
-    required['git'] = '1.6.0'
-    required['rubygems'] = '1.3.4'
-    required['ruby'] = '1.8.6'
-
-    actual = Hash.new
-    actual['bard'] = `gem list bard`[/[0-9]+\.[0-9]+\.[0-9]+/]
-    actual['git'] = `git --version`[/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/]
-    actual['rubygems'] = `gem --version`.chomp
-    actual['ruby'] = `ruby --version`[/[0-9]+\.[0-9]+\.[0-9]+/]
+    required = {
+      'bard'     => `gem list bard --remote`[/[0-9]+\.[0-9]+\.[0-9]+/],
+      'git'      => '1.6.0',
+      'rubygems' => '1.3.4',
+      'ruby'     => '1.8.6'
+    }
+    actual = {
+      'bard'     => `gem list bard`[/[0-9]+\.[0-9]+\.[0-9]+/],
+      'git'      => `git --version`[/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/],
+      'rubygems' => `gem --version`.chomp,
+      'ruby'     => `ruby --version`[/[0-9]+\.[0-9]+\.[0-9]+/]
+    }
 
     %w(bard git rubygems ruby).each do |pkg|
       if actual[pkg] < required[pkg]
