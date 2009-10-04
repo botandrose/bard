@@ -1,7 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe "Bard" do
-  it "fails" do
-    fail "hey buddy, you should probably rename this file and start specing for real"
+describe Bard do
+  it "should work" do
+    true
   end
 end

@@ -2,6 +2,7 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
 require 'term/ansicolor'
 require 'systemu'
 require 'grit'
+require 'thor'
 
 require 'bard/git'
 require 'bard/io'
