@@ -2,14 +2,122 @@
 
   This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.
 
-== Requirements
-    gem install thor
-    gem install systemu
-    gem install term-ansicolor
-    gem install git_remote_branch
+=== Requirements
     git --version >= 1.6.0
 
-== Note on Patches/Pull Requests
+=== Joining Bard
+
+	==== On any platform:
+		- gem install gemcutter
+		- gem tumble
+		- gem install bard
+
+	==== On Linux:
+
+		- Install RubyGems:
+			$> wget ...
+			$> ...
+
+		- Install Rake:
+			$> sudo gem install rake
+			( NOTE: the sudo )
+
+		- Install Apache
+			$> sudo apt-get install apache2
+
+		- Install Mysql
+			$> sudo apt-get install mysql-server
+			$> sudo /etc/init.d/mysql start
+			( No password for root, if it asks )
+			
+		- Install Passenger
+			$> sudo gem install passenger
+
+			$> sudo apt-get install apache2-prefork-dev as root.
+			$> sudo apt-get install libapr1-dev as root.
+			$> sudo apt-get install libaprutil1
+
+			$> sudo passenger-install-apache2-module
+
+		- Setup rails environment:
+			Add line to /etc/apache2/apache2.conf:
+				RailsEnv development
+			$> apache2ctl restart
+				
+	==== On Mac:
+		- ???Wtf ? I dunno. eff macs
+
+== Todos
+
+=== Adding Adva to an exising project
+	- Git clone latest tagged release from github
+	- Set up integration branch on staging
+	- Add as submodule 
+	- Bard pull will "just work" (tm)
+
+=== Joining an existing project
+	bard join will probably either do all these steps automatically, or help you do them:
+	This list summarizes the existing steps needed to join a project.
+
+	$> bard join <project-name>
+
+	- Clone the project
+		- (git clone staging@staging.botandrose.com:<project-name>)
+		- Init and update submodules
+
+	- Set up local environment:
+		- Apache
+			Put in /etc/apache2/sites-avaliable/<project-name>:
+				<VirtualHost *:80>
+					ServerName <project-name>.local
+					DocumentRoot $HOME/$BardRoot/<project-name>/public
+				</VirtualHost>
+
+			$> a2ensite <project-name>
+			$> apache2ctl restart
+
+		- Set up /etc/hosts:
+			append this line to /etc/hosts:
+				127.0.0.1 <project-name>.local
+
+		- Setup database yaml
+			- sensible default:
+				login: &login
+					adapter: mysql
+					database: <project-name>
+					username: root
+					password:
+					socket: /var/run/mysqld/mysqld.sock
+
+				development:
+					<<: *login
+
+				test: &TEST
+					<<: *login
+					database: <project-name>_test
+
+				cucumber:
+					<<: *TEST
+
+
+		- Set up gems:
+			$> rake gems:install
+
+		- Set up database
+			$> rake db:create
+			$> rake db:migrate
+
+		- Set up cap:
+			$> capify .
+			Add line to Capfile:
+				load '../cap.tasks'
+			Have cap.tasks.rb in your root work directory (eg. $HOME/work/bard )
+
+		- Seed database from staging
+			$> cap data:pull:staging
+
+
+=== Note on Patches/Pull Requests
  
 * Fork the project.
 * Make your feature addition or bug fix.
@@ -22,4 +130,4 @@
 
 == Copyright
 
-Copyright (c) 2009 Micah Geisel. See LICENSE for details.
+Copyright (c) 2009 Micah Geisel, Nick Hogle. See LICENSE for details.
