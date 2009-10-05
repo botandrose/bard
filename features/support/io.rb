@@ -1,5 +1,5 @@
 def type(command)
-  @status, @stdout, @stderr = systemu command
+  @status, @stdout, @stderr = systemu command, :env => @env
   if ENV['DEBUG']
     puts '-' * 20
     puts "Executing command: #{command}"

@@ -29,10 +29,13 @@ BASH
 end
 
 When /^I type "([^\"]*)"$/ do |command|
-  if command =~ /^bard/
-    command = "#{ROOT}/bin/#{command}"
+  type command.sub /\b(bard)\b/, "#{ROOT}/bin/bard"
+end
+
+When /^I type "([^\"]*)" on the staging server$/ do |command|
+  Dir.chdir "#{ROOT}/tmp/origin" do
+    When %(I type "#{command}")
   end
-  type command
 end
 
 Then /^I should see the fatal error "([^\"]*)"$/ do |error_message|
@@ -41,4 +44,8 @@ end
 
 Then /^I should see the warning "([^\"]*)"$/ do |warning_message|
   @stderr.should include(warning_message) 
+end
+
+Then /^I should see "([^\"]*)"$/ do |message|
+  @stdout.should include(message) 
 end

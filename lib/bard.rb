@@ -11,8 +11,11 @@ class Bard < Thor
   include BardGit
   include BardIO
 
-  desc "check", "check environment for missing dependencies"
-  def check
+  desc "check [PROJECT]", "check PROJECT or environment for missing dependencies"
+  def check(project = nil)
+    return check_project(project) if project
+    puts ENV['ASDF']
+
     required = {
       'bard'     => `gem list bard --remote`[/[0-9]+\.[0-9]+\.[0-9]+/],
       'git'      => '1.6.0',
@@ -130,4 +133,40 @@ class Bard < Thor
       system "touch tmp/restart.txt"
     end
   end
+
+  private
+    def check_project(project)
+      errors = []
+      warnings = []
+      Dir.chdir project do
+        status, stdout, stderr = systemu "rake db:abort_if_pending_migrations"
+        errors << "missing config/database.yml" if stderr.include? "config/database.yml"
+        errors << "missing database" if stderr.include? "Unknown database"
+        errors << "pending migrations" if stdout.include? "pending migrations"
+
+        errors << "missing submodule" if `git submodule status` =~ /^-/
+        errors << "missing gems" if `rake gems` =~ /\[ \]/
+        errors << "you shouldn't be working on the master branch" if `cat .git/HEAD`.include? "refs/heads/master"
+        errors << "missing integration branch" if `git branch` !~ /\bintegration\b/
+
+        if ENV['RAILS_ENV'] == "staging"
+          if File.exist? ".git/hooks/post-receive" 
+            errors << "unexecutable git hook" unless File.executable? ".git/hooks/post-receive" 
+            errors << "improper git hook" unless File.read(".git/hooks/post-receive").include? "bard stage $@"
+          else
+            errors << "missing git hook" 
+          end
+        end
+
+        warnings << "RAILS_ENV is not set" if ENV['RAILS_ENV'].nil? or ENV['RAILS_ENV'].empty?
+      end
+
+      if not errors.empty?
+        fatal "#{errors.length} problems detected:\n  #{errors.join("\n  ")}"
+      elsif not warnings.empty?
+        warn "#{warnings.length} potential problems detected:\n  #{warnings.join("\n  ")}"
+      else
+        puts green("No problems detected in project: #{project}")
+      end
+    end
 end

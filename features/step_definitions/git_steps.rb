@@ -2,6 +2,23 @@ Given /^I am on a non\-integration branch$/ do
   type "git checkout -b bad_bad_bad"
 end
 
+Given /^I am on the master branch$/ do
+  type "git checkout master"
+end
+
+Given /^there is no integration branch$/ do
+  type "git checkout master"
+  type "git branch -d integration"
+end
+
+Given /^there is no integration branch on the staging server$/ do
+  type "git branch -d origin/integration"
+  Dir.chdir "#{ROOT}/tmp/origin" do 
+    type "git checkout master"
+    type "git branch -d integration"
+  end
+end
+
 Given /^a dirty working directory$/ do
   File.open("dirty_file", "w") { |f| f.puts "dirty dirty" }
 end
