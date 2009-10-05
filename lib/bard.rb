@@ -14,7 +14,6 @@ class Bard < Thor
   desc "check [PROJECT]", "check PROJECT or environment for missing dependencies"
   def check(project = nil)
     return check_project(project) if project
-    puts ENV['ASDF']
 
     required = {
       'bard'     => `gem list bard --remote`[/[0-9]+\.[0-9]+\.[0-9]+/],
@@ -50,7 +49,6 @@ class Bard < Thor
     run_crucial "git pull --rebase origin integration"
 
     changed_files = run_crucial("git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-only").split("\n") 
-    puts changed_files.inspect
    
     if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
       run_crucial "rake db:migrate"
@@ -61,7 +59,7 @@ class Bard < Thor
       run_crucial "git submodule sync"
       run_crucial "git submodule init"
     end
-    run_crucial "git submodule update"
+    run_crucial "git submodule update --merge"
    
     if changed_files.any? { |f| f =~ %r(^config/environment.+) }
       run_crucial "rake gems:install"

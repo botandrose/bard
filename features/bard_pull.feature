@@ -12,14 +12,14 @@ Feature: bard pull
     When I type "bard pull"
     Then the "integration" branch should match the "origin/integration" branch
     And there should be one new submodule
-    And the submodule should be checked out
+    And the submodule branch should match the submodule origin branch
 
   Scenario: Pulling down when the latest changes include a submodule update
     Given a submodule
     And the remote integration branch has had a commit that includes a submodule update
     When I type "bard pull"
     Then the "integration" branch should match the "origin/integration" branch
-    And the submodule should be updated
+    And the submodule branch should match the submodule origin branch
 
   Scenario: Pulling down when the latest changes include a submodule url change
     Given a submodule
@@ -27,7 +27,7 @@ Feature: bard pull
     When I type "bard pull"
     Then the "integration" branch should match the "origin/integration" branch
     And the submodule url should be changed
-    And the submodule should be checked out
+    And the submodule branch should match the submodule origin branch
 
   # TODO
   #Scenario: Pulling down when the latest changes include a submodule deletion

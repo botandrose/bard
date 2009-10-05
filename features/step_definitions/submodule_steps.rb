@@ -4,7 +4,7 @@ Given /^a submodule$/ do
     type "git checkout integration"
     type "git pull --rebase"
     type "git submodule init"
-    type "git submodule update"
+    type "git submodule update --merge"
     @submodule_url = File.read(".gitmodules").match(/url = (.*)$/)[1]
     @submodule_commit = type "git submodule status"
   end
@@ -117,10 +117,20 @@ Then /^there should be one new submodule on the remote$/ do
   end
 end
 
-Then /^the submodule should be checked out$/ do
+Then /^the submodule branch should match the submodule origin branch$/ do
   @submodule_url = File.read(".gitmodules").match(/url = (.*)$/)[1]
   @submodule_commit = type "git submodule status"
   @submodule_commit.should match %r( [a-z0-9]{40} submodule)
+  Dir.chdir "submodule" do
+    @submodule = Grit::Repo.new "."
+    branch = @submodule.head.name rescue nil
+    remote_branch = @submodule.remotes.find {|n| n.name == "origin/HEAD" }.commit.id[/\w+$/]
+    branch.should_not be_nil
+    remote_branch.should_not be_nil
+    branch.should == remote_branch
+    type("git rev-parse HEAD").should == type("git rev-parse origin/HEAD")
+    type("git name-rev --name-only HEAD").should == type("git name-rev --name-only origin/HEAD")
+  end
 end
 
 Then /^the remote submodule should be checked out$/ do
