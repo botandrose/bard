@@ -14,8 +14,6 @@ class Bard < Thor
 
   desc "check [PROJECT]", "check PROJECT or environment for missing dependencies"
   def check(project = nil)
-    return check_project(project) if project
-
     required = {
       'bard'     => Net::HTTP.get(URI.parse("http://gemcutter.org/gems/bard.json")).match(/"version":"([0-9.]+)"/)[1],
       'git'      => '1.6.4',
@@ -23,10 +21,10 @@ class Bard < Thor
       'ruby'     => '1.8.6'
     }
     actual = {
-      'bard'     => `gem list bard`[/[0-9]+\.[0-9]+\.[0-9]+/],
+      'bard'     =>  File.read(File.expand_path(File.dirname(__FILE__) + "../../VERSION")).chomp,
       'git'      => `git --version`[/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/],
-      'rubygems' => `gem --version`.chomp,
-      'ruby'     => `ruby --version`[/[0-9]+\.[0-9]+\.[0-9]+/]
+      'rubygems' =>  Gem::VERSION,
+      'ruby'     =>  RUBY_VERSION
     }
     help = {
       'bard'     => 'please type `gem install bard` to update',
@@ -43,10 +41,14 @@ class Bard < Thor
         puts green("#{pkg.ljust(9)} (#{actual[pkg]})")
       end
     end
+
+    check_project(project) if project
   end
 
   desc "pull", "pull changes to your local machine"
   def pull
+    invoke :check
+
     ensure_integration_branch!
     ensure_clean_working_directory!
 
@@ -78,6 +80,8 @@ class Bard < Thor
 
   desc "push", "push local changes out to the remote"
   def push
+    invoke :check
+
     ensure_integration_branch!
     ensure_clean_working_directory!
 
@@ -100,7 +104,9 @@ class Bard < Thor
 
   desc "deploy", "pushes, merges integration branch into master and deploys it to production"
   def deploy
+    invoke :check
     invoke :push
+
     run_crucial "git fetch origin"
     run_crucial "git checkout master"
     run_crucial "git pull --rebase origin master"
@@ -115,6 +121,8 @@ class Bard < Thor
   if ENV['RAILS_ENV'] == "staging"
     desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
     def stage
+      invoke :check
+
       if ENV['GIT_DIR'] == '.'
         # this means the script has been called as a hook, not manually.
         # get the proper GIT_DIR so we can descend into the working copy dir;
