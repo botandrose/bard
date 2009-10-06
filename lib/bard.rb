@@ -143,6 +143,7 @@ class Bard < Thor
         errors << "pending migrations" if stdout.include? "pending migrations"
 
         errors << "missing submodule" if `git submodule status` =~ /^-/
+        errors << "submodule has a detached head" unless system 'git submodule foreach "git symbolic-ref HEAD"'
         errors << "missing gems" if `rake gems` =~ /\[ \]/
         errors << "you shouldn't be working on the master branch" if `cat .git/HEAD`.include? "refs/heads/master"
         errors << "missing integration branch" if `git branch` !~ /\bintegration\b/

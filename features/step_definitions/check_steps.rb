@@ -40,6 +40,12 @@ Given /^the submodule is missing$/ do
   type "mkdir submodule"
 end
 
+Given /^the submodule has a detached head$/ do
+  Dir.chdir "submodule" do
+    type "git checkout `git rev-parse HEAD`"
+  end
+end
+
 Given /^my "([^\"]*)" environment variable is "([^\"]*)"$/ do |key, value|
   @env ||= Hash.new
   @env[key] = value

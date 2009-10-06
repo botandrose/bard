@@ -37,6 +37,13 @@ Feature: Bard can check its environment for missing dependencies and potential p
     When I type "bard check ."
     Then I should see the fatal error "missing submodule"
 
+  Scenario: Bard check detects submodules with detached heads
+    Given a shared rails project
+    And a submodule
+    And the submodule has a detached head
+    When I type "bard check ."
+    Then I should see the fatal error "submodule has a detached head"
+
   Scenario: Bard check detects missing gems
     Given a shared rails project
     And I have committed a set of changes that adds the test gem as a dependency
