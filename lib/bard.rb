@@ -146,7 +146,7 @@ class Bard < Thor
       Dir.chdir project do
         status, stdout, stderr = systemu "rake db:abort_if_pending_migrations"
         errors << "missing config/database.yml, adapt from config/database.sample.yml." if stderr.include? "config/database.yml"
-        errors << "missing config/database.sample.yml, please complain to micah" if not File.exist? "config/database.staging.yml"
+        errors << "missing config/database.sample.yml, please complain to micah" if not File.exist? "config/database.sample.yml"
         errors << "missing database, please run `rake db:create db:migrate" if stderr.include? "Unknown database"
         errors << "pending migrations, please run `rake db:migrate`" if stdout.include? "pending migrations"
 
