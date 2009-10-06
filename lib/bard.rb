@@ -17,7 +17,7 @@ class Bard < Thor
 
     required = {
       'bard'     => `gem list bard --remote`[/[0-9]+\.[0-9]+\.[0-9]+/],
-      'git'      => '1.6.0',
+      'git'      => '1.6.4',
       'rubygems' => '1.3.4',
       'ruby'     => '1.8.6'
     }
@@ -59,7 +59,7 @@ class Bard < Thor
       run_crucial "git submodule sync"
       run_crucial "git submodule init"
     end
-    run_crucial "git submodule update --merge"
+    run_crucial "git submodule update --rebase"
    
     if changed_files.any? { |f| f =~ %r(^config/environment.+) }
       run_crucial "rake gems:install"
