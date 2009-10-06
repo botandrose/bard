@@ -145,27 +145,30 @@ class Bard < Thor
       warnings = []
       Dir.chdir project do
         status, stdout, stderr = systemu "rake db:abort_if_pending_migrations"
-        errors << "missing config/database.yml" if stderr.include? "config/database.yml"
-        errors << "missing database" if stderr.include? "Unknown database"
-        errors << "pending migrations" if stdout.include? "pending migrations"
+        errors << "missing config/database.yml, adapt from config/database.sample.yml." if stderr.include? "config/database.yml"
+        errors << "missing config/database.sample.yml, please complain to micah" if not File.exist? "config/database.staging.yml"
+        errors << "missing database, please run `rake db:create db:migrate" if stderr.include? "Unknown database"
+        errors << "pending migrations, please run `rake db:migrate`" if stdout.include? "pending migrations"
 
-        errors << "missing submodule" if `git submodule status` =~ /^-/
-        errors << "submodule has a detached head" unless system 'git submodule foreach "git symbolic-ref HEAD"'
-        errors << "missing gems" if `rake gems` =~ /\[ \]/
-        errors << "you shouldn't be working on the master branch" if `cat .git/HEAD`.include? "refs/heads/master"
-        errors << "missing integration branch" if `git branch` !~ /\bintegration\b/
+        errors << "missing submodule, please run git submodule update --init" if `git submodule status` =~ /^-/
+        errors << "submodule has a detached head, please complain to micah" unless system 'git submodule foreach "git symbolic-ref HEAD"'
+
+        errors << "missing gems, please run `rake gems:install`" if `rake gems` =~ /\[ \]/
+
+        errors << "missing integration branch, please complain to micah" if `git branch` !~ /\bintegration\b/
+        errors << "you shouldn't be working on the master branch, please work on the integration branch" if `cat .git/HEAD`.include? "refs/heads/master"
 
         if ENV['RAILS_ENV'] == "staging"
-          if File.exist? ".git/hooks/post-receive" 
+          if not File.exist? ".git/hooks/post-receive" 
+            errors << "missing git hook" 
+          else
             errors << "unexecutable git hook" unless File.executable? ".git/hooks/post-receive" 
             errors << "improper git hook" unless File.read(".git/hooks/post-receive").include? "bard stage $@"
-          else
-            errors << "missing git hook" 
           end
           errors << "the git config variable receive.denyCurrentBranch is not set to ignore" if `git config receive.denyCurrentBranch`.chomp != "ignore"
         end
 
-        warnings << "RAILS_ENV is not set" if ENV['RAILS_ENV'].nil? or ENV['RAILS_ENV'].empty?
+        warnings << "RAILS_ENV is not set, please complain to micah" if ENV['RAILS_ENV'].nil? or ENV['RAILS_ENV'].empty?
       end
 
       if not errors.empty?
