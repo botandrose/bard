@@ -27,10 +27,17 @@ class Bard < Thor
       'rubygems' => `gem --version`.chomp,
       'ruby'     => `ruby --version`[/[0-9]+\.[0-9]+\.[0-9]+/]
     }
+    help = {
+      'bard'     => 'please type `gem install bard` to update',
+      'git'      => 'please visit http://git-scm.com/download and install the appropriate package for your architecture',
+      'rubygems' => 'please type `gem update --system` to update',
+      'ruby'     => 'um... ask micah?'
+    }
 
     %w(bard git rubygems ruby).each do |pkg|
       if actual[pkg] < required[pkg]
         puts red("#{pkg.ljust(9)} (#{actual[pkg]}) ... NEED (#{required[pkg]})")
+        puts red("  #{help[pkg]}")
       else
         puts green("#{pkg.ljust(9)} (#{actual[pkg]})")
       end

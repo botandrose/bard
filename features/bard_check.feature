@@ -90,7 +90,6 @@ Feature: Bard can check its environment for missing dependencies and potential p
     When I type "bard check ." on the staging server
     Then I should see the fatal error "improper git hook"
 
-  @wip
   Scenario: Bard check detects missing receive.denyCurrentBranch git variable on staging
     Given a shared rails project
     And my "RAILS_ENV" environment variable is "staging"
