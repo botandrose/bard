@@ -10,12 +10,12 @@ module BardGit
       fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push or pull."
     end
 
-    def fast_forward_merge? 
+    def fast_forward_merge?(root = "origin/integration", branch = "HEAD")
       run_crucial "git fetch origin"
-      head = run_crucial "git rev-parse HEAD"
-      remote_head = run_crucial "git rev-parse origin/integration"
-      @common_ancestor = find_common_ancestor head, remote_head
-      @common_ancestor == remote_head
+      root_head = run_crucial "git rev-parse #{root}"
+      branch_head = run_crucial "git rev-parse #{branch}"
+      @common_ancestor = find_common_ancestor root_head, branch_head 
+      @common_ancestor == root_head
     end
 
     def find_common_ancestor(head1, head2)

@@ -1,5 +1,6 @@
 $:.unshift File.expand_path(File.dirname(__FILE__))
 require 'term/ansicolor'
+require 'net/http'
 require 'systemu'
 require 'grit'
 require 'thor'
@@ -16,7 +17,7 @@ class Bard < Thor
     return check_project(project) if project
 
     required = {
-      'bard'     => `gem list bard --remote`[/[0-9]+\.[0-9]+\.[0-9]+/],
+      'bard'     => Net::HTTP.get(URI.parse("http://gemcutter.org/gems/bard.json")).match(/"version":"([0-9.]+)"/)[1],
       'git'      => '1.6.4',
       'rubygems' => '1.3.4',
       'ruby'     => '1.8.6'
@@ -97,6 +98,20 @@ class Bard < Thor
     # git post-receive hook runs stage task below
   end
 
+  desc "deploy", "pushes, merges integration branch into master and deploys it to production"
+  def deploy
+    invoke :push
+    run_crucial "git fetch origin"
+    run_crucial "git checkout master"
+    run_crucial "git pull --rebase origin master"
+    if not fast_forward_merge? "master", "integration"
+      fatal "master has advanced since last deploy, probably due to a bugfix. rebase your integration branch on top of it, and check for breakage."
+    end
+
+    run_crucial "git merge integration"
+    run_crucial "git push origin master"
+  end
+
   if ENV['RAILS_ENV'] == "staging"
     desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
     def stage
@@ -114,28 +129,31 @@ class Bard < Thor
       head = File.read('.git/HEAD').chomp
       # abort if we're on a detached head
       exit unless head.sub! 'ref: ', ''
+      if head == "master"
+        run_crucial "cap deploy"
+      else
+        revs = gets.split ' '  
+        old_rev, new_rev = revs if head == revs.pop
 
-      revs = gets.split ' '  
-      old_rev, new_rev = revs if head == revs.pop
+        changed_files = run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 
 
-      changed_files = run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 
-
-      if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
-        run_crucial "rake db:migrate RAILS_ENV=staging"
-        run_crucial "rake db:migrate RAILS_ENV=test"
-      end
+        if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
+          run_crucial "rake db:migrate RAILS_ENV=staging"
+          run_crucial "rake db:migrate RAILS_ENV=test"
+        end
+         
+        if changed_files.any? { |f| f == ".gitmodules" }
+          run_crucial "git submodule sync"
+          run_crucial "git submodule init"
+        end
+        system "git submodule update"
        
-      if changed_files.any? { |f| f == ".gitmodules" }
-        run_crucial "git submodule sync"
-        run_crucial "git submodule init"
-      end
-      system "git submodule update"
-     
-      if changed_files.any? { |f| f =~ %r(^config/environment.+) }
-        run_crucial "rake gems:install"
-      end
+        if changed_files.any? { |f| f =~ %r(^config/environment.+) }
+          run_crucial "rake gems:install"
+        end
 
-      system "touch tmp/restart.txt"
+        system "touch tmp/restart.txt"
+      end
     end
   end
 

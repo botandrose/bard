@@ -29,6 +29,16 @@ Given /^I have committed a set of changes to my local integration branch$/ do
   type "git commit -am'test commit to local integration branch.'"
 end
 
+Given /^the remote master branch has had a commit since I last pulled$/ do
+  Dir.chdir "#{ROOT}/tmp/origin" do 
+    type "git checkout master"
+    type "echo 'zomg' > origin_master_change_file"
+    type "git add ."
+    type "git commit -am 'testing origin master change'"
+    type "git checkout integration"
+  end
+end
+
 Given /^the remote integration branch has had a commit since I last pulled$/ do
   Dir.chdir "#{ROOT}/tmp/origin" do 
     type "git checkout integration"
