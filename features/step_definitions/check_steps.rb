@@ -69,3 +69,8 @@ Given /^the git hook on the staging server is bad$/ do
   end
 end
 
+Given /^the staging server git config for receive.denyCurrentBranch is not "ignore"$/ do
+  Dir.chdir "#{ROOT}/tmp/origin" do
+    type "git config --unset receive.denyCurrentBranch"
+  end
+end

@@ -8,6 +8,7 @@ Given /^a shared rails project$/ do
   Dir.mkdir 'tmp'
   type "cp -R fixtures/repo tmp/origin"
   Dir.chdir 'tmp/origin' do
+    type "git config receive.denyCurrentBranch ignore"
     File.open ".git/hooks/post-receive", "w" do |f|
       f.puts <<-BASH
 #!/bin/bash

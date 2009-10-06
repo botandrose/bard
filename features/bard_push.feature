@@ -29,20 +29,20 @@ Feature: bard push
     Given I have committed a set of changes that includes a new submodule
     When I type "bard push"
     Then there should be one new submodule on the remote
-    And the remote submodule should be checked out
+    And the submodule branch should match the submodule origin branch
   
   Scenario: Pushing a change that includes a submodule update
     Given a submodule
     And I have committed a set of changes that includes a submodule update
     When I type "bard push"
-    Then the remote submodule should be updated
+    Then the submodule branch should match the submodule origin branch
 
   Scenario: Pushing a change that includes a submodule url change
     Given a submodule
-    Given I have committed a set of changes that includes a submodule url change
+    And I have committed a set of changes that includes a submodule url change
     When I type "bard push"
     Then the remote submodule url should be changed
-    And the remote submodule should be checked out
+    And the submodule branch should match the submodule origin branch
 
   # TODO
   #Scenario: Pushing a change that includes a submodule deletion

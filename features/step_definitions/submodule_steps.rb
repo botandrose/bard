@@ -4,7 +4,10 @@ Given /^a submodule$/ do
     type "git checkout integration"
     type "git pull --rebase"
     type "git submodule init"
-    type "git submodule update --merge"
+    type "git submodule update"
+    Dir.chdir "submodule" do
+      type "git checkout master"
+    end
     @submodule_url = File.read(".gitmodules").match(/url = (.*)$/)[1]
     @submodule_commit = type "git submodule status"
   end
@@ -19,7 +22,6 @@ end
 
 Given /^I have committed a set of changes to the submodule$/ do
   Dir.chdir "#{ROOT}/tmp/local/submodule" do
-    type "git checkout -b master"
     type "echo 'submodule_update' > submodule_update"
     type "git add ."
     type "git commit -am 'update in submodule'"
@@ -29,10 +31,8 @@ end
 Given /^the remote integration branch has had a commit that includes a new submodule$/ do
   Dir.chdir "#{ROOT}/tmp/origin" do 
     type "git submodule add #{ROOT}/tmp/submodule submodule"
-    Dir.chdir "submodule" do
-      type "git checkout -b master"
-      type "grb track master"
-    end
+    type "git submodule init"
+    type "git submodule update"
     type "git add ."
     type "git commit -m 'added submodule'"
   end
@@ -40,8 +40,9 @@ end
 
 Given /^I have committed a set of changes that includes a new submodule$/ do
   type "git submodule add #{ROOT}/tmp/submodule submodule"
+  type "git submodule init"
+  type "git submodule update --merge"
   Dir.chdir "submodule" do
-    type "git checkout -b master"
     type "grb track master"
   end
   type "git add ."

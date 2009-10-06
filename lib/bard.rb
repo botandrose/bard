@@ -155,6 +155,7 @@ class Bard < Thor
           else
             errors << "missing git hook" 
           end
+          errors << "the git config variable receive.denyCurrentBranch is not set to ignore" if `git config receive.denyCurrentBranch`.chomp != "ignore"
         end
 
         warnings << "RAILS_ENV is not set" if ENV['RAILS_ENV'].nil? or ENV['RAILS_ENV'].empty?
