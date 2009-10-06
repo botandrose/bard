@@ -16,7 +16,7 @@ RAILS_ENV=staging #{ROOT}/bin/bard stage $@
 BASH
       f.chmod 0775
     end
-    type "cp config/database.yml.sample config/database.yml"
+    type "cp config/database.sample.yml config/database.yml"
     type "git checkout -b integration"
   end
   type "cp -R fixtures/repo tmp/submodule"
@@ -26,7 +26,7 @@ BASH
   @repo = Grit::Repo.new "."
   type "grb fetch integration"
   type "git checkout integration"
-  type "cp config/database.yml.sample config/database.yml"
+  type "cp config/database.sample.yml config/database.yml"
 end
 
 When /^I type "([^\"]*)"$/ do |command|

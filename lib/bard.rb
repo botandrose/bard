@@ -160,12 +160,12 @@ class Bard < Thor
 
         if ENV['RAILS_ENV'] == "staging"
           if not File.exist? ".git/hooks/post-receive" 
-            errors << "missing git hook" 
+            errors << "missing git hook, please complain to micah" 
           else
-            errors << "unexecutable git hook" unless File.executable? ".git/hooks/post-receive" 
-            errors << "improper git hook" unless File.read(".git/hooks/post-receive").include? "bard stage $@"
+            errors << "unexecutable git hook, please complain to micah" unless File.executable? ".git/hooks/post-receive" 
+            errors << "improper git hook, please complain to micah" unless File.read(".git/hooks/post-receive").include? "bard stage $@"
           end
-          errors << "the git config variable receive.denyCurrentBranch is not set to ignore" if `git config receive.denyCurrentBranch`.chomp != "ignore"
+          errors << "the git config variable receive.denyCurrentBranch is not set to ignore, please complain to micah" if `git config receive.denyCurrentBranch`.chomp != "ignore"
         end
 
         warnings << "RAILS_ENV is not set, please complain to micah" if ENV['RAILS_ENV'].nil? or ENV['RAILS_ENV'].empty?
@@ -177,6 +177,9 @@ class Bard < Thor
         warn "#{warnings.length} potential problems detected:\n  #{warnings.join("\n  ")}"
       else
         puts green("No problems detected in project: #{project}")
+        if ENV['RAILS_ENV'] != "staging"
+          puts "please run it on the staging server by typing `cap shell` and then `bard check [PROJECT_NAME]`"
+        end
       end
     end
 end
