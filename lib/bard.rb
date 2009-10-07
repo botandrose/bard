@@ -98,6 +98,7 @@ class Bard < Thor
 
     run_crucial "git merge integration"
     run_crucial "git push origin master"
+    run_crucial "git checkout integration"
   end
 
   if ENV['RAILS_ENV'] == "staging"
@@ -119,12 +120,12 @@ class Bard < Thor
       head = File.read('.git/HEAD').chomp
       # abort if we're on a detached head
       exit unless head.sub! 'ref: ', ''
-      if head == "master"
-        run_crucial "cap deploy"
-      else
-        revs = gets.split ' '  
-        old_rev, new_rev = revs if head == revs.pop
+      revs = gets.split ' '  
+      old_rev, new_rev, branch = revs
 
+      if branch == "master"
+        run_crucial "cap deploy"
+      elsif read == branch
         changed_files = run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 
 
         if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
