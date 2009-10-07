@@ -19,4 +19,8 @@ module BardIO
       end
       stdout.chomp
     end
+
+    def project_name
+      @project_name ||= File.expand_path(".").split("/").last
+    end
 end
