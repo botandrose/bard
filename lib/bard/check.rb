@@ -24,8 +24,8 @@ class Bard < Thor
         if actual[pkg] < required[pkg]
           puts red("#{pkg.ljust(9)} (#{actual[pkg]}) ... NEED (#{required[pkg]})")
           puts red("  #{help[pkg]}")
-        else
-          puts green("#{pkg.ljust(9)} (#{actual[pkg]})")
+        elsif options.verbose?
+          puts green("#{pkg.ljust(9)} (#{actual[pkg]})") 
         end
       end
     end

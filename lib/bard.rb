@@ -16,6 +16,8 @@ class Bard < Thor
 
   VERSION = File.read(File.expand_path(File.dirname(__FILE__) + "../../VERSION")).chomp
 
+  method_options %w( verbose -v ) => :boolean
+
   desc "check [PROJECT_PATH]", "check current project and environment for missing dependencies and common problems"
   def check(project_path = nil)
     project_path = "." if project_path.nil? and File.directory? ".git"
@@ -25,7 +27,7 @@ class Bard < Thor
 
   desc "pull", "pull changes to your local machine"
   def pull
-    invoke :check
+    check_dependencies
 
     ensure_project_root!
     ensure_integration_branch!
@@ -60,7 +62,7 @@ class Bard < Thor
 
   desc "push", "push local changes out to the remote"
   def push
-    invoke :check
+    check_dependencies
 
     ensure_project_root!
     ensure_integration_branch!
@@ -85,7 +87,6 @@ class Bard < Thor
 
   desc "deploy", "pushes, merges integration branch into master and deploys it to production"
   def deploy
-    invoke :check
     invoke :push
 
     run_crucial "git fetch origin"
@@ -102,7 +103,7 @@ class Bard < Thor
   if ENV['RAILS_ENV'] == "staging"
     desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
     def stage
-      invoke :check
+      check_dependencies
 
       if ENV['GIT_DIR'] == '.'
         # this means the script has been called as a hook, not manually.
