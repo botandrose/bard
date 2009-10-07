@@ -125,7 +125,7 @@ class Bard < Thor
 
       if branch == "master"
         run_crucial "cap deploy"
-      elsif read == branch
+      elsif head == branch
         changed_files = run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 
 
         if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
