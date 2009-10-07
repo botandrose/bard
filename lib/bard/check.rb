@@ -20,13 +20,16 @@ class Bard < Thor
         'ruby'     => 'um... ask micah?'
       }
 
+      errors = []
       %w(bard git rubygems ruby).each do |pkg|
         if actual[pkg] < required[pkg]
-          puts red("#{pkg.ljust(9)} (#{actual[pkg]}) ... NEED (#{required[pkg]})")
-          puts red("  #{help[pkg]}")
+          errors << red("#{pkg.ljust(9)} (#{actual[pkg]}) ... NEED (#{required[pkg]})\n  #{help[pkg]}")
         elsif options.verbose?
           puts green("#{pkg.ljust(9)} (#{actual[pkg]})") 
         end
+      end
+      if not errors.empty?
+        fatal "#{errors.length} problems detected:\n  #{errors.join("\n  ")}"
       end
     end
 
