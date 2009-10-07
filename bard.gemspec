@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bard}
-  s.version = "0.6.2"
+  s.version = "0.6.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Micah Geisel", "Nick Hogle"]
@@ -41,6 +41,7 @@ Gem::Specification.new do |s|
      "features/support/grit_ext.rb",
      "features/support/io.rb",
      "lib/bard.rb",
+     "lib/bard/check.rb",
      "lib/bard/git.rb",
      "lib/bard/io.rb",
      "spec/bard_spec.rb",
