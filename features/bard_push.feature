@@ -30,12 +30,14 @@ Feature: bard push
     When I type "bard push"
     Then there should be one new submodule on the remote
     And the submodule branch should match the submodule origin branch
+    Then the remote submodule working directory should be clean
   
   Scenario: Pushing a change that includes a submodule update
     Given a submodule
     And I have committed a set of changes that includes a submodule update
     When I type "bard push"
     Then the submodule branch should match the submodule origin branch
+    Then the remote submodule working directory should be clean
 
   Scenario: Pushing a change that includes a submodule url change
     Given a submodule
@@ -43,6 +45,7 @@ Feature: bard push
     When I type "bard push"
     Then the remote submodule url should be changed
     And the submodule branch should match the submodule origin branch
+    Then the remote submodule working directory should be clean
 
   # TODO
   #Scenario: Pushing a change that includes a submodule deletion
@@ -50,6 +53,11 @@ Feature: bard push
   #  Given I have committed a set of changes that includes a submodule deletion
   #  When I type "bard push"
   #  Then the remote submodule should be deleted
+
+  Scenario: Trying to bard push when not in the project root
+    Given I am in a subdirectory
+    When I type "bard push"
+    Then I should see the fatal error "root directory"
 
   Scenario: Trying to bard push when not on the integration branch
     Given I have committed a set of changes to my local integration branch

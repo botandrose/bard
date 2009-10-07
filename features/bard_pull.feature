@@ -13,6 +13,7 @@ Feature: bard pull
     Then the "integration" branch should match the "origin/integration" branch
     And there should be one new submodule
     And the submodule branch should match the submodule origin branch
+    And the submodule working directory should be clean
 
   Scenario: Pulling down when the latest changes include a submodule update
     Given a submodule
@@ -20,6 +21,7 @@ Feature: bard pull
     When I type "bard pull"
     Then the "integration" branch should match the "origin/integration" branch
     And the submodule branch should match the submodule origin branch
+    And the submodule working directory should be clean
 
   Scenario: Pulling down when the latest changes include a submodule url change
     Given a submodule
@@ -28,6 +30,7 @@ Feature: bard pull
     Then the "integration" branch should match the "origin/integration" branch
     And the submodule url should be changed
     And the submodule branch should match the submodule origin branch
+    And the submodule working directory should be clean
 
   # TODO
   #Scenario: Pulling down when the latest changes include a submodule deletion
@@ -43,6 +46,11 @@ Feature: bard pull
     When I type "bard pull"
     Then I should see the warning "Someone has pushed some changes"
     And the "integration" branch should be a fast-forward from the "origin/integration" branch
+
+  Scenario: Trying to bard pull when not in the project root
+    Given I am in a subdirectory
+    When I type "bard pull"
+    Then I should see the fatal error "root directory"
 
   Scenario: Trying to bard pull with a dirty working directory
     Given the remote integration branch has had a commit since I last pulled

@@ -63,6 +63,12 @@ Feature: Bard can check its environment for missing dependencies and potential p
     When I type "bard check ."
     Then I should see the fatal error "missing integration branch"
 
+  Scenario: Bard check detects non-tracking integration branch
+    Given a shared rails project
+    And the integration branch isnt tracking origin/integration
+    When I type "bard check ."
+    Then I should see the fatal error "tracking"
+
   Scenario: Bard check detects missing RAILS_ENV environment variable
     Given a shared rails project
     And my "RAILS_ENV" environment variable is ""

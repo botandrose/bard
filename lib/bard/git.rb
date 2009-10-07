@@ -1,5 +1,9 @@
 module BardGit
   private
+    def ensure_project_root!
+      fatal "You are not in the project's root directory!" unless File.directory? ".git"
+    end
+
     def ensure_integration_branch!
       return if `git name-rev --name-only HEAD`.chomp == "integration"
       fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."

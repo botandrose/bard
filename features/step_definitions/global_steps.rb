@@ -29,6 +29,11 @@ BASH
   type "cp config/database.sample.yml config/database.yml"
 end
 
+Given /^I am in a subdirectory$/ do
+  type "mkdir test_subdirectory"
+  Dir.chdir "test_subdirectory"
+end
+
 When /^I type "([^\"]*)"$/ do |command|
   type command.sub /\b(bard)\b/, "#{ROOT}/bin/bard"
 end

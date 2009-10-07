@@ -19,6 +19,12 @@ Given /^there is no integration branch on the staging server$/ do
   end
 end
 
+Given /^the integration branch isnt tracking origin\/integration$/ do
+  type "git checkout master"
+  type "git branch -d integration"
+  type "git checkout -b integration"
+end
+
 Given /^a dirty working directory$/ do
   File.open("dirty_file", "w") { |f| f.puts "dirty dirty" }
 end

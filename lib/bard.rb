@@ -49,6 +49,7 @@ class Bard < Thor
   def pull
     invoke :check
 
+    ensure_project_root!
     ensure_integration_branch!
     ensure_clean_working_directory!
 
@@ -69,7 +70,8 @@ class Bard < Thor
       run_crucial "git submodule sync"
       run_crucial "git submodule init"
     end
-    run_crucial "git submodule update --rebase"
+    run_crucial "git submodule update --merge"
+    run_crucial "git submodule foreach 'git reset --hard'"
    
     if changed_files.any? { |f| f =~ %r(^config/environment.+) }
       run_crucial "rake gems:install"
@@ -82,6 +84,7 @@ class Bard < Thor
   def push
     invoke :check
 
+    ensure_project_root!
     ensure_integration_branch!
     ensure_clean_working_directory!
 
@@ -182,6 +185,7 @@ class Bard < Thor
         errors << "missing gems, please run `rake gems:install`" if `rake gems` =~ /\[ \]/
 
         errors << "missing integration branch, please complain to micah" if `git branch` !~ /\bintegration\b/
+        errors << "integration branch isnt tracking the remote integration branch, please run `grb track integration`" if `git config branch.integration.merge` !~ %r%\brefs/heads/integration\b%
         errors << "you shouldn't be working on the master branch, please work on the integration branch" if `cat .git/HEAD`.include? "refs/heads/master"
 
         if ENV['RAILS_ENV'] == "staging"

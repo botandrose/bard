@@ -182,3 +182,15 @@ Then /^the remote submodule should be deleted$/ do
     @submodule_commit.should_not match /.[a-z0-9]{40} submodule/
   end
 end
+
+Then /^the submodule working directory should be clean$/ do
+  Dir.chdir "submodule" do
+    type("git status").should include "working directory clean"
+  end
+end
+
+Then /^the remote submodule working directory should be clean$/ do
+  Dir.chdir "#{ROOT}/tmp/origin/submodule" do
+    type("git status").should include "working directory clean"
+  end
+end
