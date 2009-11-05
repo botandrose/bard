@@ -1,19 +1,5 @@
 module BardGit
   private
-    def ensure_project_root!
-      fatal "You are not in the project's root directory!" unless File.directory? ".git"
-    end
-
-    def ensure_integration_branch!
-      return if current_branch == "integration"
-      fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
-    end
-
-    def ensure_clean_working_directory!
-      return if`git status`.include? "working directory clean"
-      fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push or pull."
-    end
-
     def current_branch
       ref = `git symbolic-ref HEAD 2>&1`.chomp
       return false if ref =~ /^fatal:/

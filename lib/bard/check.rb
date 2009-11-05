@@ -35,7 +35,6 @@ class Bard < Thor
 
     def check_project(project)
       errors = []
-      warnings = []
       Dir.chdir project do
         status, stdout, stderr = systemu "rake db:abort_if_pending_migrations"
         errors << "missing config/database.yml, adapt from config/database.sample.yml." if stderr.include? "config/database.yml"
@@ -67,8 +66,6 @@ class Bard < Thor
 
       if not errors.empty?
         fatal "#{errors.length} problems detected:\n  #{errors.join("\n  ")}"
-      elsif not warnings.empty?
-        warn "#{warnings.length} potential problems detected:\n  #{warnings.join("\n  ")}"
       else
         puts green("No problems detected in project: #{project}")
         unless ENV['RAILS_ENV'] == "staging"

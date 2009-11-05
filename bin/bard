@@ -2,4 +2,8 @@
 
 require 'rubygems'
 require 'bard'
-Bard.start ARGV
+begin
+  Bard.start ARGV
+rescue BardError => e
+  fatal e.message
+end

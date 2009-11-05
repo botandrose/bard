@@ -5,6 +5,7 @@ require 'systemu'
 require 'grit'
 require 'thor'
 
+require 'bard/error'
 require 'bard/git'
 require 'bard/io'
 
@@ -29,9 +30,7 @@ class Bard < Thor
   def pull
     ensure_sanity!
 
-    unless fast_forward_merge?
-      warn "Someone has pushed some changes since you last pulled.\n  Please ensure that your changes didnt break stuff."
-    end
+    warn NonFastForwardError unless fast_forward_merge?
 
     run_crucial "git pull --rebase origin integration"
 
@@ -42,17 +41,9 @@ class Bard < Thor
   def push
     ensure_sanity!
 
-    if submodule_dirty?
-      fatal "Cannot push changes: You have uncommitted changes to a submodule!\n  Please see Micah about this."
-    end
-
-    if submodule_unpushed?
-      fatal "Cannot push changes: You have unpushed changes to a submodule!\n  Please see Micah about this."
-    end
-
-    unless fast_forward_merge?
-      fatal "Someone has pushed some changes since you last pulled.\n  Kindly run bard pull, ensure that your your changes still work.\n  Then run bard push again."
-    end
+    raise SubmoduleDirtyError if submodule_dirty?
+    raise SubmoduleUnpushedError if submodule_unpushed?
+    raise NonFastFowardError unless fast_forward_merge?
 
     run_crucial "git push origin integration", true
     
@@ -66,8 +57,7 @@ class Bard < Thor
     run_crucial "git fetch origin"
     run_crucial "git checkout master"
     run_crucial "git pull --rebase origin master"
-    if not fast_forward_merge? "master", "integration"
-      fatal "master has advanced since last deploy, probably due to a bugfix. rebase your integration branch on top of it, and check for breakage."
+    raise MasterNonFastForwardError if not fast_forward_merge? "master", "integration"
     end
 
     run_crucial "git merge integration"
@@ -90,7 +80,7 @@ class Bard < Thor
         ENV['GIT_DIR'] = '.git'
       end
 
-      fatal "staging server is on a detached HEAD!" unless current_branch
+      raise StagingDetachedHeadError unless current_branch
       old_rev, new_rev, branch = revs.split(' ') # get the low down about the commit from the git hook
 
       if current_branch == branch
@@ -103,9 +93,9 @@ class Bard < Thor
   private
     def ensure_sanity!
       check_dependencies
-      ensure_project_root!
-      ensure_integration_branch!
-      ensure_clean_working_directory!
+      raise NotInProjectRootError unless File.directory? ".git"
+      raise NotOnIntegrationError if current_branch == "integration"
+      raise WorkingTreeDirtyError unless `git status`.include? "working directory clean"
     end
 
     def prepare_environment(changed_files)
