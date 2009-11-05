@@ -49,8 +49,10 @@ class Bard < Thor
         errors << "missing gems, please run `rake gems:install`" if `rake gems` =~ /\[ \]/
 
         errors << "missing integration branch, please complain to micah" if `git branch` !~ /\bintegration\b/
-        errors << "integration branch isnt tracking the remote integration branch, please run `grb track integration`" if `git config branch.integration.merge` !~ %r%\brefs/heads/integration\b%
-        errors << "you shouldn't be working on the master branch, please work on the integration branch" if `cat .git/HEAD`.include? "refs/heads/master"
+        unless ENV['RAILS_ENV'] == "staging"
+          errors << "integration branch isnt tracking the remote integration branch, please run `grb track integration`" if `git config branch.integration.merge` !~ %r%\brefs/heads/integration\b%
+        end
+        errors << "you shouldn't be working on the master branch, please work on the integration branch" if current_branch == "master"
 
         if ENV['RAILS_ENV'] == "staging"
           if not File.exist? ".git/hooks/post-receive" 
@@ -61,8 +63,6 @@ class Bard < Thor
           end
           errors << "the git config variable receive.denyCurrentBranch is not set to ignore, please complain to micah" if `git config receive.denyCurrentBranch`.chomp != "ignore"
         end
-
-        warnings << "RAILS_ENV is not set, please complain to micah" if ENV['RAILS_ENV'].nil? or ENV['RAILS_ENV'].empty?
       end
 
       if not errors.empty?
@@ -71,7 +71,7 @@ class Bard < Thor
         warn "#{warnings.length} potential problems detected:\n  #{warnings.join("\n  ")}"
       else
         puts green("No problems detected in project: #{project}")
-        if ENV['RAILS_ENV'] != "staging"
+        unless ENV['RAILS_ENV'] == "staging"
           puts "please run it on the staging server by typing `cap shell` and then `bard check [PROJECT_NAME]`"
         end
       end

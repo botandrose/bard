@@ -5,13 +5,17 @@ module BardGit
     end
 
     def ensure_integration_branch!
-      return if `git name-rev --name-only HEAD`.chomp == "integration"
+      return if current_branch == "integration"
       fatal "You are not on the integration branch! Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance."
     end
 
     def ensure_clean_working_directory!
       return if`git status`.include? "working directory clean"
       fatal "Cannot upload changes: You have uncommitted changes!\n  Please run git commit before attempting to push or pull."
+    end
+
+    def current_branch
+      `git name-rev --name-only HEAD`.chomp
     end
 
     def fast_forward_merge?(root = "origin/integration", branch = "HEAD")
@@ -41,9 +45,8 @@ module BardGit
       submodules = Grit::Submodule.config(@repo, @repo.head.name)
       submodules.any? do |name, submodule|
         Dir.chdir submodule["path"] do
-          branch = `git name-rev --name-only HEAD`.chomp
           `git fetch origin`
-          submodule["id"] != `git rev-parse origin/#{branch}`.chomp
+          submodule["id"] != `git rev-parse origin/#{current_branch}`.chomp
         end
       end
     end
