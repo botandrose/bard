@@ -27,11 +27,7 @@ class Bard < Thor
 
   desc "pull", "pull changes to your local machine"
   def pull
-    check_dependencies
-
-    ensure_project_root!
-    ensure_integration_branch!
-    ensure_clean_working_directory!
+    ensure_sanity!
 
     unless fast_forward_merge?
       warn "Someone has pushed some changes since you last pulled.\n  Please ensure that your changes didnt break stuff."
@@ -39,34 +35,12 @@ class Bard < Thor
 
     run_crucial "git pull --rebase origin integration"
 
-    changed_files = run_crucial("git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-only").split("\n") 
-   
-    if changed_files.any? { |file| file =~ %r(^db/migrate/.+) }
-      run_crucial "rake db:migrate"
-      run_crucial "rake db:migrate RAILS_ENV=test"
-    end
-     
-    if changed_files.any? { |file| f == ".gitmodules" }
-      run_crucial "git submodule sync"
-      run_crucial "git submodule init"
-    end
-    run_crucial "git submodule update --merge"
-    run_crucial "git submodule foreach 'git reset --hard'"
-   
-    if changed_files.any? { |file| f =~ %r(^config/environment.+) }
-      run_crucial "rake gems:install"
-    end
-
-    system "touch tmp/restart.txt"
+    prepare_environment = changed_files(@common_ancestor, "origin/integration")
   end
 
   desc "push", "push local changes out to the remote"
   def push
-    check_dependencies
-
-    ensure_project_root!
-    ensure_integration_branch!
-    ensure_clean_working_directory!
+    ensure_sanity!
 
     if submodule_dirty?
       fatal "Cannot push changes: You have uncommitted changes to a submodule!\n  Please see Micah about this."
@@ -116,34 +90,41 @@ class Bard < Thor
         ENV['GIT_DIR'] = '.git'
       end
 
-      # find out the current branch
-      # abort if we're on a detached head
-      exit unless current_branch
-      revs = gets.split ' '  
-      old_rev, new_rev, branch = revs
+      fatal "staging server is on a detached HEAD!" unless current_branch
+      old_rev, new_rev, branch = revs.split(' ') # get the low down about the commit from the git hook
 
       if current_branch == branch
         run_crucial "git reset --hard"
-
-        changed_files = run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 
-
-        if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
-          run_crucial "rake db:migrate RAILS_ENV=staging"
-          run_crucial "rake db:migrate RAILS_ENV=test"
-        end
-         
-        if changed_files.any? { |f| f == ".gitmodules" }
-          run_crucial "git submodule sync"
-          run_crucial "git submodule init"
-        end
-        system "git submodule update"
-       
-        if changed_files.any? { |f| f =~ %r(^config/environment.+) }
-          run_crucial "rake gems:install"
-        end
-
-        system "touch tmp/restart.txt"
+        prepare_environment changed_files(old_rev, new_rev)
       end
     end
   end
+
+  private
+    def ensure_sanity!
+      check_dependencies
+      ensure_project_root!
+      ensure_integration_branch!
+      ensure_clean_working_directory!
+    end
+
+    def prepare_environment(changed_files)
+      if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
+        run_crucial "rake db:migrate RAILS_ENV=staging"
+        run_crucial "rake db:migrate RAILS_ENV=test"
+      end
+       
+      if changed_files.any? { |f| f == ".gitmodules" }
+        run_crucial "git submodule sync"
+        run_crucial "git submodule init"
+      end
+      run_crucial "git submodule update --merge"
+      run_crucial "git submodule foreach 'git reset --hard'"
+     
+      if changed_files.any? { |f| f =~ %r(^config/environment.+) }
+        run_crucial "rake gems:install"
+      end
+
+      system "touch tmp/restart.txt"
+    end
 end

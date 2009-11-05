@@ -32,6 +32,10 @@ module BardGit
       run_crucial "git merge-base #{head1} #{head2}"
     end
 
+    def changed_files(old_rev, new_rev)
+      run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 
+    end
+
     def submodule_dirty?
       @repo ||= Grit::Repo.new "."
       submodules = Grit::Submodule.config(@repo, @repo.head.name)
