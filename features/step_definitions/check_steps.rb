@@ -4,7 +4,7 @@ Then /^I should see the current version of bard$/ do
 end
 
 Then /^I should see the current version of git$/ do
-  version = `git --version`[/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/]
+  version = `git --version`[/[0-9]+\.[0-9]+\.[0-9]+/]
   @stdout.should =~ /git\s+\(#{Regexp.escape(version)}\)/
 end
 

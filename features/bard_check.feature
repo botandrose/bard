@@ -69,12 +69,6 @@ Feature: Bard can check its environment for missing dependencies and potential p
     When I type "bard check"
     Then I should see the fatal error "tracking"
 
-  Scenario: Bard check detects missing RAILS_ENV environment variable
-    Given a shared rails project
-    And my "RAILS_ENV" environment variable is ""
-    When I type "bard check"
-    Then I should see the warning "RAILS_ENV is not set"
-
   Scenario: Bard check detects missing staging hook
     Given a shared rails project
     And my "RAILS_ENV" environment variable is "staging"

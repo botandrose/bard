@@ -1,4 +1,5 @@
 $:.unshift File.expand_path(File.dirname(__FILE__))
+require 'rubygems'
 require 'term/ansicolor'
 require 'net/http'
 require 'systemu'
@@ -21,7 +22,7 @@ class Bard < Thor
 
   desc "check [PROJECT_PATH]", "check current project and environment for missing dependencies and common problems"
   def check(project_path = nil)
-    project_path = "." if project_path.nil? and File.directory? ".git"
+    project_path = "." if project_path.nil? and File.directory? ".git" and File.exist? "config/environment.rb"
     check_dependencies
     check_project project_path if project_path
   end
@@ -34,7 +35,7 @@ class Bard < Thor
 
     run_crucial "git pull --rebase origin integration"
 
-    prepare_environment = changed_files(@common_ancestor, "origin/integration")
+    prepare_environment changed_files(@common_ancestor, "origin/integration")
   end
 
   desc "push", "push local changes out to the remote"
@@ -43,7 +44,7 @@ class Bard < Thor
 
     raise SubmoduleDirtyError if submodule_dirty?
     raise SubmoduleUnpushedError if submodule_unpushed?
-    raise NonFastFowardError unless fast_forward_merge?
+    raise NonFastForwardError unless fast_forward_merge?
 
     run_crucial "git push origin integration", true
     
@@ -58,7 +59,6 @@ class Bard < Thor
     run_crucial "git checkout master"
     run_crucial "git pull --rebase origin master"
     raise MasterNonFastForwardError if not fast_forward_merge? "master", "integration"
-    end
 
     run_crucial "git merge integration"
     run_crucial "git push origin master"
@@ -81,9 +81,9 @@ class Bard < Thor
       end
 
       raise StagingDetachedHeadError unless current_branch
-      old_rev, new_rev, branch = revs.split(' ') # get the low down about the commit from the git hook
+      old_rev, new_rev, branch = gets.split(' ') # get the low down about the commit from the git hook
 
-      if current_branch == branch
+      if current_branch == branch.split('/').last
         run_crucial "git reset --hard"
         prepare_environment changed_files(old_rev, new_rev)
       end
@@ -94,7 +94,7 @@ class Bard < Thor
     def ensure_sanity!
       check_dependencies
       raise NotInProjectRootError unless File.directory? ".git"
-      raise NotOnIntegrationError if current_branch == "integration"
+      raise NotOnIntegrationError unless current_branch == "integration"
       raise WorkingTreeDirtyError unless `git status`.include? "working directory clean"
     end
 
@@ -104,11 +104,11 @@ class Bard < Thor
         run_crucial "rake db:migrate RAILS_ENV=test"
       end
        
-      if changed_files.any? { |f| f == ".gitmodules" }
-        run_crucial "git submodule sync"
-        run_crucial "git submodule init"
-      end
+      run_crucial "git submodule sync"
       run_crucial "git submodule update --merge"
+      if `git submodule` =~ /^[^ ]/
+        run_crucial "git submodule update --init"
+      end
       run_crucial "git submodule foreach 'git reset --hard'"
      
       if changed_files.any? { |f| f =~ %r(^config/environment.+) }

@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
-require 'bard'
+require File.dirname(__FILE__) + "/../lib/bard"
 begin
   Bard.start ARGV
-rescue BardError => e
+rescue Bard::Error => e
   fatal e.message
 end

@@ -5,7 +5,7 @@ Feature: Bard deploy should fold the integration branch into master and perform 
     And the remote master branch has had a commit since I last pulled
     And I have committed a set of changes to my local integration branch
     When I type "bard deploy"
-    Then I should see the fatal error "rebase"
+    Then I should see the fatal error "Rebase"
 
   Scenario: Bard deploy works
     Given a shared rails project

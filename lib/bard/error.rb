@@ -1,5 +1,4 @@
 class Bard < Thor
-  class BardError < StandardError; end
   {
     "SubmoduleDirtyError"       => "You have uncommitted changes to a submodule!\n  Please see Micah about this.",
     "SubmoduleUnpushedError"    => "You have unpushed changes to a submodule!\n  Please see Micah about this.",
@@ -11,7 +10,7 @@ class Bard < Thor
     "StagingDetachedHeadError"  => "The staging server is on a detached HEAD!\n  Please see Micah for assistance."
   }.each do |error, message|
     eval <<-RUBY
-    class #{error} < BardError
+    class #{error} < Bard::Error
       def message
         %q{#{message}}
       end
