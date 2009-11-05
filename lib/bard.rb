@@ -100,7 +100,7 @@ class Bard < Thor
 
     def prepare_environment(changed_files)
       if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
-        run_crucial "rake db:migrate RAILS_ENV=staging"
+        run_crucial "rake db:migrate"
         run_crucial "rake db:migrate RAILS_ENV=test"
       end
        
