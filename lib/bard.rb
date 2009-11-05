@@ -41,19 +41,19 @@ class Bard < Thor
 
     changed_files = run_crucial("git diff #{@common_ancestor} origin/integration --diff-filter=ACDMR --name-only").split("\n") 
    
-    if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
+    if changed_files.any? { |file| file =~ %r(^db/migrate/.+) }
       run_crucial "rake db:migrate"
       run_crucial "rake db:migrate RAILS_ENV=test"
     end
      
-    if changed_files.any? { |f| f == ".gitmodules" }
+    if changed_files.any? { |file| f == ".gitmodules" }
       run_crucial "git submodule sync"
       run_crucial "git submodule init"
     end
     run_crucial "git submodule update --merge"
     run_crucial "git submodule foreach 'git reset --hard'"
    
-    if changed_files.any? { |f| f =~ %r(^config/environment.+) }
+    if changed_files.any? { |file| f =~ %r(^config/environment.+) }
       run_crucial "rake gems:install"
     end
 
@@ -117,13 +117,12 @@ class Bard < Thor
       end
 
       # find out the current branch
-      head = File.read('.git/HEAD').chomp
       # abort if we're on a detached head
-      exit unless head.sub! 'ref: ', ''
+      exit unless current_branch
       revs = gets.split ' '  
       old_rev, new_rev, branch = revs
 
-      if head == branch
+      if current_branch == branch
         run_crucial "git reset --hard"
 
         changed_files = run_crucial("git diff #{old_rev} #{new_rev} --diff-filter=ACMRD --name-only").split("\n") 

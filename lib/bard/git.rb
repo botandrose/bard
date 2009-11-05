@@ -15,7 +15,9 @@ module BardGit
     end
 
     def current_branch
-      `git name-rev --name-only HEAD`.chomp
+      ref = `git symbolic-ref HEAD 2>&1`.chomp
+      return false if ref =~ /^fatal:/
+      rev.split('/').last # /refs/heads/master ... we want "master"
     end
 
     def fast_forward_merge?(root = "origin/integration", branch = "HEAD")
