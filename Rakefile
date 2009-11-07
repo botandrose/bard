@@ -19,8 +19,6 @@ begin
     gem.add_dependency(%q<git_remote_branch>, [">= 0.3.0"])
     gem.add_dependency(%q<systemu>, [">= 1.2.0"])
     gem.add_dependency(%q<term-ansicolor>, [">= 1.0.3"])
-    gem.extensions << 'ext/bard/extconf.rb'
-    gem.files.include FileList['dotfiles/*']
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
