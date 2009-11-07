@@ -26,13 +26,3 @@ fi
   end
 end
 
-# install into .gitconfig
-gitconfig_path = File.expand_path('~/.gitconfig')
-gitconfig_bard = File.read(File.expand_path("~/.bard/gitconfig"))
-gitconfig = File.read(gitconfig_path) rescue gitconfig_bard
-if gitconfig =~ /^### bard gem/
-  gitconfig.gsub! /### bard gem.*### end bard gem\n\n/m, gitconfig_bard
-else
-  gitconfig = gitconfig_bard + gitconfig
-end
-File.open(gitconfig_path, "w") { |f| f << gitconfig }
