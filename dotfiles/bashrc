@@ -1,0 +1,20 @@
+export PATH=~/.gem/ruby/1.8/bin:$PATH
+export EDITOR=vi
+export AUTOFEATURE=true
+
+function parse_git_dirty {
+  [[ $(git ls-files -o -m --exclude-standard 2> /dev/null) != "" ]] && echo "*"
+}
+function parse_git_branch {
+  if type -p __git_ps1; then
+    branch=$(__git_ps1 '%s')
+		if [ -n "$branch" ]; then
+	    echo -e "[$branch]"
+		fi
+  fi
+
+  #ref=$(git-symbolic-ref HEAD 2> /dev/null) || return
+  #echo "["${ref#refs/heads/}"]"
+}
+
+PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\[\033[01;32m\]$(parse_git_branch)\[\033[1;31m\]$(parse_git_dirty)\[\033[00m\]\$ '
