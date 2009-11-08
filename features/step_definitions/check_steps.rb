@@ -5,7 +5,7 @@ end
 
 Then /^I should see the current version of git$/ do
   version = `git --version`[/[0-9]+\.[0-9]+\.[0-9]+/]
-  @stdout.should =~ /git\s+\(#{Regexp.escape(version)}\)/
+  @stdout.should =~ /git\s+\(#{Regexp.escape(version)}/
 end
 
 Then /^I should see the current version of rubygems$/ do
