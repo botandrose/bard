@@ -11,14 +11,6 @@ Given /^there is no integration branch$/ do
   type "git branch -d integration"
 end
 
-Given /^there is no integration branch on the staging server$/ do
-  type "git branch -d origin/integration"
-  Dir.chdir "#{ROOT}/tmp/origin" do 
-    type "git checkout master"
-    type "git branch -d integration"
-  end
-end
-
 Given /^the integration branch isnt tracking origin\/integration$/ do
   type "git checkout master"
   type "git branch -d integration"
@@ -29,39 +21,22 @@ Given /^a dirty working directory$/ do
   File.open("dirty_file", "w") { |f| f.puts "dirty dirty" }
 end
 
-Given /^I have committed a set of changes to my local integration branch$/ do
-  type "echo 'fuck shit' > fuck_file"
+Given /^a commit$/ do
+  type "echo '#{rand}' > foobar_file"
   type "git add ."
-  type "git commit -am'test commit to local integration branch.'"
+  type "git commit -am'test commit'"
 end
 
-Given /^the remote master branch has had a commit since I last pulled$/ do
-  Dir.chdir "#{ROOT}/tmp/origin" do 
-    type "git checkout master"
-    type "echo 'zomg' > origin_master_change_file"
-    type "git add ."
-    type "git commit -am 'testing origin master change'"
-    type "git checkout integration"
-  end
-end
-
-Given /^the remote integration branch has had a commit since I last pulled$/ do
-  Dir.chdir "#{ROOT}/tmp/origin" do 
-    type "git checkout integration"
-    type "echo 'zomg' > origin_change_file"
-    type "git add ."
-    type "git commit -am 'testing origin change'"
-  end
+Given /^a commit to the master branch$/ do
+  type "git checkout master"
+  type "echo '#{rand}' > master_change_file"
+  type "git add ."
+  type "git commit -am 'testing master change'"
+  type "git checkout integration"
 end
 
 Then /^the directory should not be dirty$/ do
   type("git status").should include "working directory clean"
-end
-
-Then /^the remote directory should not be dirty$/ do
-  Dir.chdir "#{ROOT}/tmp/origin" do 
-    type("git status").should include "working directory clean"
-  end
 end
 
 Then /^I should be on the "([^\"]*)" branch$/ do |branch|

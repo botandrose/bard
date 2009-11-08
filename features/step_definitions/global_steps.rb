@@ -21,9 +21,9 @@ When /^I type "([^\"]*)"$/ do |command|
   type command.sub /\b(bard)\b/, "#{ROOT}/bin/bard"
 end
 
-When /^I type "([^\"]*)" on the staging server$/ do |command|
+When /^on staging, (.*$)/ do |step|
   Dir.chdir "#{ROOT}/tmp/origin" do
-    When %(I type "#{command}")
+    When step
   end
 end
 
