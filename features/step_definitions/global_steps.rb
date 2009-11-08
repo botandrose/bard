@@ -1,36 +1,19 @@
 Given /^a shared rails project$/ do
   # TEARDOWN
-  Dir.chdir ROOT
-  type "rm -rf tmp"
+  Dir.foreach "#{ROOT}/tmp" do |file|
+    FileUtils.rm_rf("#{ROOT}/tmp/#{file}") unless %w(fixtures . ..).include? file
+  end
   
   # SETUP
   Dir.chdir ROOT
-  Dir.mkdir 'tmp'
-  type "cp -R fixtures/repo tmp/origin"
-  Dir.chdir 'tmp/origin' do
-    type "git config receive.denyCurrentBranch ignore"
-    File.open ".git/hooks/post-receive", "w" do |f|
-      f.puts <<-BASH
-#!/bin/bash
-RAILS_ENV=staging #{ROOT}/bin/bard stage $@
-BASH
-      f.chmod 0775
-    end
-    type "cp config/database.sample.yml config/database.yml"
-    type "git checkout -b integration"
-  end
-  type "cp -R fixtures/repo tmp/submodule"
-  type "cp -R fixtures/repo tmp/submodule2"
-  type "git clone tmp/origin tmp/local"
+  `cp -r tmp/fixtures/* tmp/`
   Dir.chdir 'tmp/local'
   @repo = Grit::Repo.new "."
-  type "grb fetch integration"
-  type "git checkout integration"
-  type "cp config/database.sample.yml config/database.yml"
+
 end
 
 Given /^I am in a subdirectory$/ do
-  type "mkdir test_subdirectory"
+  FileUtils.mkdir "test_subdirectory"
   Dir.chdir "test_subdirectory"
 end
 
