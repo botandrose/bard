@@ -14,7 +14,7 @@ Then /^the (\w+) database should include that migration$/ do |env|
   db_version.should == migration_version
 end
 
-Given /^I dont have the test gem installed$/ do
+Given /^the test gem is not installed$/ do
   type "gem uninstall rake-dotnet -v=0.0.1 -x"
 end
 

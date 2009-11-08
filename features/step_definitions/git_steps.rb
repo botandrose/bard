@@ -22,14 +22,16 @@ Given /^a dirty working directory$/ do
 end
 
 Given /^a commit$/ do
-  type "echo '#{rand}' > foobar_file"
+  text = (rand * 100000000).round
+  type "echo '#{text}' > foobar_#{text}_file"
   type "git add ."
   type "git commit -am'test commit'"
 end
 
 Given /^a commit to the master branch$/ do
+  text = (rand * 100000000).round
   type "git checkout master"
-  type "echo '#{rand}' > master_change_file"
+  type "echo '#{text}' > master_#{text}_file"
   type "git add ."
   type "git commit -am 'testing master change'"
   type "git checkout integration"
