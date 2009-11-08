@@ -16,7 +16,7 @@ Feature: bard push
     And on staging, the test database should include that migration
 
   Scenario: Pushing a change that includes a gem dependency change
-    Given I dont have the test gem installed
+    Given the test gem is not installed
     And a commit that adds the test gem as a dependency
     When I type "bard push"
     Then on staging, the test gem should be installed
