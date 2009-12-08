@@ -2,7 +2,7 @@ class Bard < Thor
   private
     def check_dependencies
       required = {
-        'bard'     => Net::HTTP.get(URI.parse("http://gemcutter.org/gems/bard.json")).match(/"version":"([0-9.]+)"/)[1],
+        'bard'     => Net::HTTP.get(URI.parse("http://gemcutter.org/api/v1/gems/bard.json")).match(/"version":"([0-9.]+)"/)[1],
         'git'      => '1.6.4',
         'rubygems' => '1.3.4',
         'ruby'     => '1.8.6'
