@@ -11,6 +11,7 @@ require 'bard/git'
 require 'bard/io'
 
 require 'bard/check'
+require 'bard/ssh_delegation'
 
 class Bard < Thor
   include BardGit
