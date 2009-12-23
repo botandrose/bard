@@ -52,16 +52,6 @@ class Bard < Thor
           errors << "integration branch isnt tracking the remote integration branch, please run `grb track integration`" if `git config branch.integration.merge` !~ %r%\brefs/heads/integration\b%
         end
         errors << "you shouldn't be working on the master branch, please work on the integration branch" if current_branch == "master"
-
-        if ENV['RAILS_ENV'] == "staging"
-          if not File.exist? ".git/hooks/post-receive" 
-            errors << "missing git hook, please complain to micah" 
-          else
-            errors << "unexecutable git hook, please complain to micah" unless File.executable? ".git/hooks/post-receive" 
-            errors << "improper git hook, please complain to micah" unless File.read(".git/hooks/post-receive").include? "bard stage $@"
-          end
-          errors << "the git config variable receive.denyCurrentBranch is not set to ignore, please complain to micah" if `git config receive.denyCurrentBranch`.chomp != "ignore"
-        end
       end
 
       if not errors.empty?
