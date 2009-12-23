@@ -5,15 +5,13 @@ Feature: bard push
   Scenario: Uploading local changes onto the remote integration branch
     Given a commit
     When I type "bard push"
-    Then the "integration" branch should match the "origin/integration" branch
+    Then the "integration" branch should match the "staging:integration" branch
 
   Scenario: Pushing a change that includes a migration
     Given on staging, a staging database
-    And on staging, a test database
     And a commit with a new migration
     When I type "bard push"
     Then on staging, the staging database should include that migration
-    And on staging, the test database should include that migration
 
   Scenario: Pushing a change that includes a gem dependency change
     Given the test gem is not installed
@@ -66,21 +64,22 @@ Feature: bard push
     And I am on a non-integration branch
     When I type "bard push"
     Then I should see the fatal error "not on the integration branch"
-    And the "integration" branch should not match the "origin/integration" branch
+    And the "integration" branch should not match the "staging:integration" branch
 
   Scenario: Trying to bard push with a dirty working directory
     Given a commit
     And a dirty working directory
     When I type "bard push"
     Then I should see the fatal error "You have uncommitted changes!"
-    And the "integration" branch should not match the "origin/integration" branch
+    And the "integration" branch should not match the "staging:integration" branch
 
   Scenario: Trying to bard push with a non-fast-foward changeset
     Given a commit
-    And on staging, a commit
+    And on development_b, a commit
+    And on development_b, I type "bard push"
     When I type "bard push"
     Then I should see the fatal error "Someone has pushed some changes"
-    And the "integration" branch should not match the "origin/integration" branch
+    And the "integration" branch should not match the "staging:integration" branch
 
   Scenario: Trying to bard push with an uncommitted change to a submodule
     Given a submodule
@@ -88,7 +87,7 @@ Feature: bard push
     And the submodule working directory is dirty
     When I type "bard push"
     Then I should see the fatal error "Micah"
-    And the "integration" branch should not match the "origin/integration" branch
+    And the "integration" branch should not match the "staging:integration" branch
 
   Scenario: Trying to bard push with a committed but unpushed change to a submodule
     Given a submodule
@@ -96,4 +95,4 @@ Feature: bard push
     And a commit
     When I type "bard push"
     Then I should see the fatal error "Micah"
-    And the "integration" branch should not match the "origin/integration" branch
+    And the "integration" branch should not match the "staging:integration" branch

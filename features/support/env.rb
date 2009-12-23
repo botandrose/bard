@@ -15,27 +15,20 @@ ROOT = File.expand_path(File.dirname(__FILE__) + '/../..')
 # setup fixtures
 FileUtils.rm_rf "tmp"
 FileUtils.mkdir "tmp"
-FileUtils.cp_r "fixtures/repo", "tmp/origin"
-Dir.chdir 'tmp/origin' do
-  `git config receive.denyCurrentBranch ignore`
-  File.open ".git/hooks/post-receive", "w" do |f|
-    f.puts <<-BASH
-#!/bin/bash
-RAILS_ENV=staging #{ROOT}/bin/bard stage $@
-BASH
-    f.chmod 0775
+Dir.chdir 'tmp' do
+  `git clone --mirror --recursive ../fixtures/repo origin.git`
+
+  `git clone --bare --recursive origin.git submodule_a.git`
+  `git clone --bare --recursive origin.git submodule_b.git`
+  %w(development_a development_b staging production).each do |env|
+    `git clone --recursive origin.git #{env}`
+    Dir.chdir env do
+      FileUtils.cp "config/database.sample.yml", "config/database.yml"
+      `git checkout -b integration origin/integration` unless env == "production"
+    end
   end
-  FileUtils.cp "config/database.sample.yml", "config/database.yml"
-  `git checkout -b integration`
-end
-FileUtils.cp_r "fixtures/repo", "tmp/submodule"
-FileUtils.cp_r "fixtures/repo", "tmp/submodule2"
-`git clone tmp/origin tmp/local`
-Dir.chdir 'tmp/local' do
-  `grb fetch integration && git checkout integration`
-  FileUtils.cp "config/database.sample.yml", "config/database.yml"
-end
-FileUtils.mkdir "tmp/fixtures"
-Dir.foreach "tmp" do |file|
-  FileUtils.mv("tmp/#{file}", "tmp/fixtures/") unless %w(fixtures . ..).include? file
+  FileUtils.mkdir "fixtures"
+  Dir.foreach "." do |file|
+    FileUtils.mv(file, "fixtures/") unless %w(fixtures . ..).include? file
+  end
 end

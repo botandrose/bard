@@ -7,9 +7,14 @@ Given /^a shared rails project$/ do
   # SETUP
   Dir.chdir ROOT
   `cp -r tmp/fixtures/* tmp/`
-  Dir.chdir 'tmp/local'
-  @repo = Grit::Repo.new "."
-
+  
+  Dir.chdir 'tmp'
+  @repos = {}
+  %w(development_a development_b staging production).each do |env|
+    @repos[env] = Grit::Repo.new env
+  end
+  Dir.chdir 'development_a'
+  @repo = @repos['development_a']
 end
 
 Given /^I am in a subdirectory$/ do
@@ -21,9 +26,12 @@ When /^I type "([^\"]*)"$/ do |command|
   type command.sub /\b(bard)\b/, "#{ROOT}/bin/bard"
 end
 
-When /^on staging, (.*$)/ do |step|
-  Dir.chdir "#{ROOT}/tmp/origin" do
+When /^on (\w+), (.*$)/ do |env, step|
+  Dir.chdir "#{ROOT}/tmp/#{env}" do
+    old_repo = @repo
+    @repo = @repos[env]
     When step
+    @repo = old_repo
   end
 end
 
@@ -37,4 +45,8 @@ end
 
 Then /^I should see "([^\"]*)"$/ do |message|
   @stdout.should include(message) 
+end
+
+Then /^debug$/ do
+  debugger
 end

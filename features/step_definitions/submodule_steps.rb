@@ -1,12 +1,7 @@
 Given /^a submodule$/ do
-  Given 'on staging, a commit with a new submodule'
-  type "git checkout integration"
-  type "git pull --rebase"
-  type "git submodule init"
-  type "git submodule update"
-  Dir.chdir "submodule" do
-    type "git checkout master"
-  end
+  Given 'on development_b, a commit with a new submodule'
+  Given 'on development_b, I type "bard push"'
+  Given 'I type "bard pull"'
   @submodule_url = File.read(".gitmodules").match(/url = (.*)$/)[1]
   @submodule_commit = type "git submodule status"
 end
@@ -27,11 +22,11 @@ Given /^a commit to the submodule$/ do
 end
 
 Given /^a commit with a new submodule$/ do
-  type "git submodule add #{ROOT}/tmp/submodule submodule"
+  type "git submodule add #{ROOT}/tmp/submodule_a.git submodule"
   type "git submodule init"
   type "git submodule update --merge"
   Dir.chdir "submodule" do
-    type "grb track master"
+    type "git checkout -b master origin/master"
   end
   type "git add ."
   type "git commit -m 'added submodule'"
@@ -51,7 +46,7 @@ Given /^a commit with a submodule update$/ do
 end
 
 Given /^a commit with a submodule url change$/ do
-  gsub_file ".gitmodules", /(url = .*submodule)$/ do |match| "#{match}2" end
+  gsub_file ".gitmodules", "submodule_a.git", "submodule_b.git"
   type "git add ."
   type "git commit -m 'updated submodule url'"
 end

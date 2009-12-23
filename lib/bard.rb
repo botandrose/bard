@@ -68,26 +68,16 @@ class Bard < Thor
     run_crucial "cap ROLES=staging COMMAND='cd #{project_name} && cap deploy' invoke"
   end
 
-  if ENV['RAILS_ENV'] == "staging"
-    desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
-    def stage
-      check_dependencies
+  desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
+  def stage
+    check_dependencies
 
-      if ENV['GIT_DIR'] == '.'
-        # this means the script has been called as a hook, not manually.
-        # get the proper GIT_DIR so we can descend into the working copy dir;
-        # if we don't then `git reset --hard` doesn't affect the working tree.
-        Dir.chdir '..' 
-        ENV['GIT_DIR'] = '.git'
-      end
+    raise StagingDetachedHeadError unless current_branch
+    old_rev, new_rev, branch = gets.split(' ') # get the low down about the commit from the git hook
 
-      raise StagingDetachedHeadError unless current_branch
-      old_rev, new_rev, branch = gets.split(' ') # get the low down about the commit from the git hook
-
-      if current_branch == branch.split('/').last
-        run_crucial "git reset --hard"
-        prepare_environment changed_files(old_rev, new_rev)
-      end
+    if current_branch == branch.split('/').last
+      run_crucial "git reset --hard"
+      prepare_environment changed_files(old_rev, new_rev)
     end
   end
 
@@ -102,15 +92,13 @@ class Bard < Thor
     def prepare_environment(changed_files)
       if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
         run_crucial "rake db:migrate"
-        run_crucial "rake db:migrate RAILS_ENV=test"
+        run_crucial "rake db:migrate RAILS_ENV=test" unless ENV['RAILS_ENV'] == 'staging'
       end
        
       run_crucial "git submodule sync"
+      run_crucial "git submodule init"
       run_crucial "git submodule update --merge"
-      if `git submodule` =~ /^[^ ]/
-        run_crucial "git submodule update --init"
-      end
-      run_crucial "git submodule foreach 'git reset --hard'"
+      run_crucial "git submodule foreach 'git checkout `git name-rev --name-only HEAD`'"
      
       if changed_files.any? { |f| f =~ %r(^config/environment.+) }
         run_crucial "rake gems:install"

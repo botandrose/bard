@@ -51,15 +51,23 @@ end
 
 Then /^the "([^\"]*)" branch (should|should not) match the "([^\"]*)" branch$/ do |local_branch, which, remote_branch|
   type "git fetch origin"
-  local_sha = @repo.commits(local_branch).first.id
-  remote_sha = @repo.commits(remote_branch).first.id
+  local_env, local_branch = local_branch.split(':') if local_branch.include? ':'
+  local_env ||= "development_a"
+  remote_env, remote_branch = remote_branch.split(':') if remote_branch.include? ':'
+  remote_env ||= "development_a"
+  local_sha = @repos[local_env].commits(local_branch).first.id
+  remote_sha = @repos[remote_env].commits(remote_branch).first.id
   which = which.gsub(/ /, '_').to_sym
   local_sha.send(which) == remote_sha
 end
 
 Then /^the "([^\"]*)" branch should be a fast\-forward from the "([^\"]*)" branch$/ do |local_branch, remote_branch|
-  local_sha = @repo.commits(local_branch).first.id
-  remote_sha = @repo.commits(remote_branch).first.id
-  common_ancestor = @repo.find_common_ancestor local_sha, remote_sha
+  local_env, local_branch = local_branch.split(':') if local_branch.include? ':'
+  local_env ||= "development_a"
+  remote_env, remote_branch = remote_branch.split(':') if remote_branch.include? ':'
+  remote_env ||= "development_a"
+  local_sha = @repos[local_env].commits(local_branch).first.id
+  remote_sha = @repos[remote_env].commits(remote_branch).first.id
+  common_ancestor = @repos[local_env].find_common_ancestor local_sha, remote_sha
   common_ancestor.should  == remote_sha
 end
