@@ -6,6 +6,9 @@ require 'systemu'
 gem 'sqlite3-ruby'
 
 ENV["PATH"] += ":#{File.dirname(File.expand_path(__FILE__))}/../../bin"
+ENV["GIT_DIR"] = nil
+ENV["GIT_WORK_TREE"] = nil
+ENV["GIT_INDEX_FILE"] = nil
 
 ROOT = File.expand_path(File.dirname(__FILE__) + '/../..')
 
