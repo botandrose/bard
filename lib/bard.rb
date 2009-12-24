@@ -65,7 +65,7 @@ class Bard < Thor
     run_crucial "git push origin master"
     run_crucial "git checkout integration"
 
-    run_crucial "cap ROLES=staging COMMAND='cd #{project_name} && cap deploy' invoke"
+    run_crucial_via_bard "cap deploy"
   end
 
   desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
