@@ -15,6 +15,7 @@ Given /^a shared rails project$/ do
   end
   Dir.chdir 'development_a'
   @repo = @repos['development_a']
+  @env = { 'RAILS_ENV' => 'development', 'TESTING' => true }
 end
 
 Given /^I am in a subdirectory$/ do
@@ -27,12 +28,15 @@ When /^I type "([^\"]*)"$/ do |command|
 end
 
 When /^on (\w+), (.*$)/ do |env, step|
+  old_env = @env['RAILS_ENV']
+  @env['RAILS_ENV'] = env if %w(staging production).include? env
   Dir.chdir "#{ROOT}/tmp/#{env}" do
     old_repo = @repo
     @repo = @repos[env]
     When step
     @repo = old_repo
   end
+  @env['RAILS_ENV'] = old_env
 end
 
 Then /^I should see the fatal error "([^\"]*)"$/ do |error_message|

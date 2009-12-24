@@ -28,4 +28,9 @@ class Bard < Thor
     def command_for(user, command)
       %(sudo -H -u #{user} sh -c "cd ~ && #{command}")
     end
+
+    def run_crucial_via_bard(command)
+      return if ENV['TESTING']
+      run_crucial %(ssh bard@bard.botandrose.com "cd #{project_name} && #{command}")
+    end
 end

@@ -45,32 +45,3 @@ Given /^the submodule has a detached head$/ do
     type "git checkout `git rev-parse HEAD`"
   end
 end
-
-Given /^my "([^\"]*)" environment variable is "([^\"]*)"$/ do |key, value|
-  @env ||= Hash.new
-  @env[key] = value
-end
-
-Given /^there is no git hook on the staging server$/ do
-  Dir.chdir "#{ROOT}/tmp/origin" do
-    type "rm .git/hooks/post-receive"
-  end
-end
-
-Given /^the git hook on the staging server is not executable$/ do
-  Dir.chdir "#{ROOT}/tmp/origin" do
-    type "chmod 664 .git/hooks/post-receive"
-  end
-end
-
-Given /^the git hook on the staging server is bad$/ do
-  Dir.chdir "#{ROOT}/tmp/origin" do
-    type "echo 'bad' > .git/hooks/post-receive"
-  end
-end
-
-Given /^the staging server git config for receive.denyCurrentBranch is not "ignore"$/ do
-  Dir.chdir "#{ROOT}/tmp/origin" do
-    type "git config --unset receive.denyCurrentBranch"
-  end
-end

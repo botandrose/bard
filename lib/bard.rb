@@ -49,7 +49,7 @@ class Bard < Thor
 
     run_crucial "git push origin integration", true
     
-    # git post-receive hook runs stage task below
+    run_crucial_via_bard "bard stage"
   end
 
   desc "deploy", "pushes, merges integration branch into master and deploys it to production"
@@ -72,13 +72,9 @@ class Bard < Thor
   def stage
     check_dependencies
 
-    raise StagingDetachedHeadError unless current_branch
-    old_rev, new_rev, branch = gets.split(' ') # get the low down about the commit from the git hook
-
-    if current_branch == branch.split('/').last
-      run_crucial "git reset --hard"
-      prepare_environment changed_files(old_rev, new_rev)
-    end
+    run_crucial "git fetch"
+    run_crucial "git reset --hard origin/integration"
+    prepare_environment
   end
 
   private
@@ -89,8 +85,12 @@ class Bard < Thor
       raise WorkingTreeDirtyError unless `git status`.include? "working directory clean"
     end
 
-    def prepare_environment(changed_files)
-      if changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
+    def prepare_environment(changed_files = nil)
+      if changed_files.nil? or changed_files.any? { |f| f =~ %r(^config/environment.+) }
+        run_crucial "rake gems:install"
+      end
+     
+      if changed_files.nil? or changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
         run_crucial "rake db:migrate"
         run_crucial "rake db:migrate RAILS_ENV=test" unless ENV['RAILS_ENV'] == 'staging'
       end
@@ -99,10 +99,6 @@ class Bard < Thor
       run_crucial "git submodule init"
       run_crucial "git submodule update --merge"
       run_crucial "git submodule foreach 'git checkout `git name-rev --name-only HEAD`'"
-     
-      if changed_files.any? { |f| f =~ %r(^config/environment.+) }
-        run_crucial "rake gems:install"
-      end
 
       system "touch tmp/restart.txt"
     end
