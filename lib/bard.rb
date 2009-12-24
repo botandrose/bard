@@ -72,7 +72,7 @@ class Bard < Thor
   def stage
     check_dependencies
 
-    run_crucial "export RAILS_ENV=staging"
+    ENV['RAILS_ENV'] = "staging"
     run_crucial "git fetch"
     run_crucial "git reset --hard origin/integration"
     prepare_environment
