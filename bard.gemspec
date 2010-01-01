@@ -52,7 +52,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/botandrose/bard}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.4}
+  s.rubygems_version = %q{1.3.5}
   s.summary = %q{Tools for collaborating with Bot and Rose Design.}
   s.test_files = [
     "spec/spec_helper.rb",
