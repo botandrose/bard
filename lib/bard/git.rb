@@ -3,7 +3,7 @@ module BardGit
     def current_branch
       ref = `git symbolic-ref HEAD 2>&1`.chomp
       return false if ref =~ /^fatal:/
-      ref.split('/').last # /refs/heads/master ... we want "master"
+      ref.sub(/refs\/heads\//, '') # refs/heads/master ... we want "master"
     end
 
     def fast_forward_merge?(root = "origin/integration", branch = "HEAD")
