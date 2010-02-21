@@ -10,27 +10,19 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :staging, :roles => :staging do
         data_pull :staging
       end
-
-      desc "pull data from production"
-      task :yml, :roles => :production do
-        run "cd #{application} && rake db:data:dump && gzip -9f db/data.yml"
-        transfer :down, "#{application}/db/data.yml.gz", "db/data.yml.gz"
-        system "gunzip -f db/data.yml.gz"
-        system "rake db:data:load"
-      end
     end
   end
 
   def data_pull(env)
     config = YAML::load(File.open("config/database.yml"))
     source = config[env.to_s]
-    target = config["development"]
-    run "cd #{application} && mysqldump -u#{source["username"]} #{"-p#{source["password"]}" if source["password"]} '#{source["database"]}' > db/data.sql && gzip -9f db/data.sql"
+    target = config[ENV['RAILS_ENV'] || "development"]
+    run "cd #{application} && mysqldump -u#{source["username"]} --password=#{source["password"]} '#{source["database"]}' > db/data.sql && gzip -9f db/data.sql"
     transfer :down, "#{application}/db/data.sql.gz", "db/data.sql.gz"
     run "cd #{application} && rm db/data.sql.gz"
     system "gunzip -f db/data.sql.gz"
-    system "echo 'DROP DATABASE `#{target["database"]}`; CREATE DATABASE `#{target["database"]}`;' | mysql -u#{target["username"]}"
-    system "mysql -u#{target["username"]} '#{target["database"]}' < db/data.sql"
+    system "echo 'DROP DATABASE `#{target["database"]}`; CREATE DATABASE `#{target["database"]}`;' | mysql -u#{target["username"]} --password=#{target["password"]}"
+    system "mysql -u#{target["username"]} --password=#{target["password"]} '#{target["database"]}' < db/data.sql"
     # system "rm db/data.sql"
   end
 
@@ -67,17 +59,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         handle_error e
       end
     end
-
-    def readline(prompt)
-      STDOUT.print(prompt)
-      STDOUT.flush
-      STDIN.gets
-    end
-    
-    def handle_error(error)
-      name = error.message.split('::').last.gsub(/([A-Z])/, " \\1").gsub(/^ /,'').gsub(/ Error/, '')
-      failure "!!! Deploy Error: #{name}"
-    end
   end
 
   ## ERROR HANDLING
@@ -89,9 +70,6 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   class BardError < Capistrano::Error; end
   class TestsFailedError < BardError; end
-  class WorkingDirectoryDirtyError < BardError; end
-  class StagingWorkingDirectoryDirtyError < BardError; end
-  class NonFastForwardError < BardError; end
 
   def success(msg)
     puts "#{GREEN}#{msg}#{DEFAULT}"
