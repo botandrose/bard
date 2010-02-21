@@ -1,6 +1,7 @@
-load_template "../bard_template/helper.rb"
+require "bard/template/helper"
 
-plugin 'exception_notification', :git => 'git://github.com/rails/exception_notification.git'
+git :clone => "git://github.com/rails/exception_notification.git --branch=2-3-stable vendor/plugins/exception_notification"
+run "rm -rf vendor/plugins/exception_notification/.git"
 
 file_inject "app/controllers/application_controller.rb",
   "class ApplicationController < ActionController::Base", <<-END

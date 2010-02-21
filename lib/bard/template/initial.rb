@@ -36,7 +36,6 @@ test:
 
 staging:
   <<: *login
-  password: thecakeisalie
 
 production:
   <<: *login
@@ -78,22 +77,20 @@ file "app/views/layouts/application.html.haml", <<-END
   %body
     #container
       = yield
-    = javascript_include_merged :base
-    = yield :js
     - if flash[:notice]
       #flash_notice= flash[:notice]
     - if flash[:error]
       #flash_error= flash[:error]
+
+    = javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"
+    = javascript_include_merged :base
+    = yield :js
 END
 
 run "compass --rails --sass-dir app/sass --css-dir public/stylesheets ."
-file_inject "config/compass.config",
-'http_images_path = "/images"', <<-END
-http_stylesheets_path = "/stylesheets"
-END
 
-# global.sass
-file "public/stylesheets/sass/global.sass", <<-END
+# application.sass
+file "public/stylesheets/sass/application.sass", <<-END
 // global
 
 @import constant.sass
@@ -144,9 +141,6 @@ file "public/stylesheets/sass/_constant.sass", <<-END
   
 END
 
-# Download JQuery
-run "curl -L http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js > public/javascripts/jquery.js"
-
 file "public/javascripts/application.js", <<-END
 $(function() {
 });
@@ -156,12 +150,11 @@ file "config/asset_packages.yml", <<-END
 --- 
 javascripts: 
 - base:
-  - jquery
   - application
 stylesheets: 
 - base: 
   - screen
-  - global
+  - application
 - ie:
   - ie
 END
@@ -187,7 +180,6 @@ db/*.sqlite3
 config/database.yml
 config/deploy.rb
 converage/**/*
-Capfile
 public/stylesheets/*.css
 *[~]
 END
@@ -198,9 +190,8 @@ git :commit => "-m'initial commit.'"
 
 # Deployment and staging setup
 file "Capfile", <<-END
-load 'deploy' if respond_to?(:namespace) # cap2 differentiator
 Dir['vendor/plugins/*/recipes/*.rb'].each { |plugin| load(plugin) }
-load '../cap.tasks'
+require 'bard/capistrano'
 load 'config/deploy'
 END
 
@@ -208,5 +199,5 @@ file "config/deploy.rb", <<-END
 set :application, "#{project_name}"
 END
 
-git :remote => "add origin staging@staging.botandrose.com:#{project_name}"
+git :remote => "add origin git@git.botandrose.com:#{project_name}.git"
 run "cap staging:bootstrap"

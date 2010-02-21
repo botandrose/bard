@@ -1,4 +1,4 @@
-load_template "../bard_template/helper.rb"
+require "bard/template/helper"
 
 # Set up static controller
 file "app/controllers/static_controller.rb", <<-END

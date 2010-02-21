@@ -1,4 +1,4 @@
-load_template "../bard_template/helper.rb"
+require "bard/template/helper"
 
 # GEMS
 #gem 'bcrypt-ruby', :lib => 'bcrypt' # used by authlogic

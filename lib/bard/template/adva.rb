@@ -1,4 +1,4 @@
-load_template "../bard_template/helper.rb"
+require "bard/template/helper"
 
 # Download and install Adva CMS
 file "script/test-adva-cms", <<-src

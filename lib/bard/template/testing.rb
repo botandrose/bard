@@ -1,17 +1,16 @@
-load_template "../bard_template/helper.rb"
+require "bard/template/helper"
 
 # Testing Environment
-gem "rspec", :version => "1.2.9", :lib => false
-gem "rspec-rails", :version => "1.2.9", :lib => false
-gem "cucumber", :version => "0.6.1", :lib => false
-gem "cucumber-rails", :version => "0.2.3", :lib => false
-gem "database_cleaner", :version => "0.2.3", :lib => false
-gem "pickle", :version => "0.2.1", :lib => false
-gem "webrat", :version => "0.6.0", :lib => false
-gem "email_spec", :version => "0.4.0", :lib => false
-gem "machinist", :version => "1.0.6", :lib => false
-gem "faker", :version => "0.3.1", :lib => false
-rake "gems:install"
+with_options :env => :cucumber do
+  gem 'cucumber',    :lib => false, :version => '0.4.3'
+  gem 'webrat',      :lib => false, :version => '0.5.3'
+  gem 'rspec',       :lib => false, :version => '1.2.9'
+  gem 'rspec-rails', :lib => false, :version => '1.2.9'
+  gem 'faker', :version => '0.3.1'
+  gem "email_spec", :version => "0.4.0", :lib => false
+  gem "machinist", :version => "1.0.6", :lib => false
+  gem "pickle", :version => "0.2.1", :lib => false
+end
 
 plugin 'cucumber_rails_debug', :git => "git://github.com/mischa/cucumber_rails_debug"
 
