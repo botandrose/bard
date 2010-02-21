@@ -36,6 +36,11 @@ class Bard < Thor
     check_project project_path if project_path
   end
 
+  desc "data", "copy production database down to your local machine"
+  def data
+    exec "cap data:pull"
+  end
+
   desc "pull", "pull changes to your local machine"
   def pull
     ensure_sanity!
