@@ -22,7 +22,7 @@ class Bard < Thor
 
       errors = []
       %w(bard git rubygems ruby).each do |pkg|
-        if actual[pkg] < required[pkg]
+        if Versionomy.parse(actual[pkg]) < Versionomy.parse(required[pkg])
           errors << red("#{pkg.ljust(9)} (#{actual[pkg]}) ... NEED (#{required[pkg]})\n  #{help[pkg]}")
         elsif options.verbose?
           puts green("#{pkg.ljust(9)} (#{actual[pkg]})") 

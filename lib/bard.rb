@@ -3,6 +3,7 @@ require 'rubygems'
 require 'term/ansicolor'
 require 'net/http'
 require 'systemu'
+require 'versionomy'
 require 'grit'
 require 'thor'
 
