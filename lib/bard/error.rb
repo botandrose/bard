@@ -7,7 +7,8 @@ class Bard < Thor
     "NotInProjectRootError"     => "You are not in the project's root directory!",
     "NotOnIntegrationError"     => "You are not on the integration branch!\n  Type `git checkout integration` to switch to it. If you have made changes to your current branch, please see Micah for assistance.",
     "WorkingTreeDirtyError"     => "You have uncommitted changes!\n  Please run git commit before attempting to push or pull.",
-    "StagingDetachedHeadError"  => "The staging server is on a detached HEAD!\n  Please see Micah for assistance."
+    "StagingDetachedHeadError"  => "The staging server is on a detached HEAD!\n  Please see Micah for assistance.",
+    "TestsFailedError"          => "Automated tests failed!\n  See http://integrity.botandrose.com/ for more info."
   }.each do |error, message|
     eval <<-RUBY
     class #{error} < Bard::Error

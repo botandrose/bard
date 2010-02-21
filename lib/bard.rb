@@ -66,6 +66,21 @@ class Bard < Thor
     run_crucial "git push origin master"
     run_crucial "git checkout integration"
 
+    if `curl -s -I http://integrity.botandrose.com/#{project_name}` !~ /\b404\b/
+      puts "Integrity: verifying build..."
+      system "curl -sX POST http://integrity.botandrose.com/#{project_name}/builds"
+      while true
+        response = `curl -s http://integrity.botandrose.com/#{project_name}`
+        break unless response =~ /div class='(building|pending)' id='last_build'/
+        sleep(2)
+      end
+      case response
+        when /div class='failed' id='last_build'/ then raise TestsFailedError
+        when /div class='success' id='last_build'/ then puts "Integrity: success! deploying to production"
+        else raise "Unknown response from CI server:\n#{response}"
+      end
+    end
+
     run_crucial_via_bard "cap deploy"
   end
 
