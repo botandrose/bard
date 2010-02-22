@@ -2,9 +2,9 @@ require "bard/template/helper"
 
 git :clone => "git://github.com/rails/exception_notification.git vendor/plugins/exception_notification"
 inside "vendor/plugins/exception_notification" do
-  git "checkout 2-3-stable"
+  git "checkout -b 2-3-stable origin/2-3-stable"
+  run "rm -rf .git"
 end
-run "rm -rf vendor/plugins/exception_notification/.git"
 
 file_inject "app/controllers/application_controller.rb",
   "class ApplicationController < ActionController::Base", <<-END
