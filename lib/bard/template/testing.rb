@@ -11,6 +11,7 @@ with_options :env => :cucumber do
   gem "machinist", :version => "1.0.6", :lib => false
   gem "pickle", :version => "0.2.1", :lib => false
 end
+rake "gems:install RAILS_ENV=cucumber"
 
 plugin 'cucumber_rails_debug', :git => "git://github.com/mischa/cucumber_rails_debug"
 
