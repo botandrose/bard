@@ -178,15 +178,10 @@ doc/spec/*
 db/data.*
 db/*.sqlite3
 config/database.yml
-config/deploy.rb
 converage/**/*
 public/stylesheets/*.css
 *[~]
 END
-
-git :init
-git :add => "."
-git :commit => "-m'initial commit.'"
 
 # Deployment and staging setup
 file "Capfile", <<-END
@@ -198,6 +193,11 @@ END
 file "config/deploy.rb", <<-END
 set :application, "#{project_name}"
 END
+
+git :init
+git :add => "."
+git :commit => "-m'initial commit.'"
+git :checkout => "-b integration"
 
 git :remote => "add origin git@git.botandrose.com:#{project_name}.git"
 run "cap staging:bootstrap"
