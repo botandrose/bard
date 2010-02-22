@@ -24,6 +24,7 @@ class Bard < Thor
 
   desc "create [PROJECT_NAME]", "create new project"
   def create(project_name)
+    check_dependencies
     template_path = File.expand_path(File.dirname(__FILE__) + "/bard/template.rb")
     command = "rails --template=#{template_path} #{project_name}"
     exec command
@@ -38,6 +39,7 @@ class Bard < Thor
 
   desc "data", "copy production database down to your local machine"
   def data
+    check_dependencies
     exec "cap data:pull"
   end
 
