@@ -2,7 +2,7 @@ require "bard/template/helper"
 
 git :clone => "git://github.com/rails/exception_notification.git vendor/plugins/exception_notification"
 inside "vendor/plugins/exception_notification" do
-  git "checkout -b 2-3-stable origin/2-3-stable"
+  git "checkout origin/2-3-stable"
   run "rm -rf .git"
 end
 
