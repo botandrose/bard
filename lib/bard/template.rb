@@ -6,4 +6,4 @@ require "bard/template/helper"
   bard_load_template template_file
 end
 run "cd #{project_name}"
-say "Project #{project_name} created! Ask Micah to set up staging server."
+puts "Project #{project_name} created! Ask Micah to set up staging server."
