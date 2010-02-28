@@ -22,6 +22,7 @@ class Bard < Thor
 
   desc "create [PROJECT_NAME]", "create new project"
   def create(project_name)
+    auto_update!
     check_dependencies
     template_path = File.expand_path(File.dirname(__FILE__) + "/bard/template.rb")
     command = "rails --template=#{template_path} #{project_name}"
@@ -32,13 +33,14 @@ class Bard < Thor
   desc "check [PROJECT_PATH]", "check current project and environment for missing dependencies and common problems"
   def check(project_path = nil)
     project_path = "." if project_path.nil? and File.directory? ".git" and File.exist? "config/environment.rb"
+    auto_update!
     check_dependencies
     check_project project_path if project_path
   end
 
   desc "data", "copy production database down to your local machine"
   def data
-    check_dependencies
+    ensure_sanity!
     exec "cap data:pull"
   end
 
@@ -109,6 +111,7 @@ class Bard < Thor
 
   private
     def ensure_sanity!
+      auto_update!
       check_dependencies
       raise NotInProjectRootError unless File.directory? ".git"
       raise NotOnIntegrationError unless current_branch == "integration"
