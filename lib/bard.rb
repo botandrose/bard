@@ -20,8 +20,6 @@ class Bard < Thor
 
   VERSION = File.read(File.expand_path(File.dirname(__FILE__) + "../../VERSION")).chomp
 
-  method_options %w( verbose -v ) => :boolean
-
   desc "create [PROJECT_NAME]", "create new project"
   def create(project_name)
     check_dependencies
@@ -30,6 +28,7 @@ class Bard < Thor
     exec command
   end
 
+  method_options %w( verbose -v ) => :boolean
   desc "check [PROJECT_PATH]", "check current project and environment for missing dependencies and common problems"
   def check(project_path = nil)
     project_path = "." if project_path.nil? and File.directory? ".git" and File.exist? "config/environment.rb"
