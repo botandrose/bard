@@ -1,12 +1,11 @@
 class Bard < Thor
   private
     def auto_update!
-      original_command = [ENV["_"], @_invocations[Bard], ARGV].flatten.join(" ")
       required = `curl -s http://gemcutter.org/api/v1/gems/bard.json`.match(/"version":"([0-9.]+)"/)[1]
       if Versionomy.parse(Bard::VERSION) < Versionomy.parse(required)
         original_command = [ENV["_"], @_invocations[Bard], ARGV].flatten.join(" ")
         puts "bard gem is out of date... updating to new version"
-        exec "gem install bard && echo 'complete. please rerun bard task.'"
+        exec "gem install bard && #{original_command}"
       end
       if options.verbose?
         puts green("#{"bard".ljust(9)} (#{Bard::VERSION})") 
