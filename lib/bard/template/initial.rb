@@ -14,6 +14,7 @@ plugin 'asset_packager', :git => 'git://github.com/sbecker/asset_packager.git'
 #plugin 'fckeditor', :git => 'git://github.com/originofstorms/fckeditor.git'
  
 # Install gems
+gem "bard"
 gem "haml", :version => "2.2.17"
 gem "compass", :version => "0.8.17"
 rake "gems:install"
@@ -43,14 +44,6 @@ END
 
 rake "db:create"
 rake "db:migrate"
-
-# Restart task
-file "lib/tasks/restart.rake", <<-END
-task :restart do
-  system("touch tmp/restart.txt")
-  system("touch tmp/debug.txt") if ENV["DEBUG"] == 'true'
-end
-END
 
 # Staging Environment
 run "cp config/environments/development.rb config/environments/staging.rb"
@@ -184,6 +177,13 @@ public/stylesheets/*.css
 END
 
 # Deployment and staging setup
+file_append "Rakefile", <<-END
+
+begin
+  require 'bard/rake'
+rescue LoadError; end
+END
+
 file "Capfile", <<-END
 Dir['vendor/plugins/*/recipes/*.rb'].each { |plugin| load(plugin) }
 require 'bard/capistrano'
