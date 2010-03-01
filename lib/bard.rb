@@ -103,8 +103,8 @@ class Bard < Thor
     ensure_sanity!
 
     run_crucial "git fetch"
-    run_crucial "git checkout master && git reset --hard origin master"
-    run_crucial "git checkout integration && reset --hard origin integration"
+    run_crucial "git checkout master && git reset --hard origin/master"
+    run_crucial "git checkout integration && git reset --hard origin/integration"
     run_crucial "rake bootstrap RAILS_ENV=staging"
   end
 
