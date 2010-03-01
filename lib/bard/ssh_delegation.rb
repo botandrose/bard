@@ -26,7 +26,7 @@ class Bard < Thor
 
   private
     def command_for(user, command)
-      %(sudo -H -u #{user} sh -c "cd ~ && #{command}")
+      %(sudo -H -u #{user} bash -c "cd ~ && #{command}")
     end
 
     def run_crucial_via_bard(command)
