@@ -13,7 +13,7 @@ begin
     gem.add_development_dependency "ruby-debug"
     gem.add_development_dependency "rspec"
     gem.add_development_dependency "cucumber"
-    gem.add_dependency(%q<thor>, [">= 0.11.7"])
+    gem.add_dependency(%q<thor>, ["= 0.11.7"])
     gem.add_dependency(%q<grit>, ["= 1.1.1"])
     gem.add_dependency(%q<git_remote_branch>, [">= 0.3.0"])
     gem.add_dependency(%q<versionomy>, [">= 0.3.0"])
