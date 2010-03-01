@@ -62,6 +62,11 @@ class Bard < Thor
           errors << "integration branch isnt tracking the remote integration branch, please run `grb track integration`" if `git config branch.integration.merge` !~ %r%\brefs/heads/integration\b%
         end
         errors << "you shouldn't be working on the master branch, please work on the integration branch" if current_branch == "master"
+
+        errors << "Capfile should not be gitignored" if File.read(".gitignore") =~ /\bCapfile\b/
+        errors << "config/deploy.rb should not be gitignored" if File.read(".gitignore") =~ /\bconfig\/deploy\.rb\b/
+        errors << "missing bard rake tasks, please complain to micah" if File.read("Rakefile") !~ /\bbard\/rake\b/
+        errors << "missing bard capistrano tasks, please complain to micah" if File.read("Capfile") !~ /\bbard\/capistrano\b/
       end
 
       if not errors.empty?

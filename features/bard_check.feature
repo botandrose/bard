@@ -68,3 +68,27 @@ Feature: Bard can check its environment for missing dependencies and potential p
     And the integration branch isnt tracking origin/integration
     When I type "bard check"
     Then I should see the fatal error "tracking"
+
+  Scenario: Bard check detects gitignored Capfile
+    Given a shared rails project
+    And the ".gitignore" file includes "Capfile"
+    When I type "bard check"
+    Then I should see the fatal error "Capfile should not be gitignored"
+
+  Scenario: Bard check detects gitignored config/deploy.rb
+    Given a shared rails project
+    And the ".gitignore" file includes "config/deploy.rb"
+    When I type "bard check"
+    Then I should see the fatal error "config/deploy.rb should not be gitignored"
+
+  Scenario: Bard check detects missing bard rake tasks
+    Given a shared rails project
+    And the "Rakefile" file does not include "bard/rake"
+    When I type "bard check"
+    Then I should see the fatal error "missing bard rake tasks"
+
+  Scenario: Bard check detects missing bard cap tasks
+    Given a shared rails project
+    And the "Capfile" file does not include "bard/capistrano"
+    When I type "bard check"
+    Then I should see the fatal error "missing bard capistrano tasks"

@@ -11,6 +11,10 @@ def type(command)
   @stdout || @stderr
 end
 
+def file_append(file_name, contents)
+  File.open(file_name, 'ab') { |file| file.puts("\n#{contents}") }
+end
+
 def file_inject(file_name, sentinel, string, before_after=:after)
   gsub_file file_name, /(#{Regexp.escape(sentinel)})/mi do |match|
     if before_after == :after 

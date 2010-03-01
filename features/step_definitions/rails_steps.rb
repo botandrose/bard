@@ -34,3 +34,11 @@ end
 Then /^passenger should have been restarted$/ do
   File.exist?("tmp/restart.txt").should be_true
 end
+
+Given /^the "([^\"]+)" file includes "([^\"]+)"$/ do |file, contents|
+  file_append file, contents
+end
+
+Given /^the "([^\"]+)" file does not include "([^\"]+)"$/ do |file, contents|
+  gsub_file file, contents, ""
+end
