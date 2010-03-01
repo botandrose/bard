@@ -26,17 +26,10 @@ Capistrano::Configuration.instance(:must_exist).load do
     # system "rm db/data.sql"
   end
 
-  namespace "deploy" do
-    desc "push app from staging to production"
-    task :default, :roles => :production do
-      system "git push github" if `git remote` =~ /\bgithub\b/
-      run "cd #{application} && git pull"
-      run "cd #{application} && rake gems:install" if File.exist?("Rakefile")
-      run "cd #{application} && script/runner 'Sass::Plugin.options[:always_update] = true; Sass::Plugin.update_stylesheets'" if File.exist?("public/stylesheets/sass") or File.exist?("app/sass")
-      run "cd #{application} && rake asset:packager:build_all" if File.exist?("vendor/plugins/asset_packager")
-      run "cd #{application} && git submodule init && git submodule update" if File.exist?(".gitmodules")
-      run "cd #{application} && rake db:migrate && rake restart" if File.exist?("Rakefile")
-      puts "Deploy Succeeded"
-    end
+  desc "push app from staging to production"
+  task :deploy, :roles => :production do
+    system "git push github" if `git remote` =~ /\bgithub\b/
+    run "cd #{application} && git pull origin/master && rake bootstrap:production"
+    puts "Deploy Succeeded"
   end
 end

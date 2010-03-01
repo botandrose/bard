@@ -23,10 +23,9 @@ end
 
 Given /^a commit with a new submodule$/ do
   type "git submodule add #{ROOT}/tmp/submodule_a.git submodule"
-  type "git submodule init"
-  type "git submodule update --merge"
+  type "git submodule update --init"
   Dir.chdir "submodule" do
-    type "git checkout -b master origin/master"
+    type "git checkout master"
   end
   type "git add ."
   type "git commit -m 'added submodule'"

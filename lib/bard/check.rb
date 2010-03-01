@@ -8,6 +8,9 @@ class Bard < Thor
         puts "bard gem is out of date... updating to new version"
         exec "gem install bard && #{original_command}"
       end
+      if options.verbose?
+        puts green("#{"bard".ljust(9)} (#{Bard::VERSION})") 
+      end
     end
 
     def check_dependencies

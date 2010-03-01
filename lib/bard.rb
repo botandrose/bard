@@ -51,8 +51,7 @@ class Bard < Thor
     warn NonFastForwardError unless fast_forward_merge?
 
     run_crucial "git pull --rebase origin integration"
-
-    prepare_environment changed_files(@common_ancestor, "origin/integration")
+    run_crucial "rake bootstrap:test"
   end
 
   desc "push", "push local changes out to the remote"
@@ -101,12 +100,11 @@ class Bard < Thor
 
   desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
   def stage
-    check_dependencies
+    ensure_sanity!
 
-    ENV['RAILS_ENV'] = "staging"
     run_crucial "git fetch"
     run_crucial "git reset --hard origin/integration"
-    prepare_environment
+    run_crucial "rake bootstrap RAILS_ENV=staging"
   end
 
   private
@@ -116,23 +114,5 @@ class Bard < Thor
       raise NotInProjectRootError unless File.directory? ".git"
       raise NotOnIntegrationError unless current_branch == "integration"
       raise WorkingTreeDirtyError unless `git status`.include? "working directory clean"
-    end
-
-    def prepare_environment(changed_files = nil)
-      if changed_files.nil? or changed_files.any? { |f| f =~ %r(^config/environment.+) }
-        run_crucial "rake gems:install"
-      end
-     
-      if changed_files.nil? or changed_files.any? { |f| f =~ %r(^db/migrate/.+) }
-        run_crucial "rake db:migrate"
-        run_crucial "rake db:migrate RAILS_ENV=test" unless ENV['RAILS_ENV'] == 'staging'
-      end
-       
-      run_crucial "git submodule sync"
-      run_crucial "git submodule init"
-      run_crucial "git submodule update --merge"
-      run_crucial "git submodule foreach 'git checkout `git name-rev --name-only HEAD`'"
-
-      system "touch tmp/restart.txt"
     end
 end
