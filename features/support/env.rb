@@ -13,10 +13,19 @@ ENV["GIT_INDEX_FILE"] = nil
 ROOT = File.expand_path(File.dirname(__FILE__) + '/../..')
 
 # setup fixtures
-FileUtils.rm_rf "tmp"
-FileUtils.mkdir "tmp"
+if File.exist?("/dev/shm")
+  FileUtils.rm_rf "tmp"
+  tmp_dir = "/dev/shm/bard_testing_tmp"
+  FileUtils.rm_rf tmp_dir
+  FileUtils.mkdir tmp_dir
+  `ln -s #{tmp_dir} tmp`
+else 
+  FileUtils.rm_rf "tmp"
+  FileUtils.mkdir "tmp"
+end
+
 Dir.chdir 'tmp' do
-  `git clone --mirror --recursive ../fixtures/repo origin.git`
+  `git clone --mirror --recursive #{ROOT}/fixtures/repo origin.git`
 
   `git clone --bare --recursive origin.git submodule_a.git`
   `git clone --bare --recursive origin.git submodule_b.git`
