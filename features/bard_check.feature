@@ -53,7 +53,7 @@ Feature: Bard can check its environment for missing dependencies and potential p
 
   Scenario: Bard check detects master branch checked out
     Given a shared rails project
-    And I am on the master branch
+    And I am on the "master" branch
     When I type "bard check"
     Then I should see the fatal error "master branch"
 

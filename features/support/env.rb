@@ -33,7 +33,12 @@ Dir.chdir 'tmp' do
     `git clone --recursive origin.git #{env}`
     Dir.chdir env do
       FileUtils.cp "config/database.sample.yml", "config/database.yml"
-      `git checkout -b integration origin/integration` unless env == "production"
+      `grb track master`
+      `git checkout master`
+      unless env == "production"
+        `grb track integration`
+        `git checkout integration`
+      end
     end
   end
   FileUtils.mkdir "fixtures"

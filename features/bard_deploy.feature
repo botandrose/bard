@@ -2,7 +2,7 @@ Feature: Bard deploy should fold the integration branch into master and perform 
 
   Scenario: Bard deploy detects non-fast-forward merge from integration to master
     Given a shared rails project
-    And on development_b, a commit to the master branch
+    And on development_b, a commit on the "master" branch
     And on development_b, I type "git push origin master"
     And a commit
     When I type "bard deploy"

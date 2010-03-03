@@ -52,6 +52,14 @@ Feature: bard pull
     Then I should see the warning "Someone has pushed some changes"
     And the "integration" branch should be a fast-forward from the "development_b:integration" branch
 
+  Scenario: Bard pull from a topic branch
+    Given on development_b, a commit on the "topic" branch
+    And on development_b, I am on the "topic" branch
+    And on development_b, I type "bard push"
+    And I am on the "topic" branch
+    When I type "bard pull"
+    Then the "topic" branch should match the "development_b:topic" branch
+
   Scenario: Trying to bard pull when not in the project root
     Given I am in a subdirectory
     When I type "bard pull"
@@ -65,13 +73,14 @@ Feature: bard pull
     Then I should see the fatal error "You have uncommitted changes!"
     And the "integration" branch should not match the "development_b:integration" branch
 
-  Scenario: Trying to bard pull when not on the integration branch
-    Given on development_b, a commit
-    And on development_b, I type "bard push"
-    And I am on a non-integration branch
+  Scenario: Trying to bard pull when on the "master" branch
+    Given on development_b, a commit on the "master" branch
+    And on development_b, I am on the "master" branch
+    And on development_b, I type "git push origin master"
+    And I am on the "master" branch
     When I type "bard pull"
-    Then I should see the fatal error "not on the integration branch"
-    And the "integration" branch should not match the "development_b:integration" branch
+    Then I should see the fatal error "on the master branch"
+    And the "master" branch should not match the "development_b:master" branch
 
   Scenario: Pulling in a change that includes a migration on a dev machine
     Given on development_b, a commit with a new migration

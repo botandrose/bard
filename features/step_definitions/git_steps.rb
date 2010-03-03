@@ -1,9 +1,9 @@
-Given /^I am on a non\-integration branch$/ do
-  type "git checkout -b bad_bad_bad"
-end
-
-Given /^I am on the master branch$/ do
-  type "git checkout master"
+Given /^I am on the "([^\"]+)" branch$/ do |branch|
+  if `git branch` =~ / #{branch}$/
+    type "git checkout #{branch}"
+  else
+    type "git checkout -b #{branch}"
+  end
 end
 
 Given /^there is no integration branch$/ do
@@ -28,12 +28,12 @@ Given /^a commit$/ do
   type "git commit -am'test commit'"
 end
 
-Given /^a commit to the master branch$/ do
+Given /^a commit on the "([^\"]+)" branch$/ do |branch|
+  Given %(I am on the "#{branch}" branch)
   text = (rand * 100000000).round
-  type "git checkout master"
-  type "echo '#{text}' > master_#{text}_file"
+  type "echo '#{text}' > #{branch}_#{text}_file"
   type "git add ."
-  type "git commit -am 'testing master change'"
+  type "git commit -am 'testing #{branch} change'"
   type "git checkout integration"
 end
 

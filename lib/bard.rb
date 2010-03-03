@@ -50,7 +50,7 @@ class Bard < Thor
 
     warn NonFastForwardError unless fast_forward_merge?
 
-    run_crucial "git pull --rebase origin integration"
+    run_crucial "git pull --rebase origin #{current_branch}"
     run_crucial "rake bootstrap:test"
   end
 
@@ -62,7 +62,7 @@ class Bard < Thor
     raise SubmoduleUnpushedError if submodule_unpushed?
     raise NonFastForwardError unless fast_forward_merge?
 
-    run_crucial "git push origin integration", true
+    run_crucial "git push origin #{current_branch}", true
     
     run_crucial_via_bard "bard stage"
   end
@@ -113,7 +113,7 @@ class Bard < Thor
       auto_update!
       check_dependencies
       raise NotInProjectRootError unless File.directory? ".git"
-      raise NotOnIntegrationError unless current_branch == "integration"
+      raise OnMasterBranchError if current_branch == "master"
       raise WorkingTreeDirtyError unless `git status`.include? "working directory clean"
     end
 end

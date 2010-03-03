@@ -8,6 +8,12 @@ Feature: bard push
     And on staging, I type "bard stage"
     Then the "integration" branch should match the "staging:integration" branch
 
+  Scenario: Uploading local changes onto a remote topic branch
+    Given a commit on the "topic" branch
+    And I am on the "topic" branch
+    When I type "bard push"
+    Then the "topic" branch should match the "origin/topic" branch
+
   Scenario: Pushing a change that includes a migration
     Given on staging, a staging database
     And a commit with a new migration
@@ -68,11 +74,11 @@ Feature: bard push
     Then I should see the fatal error "root directory"
 
   Scenario: Trying to bard push when not on the integration branch
-    Given a commit
-    And I am on a non-integration branch
+    Given a commit on the "master" branch
+    And I am on the "master" branch
     When I type "bard push"
-    Then I should see the fatal error "not on the integration branch"
-    And the "integration" branch should not match the "origin/integration" branch
+    Then I should see the fatal error "on the master branch"
+    And the "master" branch should not match the "origin/master" branch
 
   Scenario: Trying to bard push with a dirty working directory
     Given a commit
