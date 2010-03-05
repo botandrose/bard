@@ -44,23 +44,25 @@ class Bard < Thor
     exec "cap data:pull"
   end
 
+  method_options %w( verbose -v ) => :boolean
   desc "pull", "pull changes to your local machine"
   def pull
     ensure_sanity!
 
-    warn NonFastForwardError unless fast_forward_merge?
+    warn NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
 
-    run_crucial "git pull --rebase origin #{current_branch}"
-    run_crucial "rake bootstrap:test"
+    run_crucial "git pull --rebase origin #{current_branch}", options.verbose?
+    run_crucial "rake bootstrap:test", options.verbose?
   end
 
+  method_options %w( verbose -v ) => :boolean
   desc "push", "push local changes out to the remote"
   def push
     ensure_sanity!
 
     raise SubmoduleDirtyError if submodule_dirty?
     raise SubmoduleUnpushedError if submodule_unpushed?
-    raise NonFastForwardError unless fast_forward_merge?
+    raise NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
 
     run_crucial "git push origin #{current_branch}", true
     
