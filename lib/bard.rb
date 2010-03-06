@@ -40,7 +40,7 @@ class Bard < Thor
 
   desc "data", "copy production database down to your local machine"
   def data
-    ensure_sanity!
+    ensure_sanity!(true)
     exec "cap data:pull"
   end
 
@@ -111,11 +111,11 @@ class Bard < Thor
   end
 
   private
-    def ensure_sanity!
+    def ensure_sanity!(dirty_ok = false)
       auto_update!
       check_dependencies
       raise NotInProjectRootError unless File.directory? ".git"
       raise OnMasterBranchError if current_branch == "master"
-      raise WorkingTreeDirtyError unless `git status`.include? "working directory clean"
+      raise WorkingTreeDirtyError unless `git status`.include? "working directory clean" unless dirty_ok
     end
 end
