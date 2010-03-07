@@ -102,7 +102,7 @@ class Bard < Thor
 
   desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
   def stage
-    ensure_sanity!
+    ensure_sanity!(true)
 
     run_crucial "git fetch"
     run_crucial "git checkout master && git reset --hard origin/master"
