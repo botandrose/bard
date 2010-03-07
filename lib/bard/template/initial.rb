@@ -20,7 +20,7 @@ gem "compass", :version => "0.8.17"
 rake "gems:install"
 
 # Set up databases
-file "config/database.yml", <<-END
+file "config/database.sample.yml", <<-END
 login: &login
   adapter: mysql
   database: #{project_name}
@@ -41,6 +41,7 @@ staging:
 production:
   <<: *login
 END
+run "cp config/database.sample.yml config/database.yml"
 
 rake "db:create"
 rake "db:migrate"
