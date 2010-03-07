@@ -60,7 +60,7 @@ It wraps git, capistrano, thor, and rake to make things as simple as:
 	$> bard join <project-name>
 
 	- Clone the project
-		- (git clone staging@staging.botandrose.com:<project-name>)
+		- (git clone git@git.botandrose.com:<project-name>.git)
 		- Init and update submodules
 
 	- Set up local environment:
