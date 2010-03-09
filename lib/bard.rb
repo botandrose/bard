@@ -38,10 +38,10 @@ class Bard < Thor
     check_project project_path if project_path
   end
 
-  desc "data", "copy production database down to your local machine"
-  def data
+  desc "data [ROLE=production]", "copy database and assets down to your local machine from ROLE"
+  def data(role = "production")
     ensure_sanity!(true)
-    exec "cap data:pull"
+    exec "cap data:pull ROLES=#{role}"
   end
 
   method_options %w( verbose -v ) => :boolean
