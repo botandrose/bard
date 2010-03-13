@@ -7,7 +7,7 @@ namespace :db do
   desc "Dump the current database to db/data.sql"
   task :dump => :"backup:db" do
     config = ActiveRecord::Base.configurations[RAILS_ENV || 'development']
-    db_file = Dir.glob("../#{config['database']}-*.sql").first
+    db_file = Dir.glob("../#{config['database'].gsub(/_/, '-')}-*.sql").first
     FileUtils.move db_file, "db/data.sql"
   end
 
