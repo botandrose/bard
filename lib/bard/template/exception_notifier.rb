@@ -8,13 +8,13 @@ end
 
 file_inject "app/controllers/application_controller.rb",
   "class ApplicationController < ActionController::Base", <<-END
-  include ExceptionNotifiable
+  include ExceptionNotification::Notifiable
 
 END
 
 file_append "config/environment.rb", <<-END
 
-ExceptionNotifier.exception_recipients = %w(micah@botandrose.com)
+ExceptionNotification::Notifier.exception_recipients = %w(micah@botandrose.com)
 END
 
 git :add => "."
