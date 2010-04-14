@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bard}
-  s.version = "0.8.29"
+  s.version = "0.8.30"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Micah Geisel", "Nick Hogle"]
-  s.date = %q{2010-03-15}
+  s.date = %q{2010-04-14}
   s.default_executable = %q{bard}
   s.description = %q{This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.}
   s.email = %q{info@botandrose.com}
@@ -62,7 +62,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/botandrose/bard}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.6}
   s.summary = %q{Tools for collaborating with Bot and Rose Design.}
   s.test_files = [
     "spec/bard_spec.rb",
@@ -78,6 +78,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rspec>, [">= 0"])
       s.add_development_dependency(%q<cucumber>, [">= 0"])
       s.add_runtime_dependency(%q<thor>, ["= 0.11.7"])
+      s.add_runtime_dependency(%q<capistrano>, ["= 2.5.10"])
       s.add_runtime_dependency(%q<grit>, ["= 1.1.1"])
       s.add_runtime_dependency(%q<git_remote_branch>, [">= 0.3.0"])
       s.add_runtime_dependency(%q<versionomy>, [">= 0.3.0"])
@@ -88,6 +89,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rspec>, [">= 0"])
       s.add_dependency(%q<cucumber>, [">= 0"])
       s.add_dependency(%q<thor>, ["= 0.11.7"])
+      s.add_dependency(%q<capistrano>, ["= 2.5.10"])
       s.add_dependency(%q<grit>, ["= 1.1.1"])
       s.add_dependency(%q<git_remote_branch>, [">= 0.3.0"])
       s.add_dependency(%q<versionomy>, [">= 0.3.0"])
@@ -99,6 +101,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rspec>, [">= 0"])
     s.add_dependency(%q<cucumber>, [">= 0"])
     s.add_dependency(%q<thor>, ["= 0.11.7"])
+    s.add_dependency(%q<capistrano>, ["= 2.5.10"])
     s.add_dependency(%q<grit>, ["= 1.1.1"])
     s.add_dependency(%q<git_remote_branch>, [">= 0.3.0"])
     s.add_dependency(%q<versionomy>, [">= 0.3.0"])
