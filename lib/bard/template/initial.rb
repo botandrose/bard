@@ -84,7 +84,7 @@ END
 run "compass --rails --sass-dir app/sass --css-dir public/stylesheets ."
 
 # application.sass
-file "public/stylesheets/sass/application.sass", <<-END
+file "app/sass/application.sass", <<-END
 // global
 
 @import constant.sass
@@ -111,7 +111,7 @@ file "public/stylesheets/sass/application.sass", <<-END
 END
 
 # constant.sass
-file "public/stylesheets/sass/_constant.sass", <<-END
+file "app/sass/_constant.sass", <<-END
 // constant
 
 !blueprint_grid_columns = 24
