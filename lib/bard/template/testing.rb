@@ -1,19 +1,19 @@
 require "bard/template/helper"
 
 # Testing Environment
-with_options :env => :cucumber do
-  gem 'cucumber',    :lib => false, :version => '0.4.3'
-  gem 'webrat',      :lib => false, :version => '0.5.3'
-  gem 'rspec',       :lib => false, :version => '1.2.9'
-  gem 'rspec-rails', :lib => false, :version => '1.2.9'
-  gem 'faker', :version => '0.3.1'
-  gem "email_spec", :version => "0.4.0", :lib => false
-  gem "machinist", :version => "1.0.6", :lib => false
-  gem "pickle", :version => "0.2.1", :lib => false
+with_options :env => :cucumber, :lib => false do |env|
+  env.gem "cucumber",    :version => "0.4.3"
+  env.gem "webrat",      :version => "0.5.3"
+  env.gem "rspec",       :version => "1.2.9"
+  env.gem "rspec-rails", :version => "1.2.9"
+  env.gem "email_spec",  :version => "0.4.0"
+  env.gem "machinist",   :version => "1.0.6"
+  env.gem "pickle",      :version => "0.2.1"
+  env.gem "faker",       :version => "0.3.1"
 end
 rake "gems:install RAILS_ENV=cucumber"
 
-plugin 'cucumber_rails_debug', :git => "git://github.com/mischa/cucumber_rails_debug"
+plugin "cucumber_rails_debug", :git => "git://github.com/mischa/cucumber_rails_debug"
 
 generate "rspec"
 generate "cucumber"
@@ -21,8 +21,8 @@ generate "email_spec"
 generate "pickle"
 
 file "features/support/blueprints.rb", <<-END
-require 'machinist/active_record'
-require 'faker'
+require "machinist/active_record"
+require "faker"
 
 Sham.name { Faker::Name.name }
 Sham.email { Faker::Internet.email }
@@ -38,13 +38,13 @@ END
 run "ln -s features/support/blueprints.rb spec/blueprints.rb"
 
 file "features/support/debug.rb", <<-END
-require 'ruby-debug'
-require 'cucumber_rails_debug/steps'
+require "ruby-debug"
+require "cucumber_rails_debug/steps"
 END
 
 file "features/support/email.rb", <<-END
 # Email testing helpers
-require 'email_spec/cucumber'
+require "email_spec/cucumber"
 END
 
 run "rake db:create RAILS_ENV=test"
