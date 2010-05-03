@@ -14,7 +14,7 @@ plugin 'asset_packager', :git => 'git://github.com/sbecker/asset_packager.git'
 #plugin 'fckeditor', :git => 'git://github.com/originofstorms/fckeditor.git'
  
 # Install gems
-gem "bard"
+gem "bard-rake"
 gem "haml", :version => "2.2.17"
 gem "compass", :version => "0.8.17"
 rake "gems:install"
@@ -180,9 +180,7 @@ END
 # Deployment and staging setup
 file_append "Rakefile", <<-END
 
-begin
-  require 'bard/rake'
-rescue LoadError; end
+require 'bard/rake'
 END
 
 file "Capfile", <<-END
