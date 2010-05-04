@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bard}
-  s.version = "0.9.1"
+  s.version = "0.9.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Micah Geisel", "Nick Hogle"]
-  s.date = %q{2010-05-03}
+  s.date = %q{2010-05-04}
   s.default_executable = %q{bard}
   s.description = %q{This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.}
   s.email = %q{info@botandrose.com}
@@ -83,7 +83,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<versionomy>, [">= 0.3.0"])
       s.add_runtime_dependency(%q<systemu>, [">= 1.2.0"])
       s.add_runtime_dependency(%q<term-ansicolor>, [">= 1.0.3"])
-      s.add_runtime_dependency(%q<bard-rake>, [">= 0.1.0"])
+      s.add_runtime_dependency(%q<bard-rake>, [">= 0.1.1"])
     else
       s.add_dependency(%q<ruby-debug>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 0"])
@@ -95,7 +95,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<versionomy>, [">= 0.3.0"])
       s.add_dependency(%q<systemu>, [">= 1.2.0"])
       s.add_dependency(%q<term-ansicolor>, [">= 1.0.3"])
-      s.add_dependency(%q<bard-rake>, [">= 0.1.0"])
+      s.add_dependency(%q<bard-rake>, [">= 0.1.1"])
     end
   else
     s.add_dependency(%q<ruby-debug>, [">= 0"])
@@ -108,7 +108,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<versionomy>, [">= 0.3.0"])
     s.add_dependency(%q<systemu>, [">= 1.2.0"])
     s.add_dependency(%q<term-ansicolor>, [">= 1.0.3"])
-    s.add_dependency(%q<bard-rake>, [">= 0.1.0"])
+    s.add_dependency(%q<bard-rake>, [">= 0.1.1"])
   end
 end
 
