@@ -20,7 +20,7 @@ begin
     gem.add_dependency(%q<versionomy>, [">= 0.3.0"])
     gem.add_dependency(%q<systemu>, [">= 1.2.0"])
     gem.add_dependency(%q<term-ansicolor>, [">= 1.0.3"])
-    gem.add_dependency(%q<bard-rake>, [">= 0.1.0"])
+    gem.add_dependency(%q<bard-rake>, [">= 0.1.1"])
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
