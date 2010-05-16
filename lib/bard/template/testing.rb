@@ -44,6 +44,7 @@ END
 
 file "features/support/email.rb", <<-END
 # Email testing helpers
+require "email_spec"
 require "email_spec/cucumber"
 END
 
