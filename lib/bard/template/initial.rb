@@ -14,7 +14,7 @@ plugin 'asset_packager', :git => 'git://github.com/sbecker/asset_packager.git'
 #plugin 'fckeditor', :git => 'git://github.com/originofstorms/fckeditor.git'
  
 # Install gems
-gem "bard-rake"
+gem "bard-rake", :version => ">=0.1.2"
 gem "haml", :version => "2.2.17"
 gem "compass", :version => "0.8.17"
 rake "gems:install"
