@@ -16,7 +16,7 @@ rake "gems:install RAILS_ENV=cucumber"
 plugin "cucumber_rails_debug", :git => "git://github.com/mischa/cucumber_rails_debug"
 
 generate "rspec"
-generate "cucumber"
+generate "cucumber", "--skip"
 generate "email_spec"
 generate "pickle"
 
