@@ -8,7 +8,7 @@ run "rm -rf test"
 run "rm -rf doc"
 
 # Install plugins
-plugin "limerick_rake", :git => "git://github.com/thoughtbot/limerick_rake.git"
+plugin "limerick_rake", :git => "git://github.com/botandrose/limerick_rake.git"
 plugin "acts_as_list", :git => "git://github.com/rails/acts_as_list.git"
 plugin 'asset_packager', :git => 'git://github.com/sbecker/asset_packager.git'
 #plugin 'fckeditor', :git => 'git://github.com/originofstorms/fckeditor.git'
