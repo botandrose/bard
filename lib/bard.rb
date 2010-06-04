@@ -82,11 +82,11 @@ class Bard < Thor
     run_crucial "git push origin master"
     run_crucial "git checkout integration"
 
-    if `curl -s -I http://integrity.botandrose.com/#{project_name}` !~ /\b404\b/
+    if `curl -s -I --user botandrose:thecakeisalie http://integrity.botandrose.com/#{project_name}` !~ /\bStatus: 404\b/
       puts "Integrity: verifying build..."
-      system "curl -sX POST http://integrity.botandrose.com/#{project_name}/builds"
+      system "curl -sX POST --user botandrose:thecakeisalie http://integrity.botandrose.com/#{project_name}/builds"
       while true
-        response = `curl -s http://integrity.botandrose.com/#{project_name}`
+        response = `curl -s --user botandrose:thecakeisalie http://integrity.botandrose.com/#{project_name}`
         break unless response =~ /div class='(building|pending)' id='last_build'/
         sleep(2)
       end
