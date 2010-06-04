@@ -21,6 +21,11 @@ end
 rake "adva:install:core -R vendor/adva/engines/adva_cms/lib/tasks"
 rake "adva:assets:install"
 
+# Use application layout in CMS
+inside "app/views/layouts" do
+  run "ln -s application.html.haml default.html.haml"
+end
+
 # Install FCKEditor plugin
 rake "adva:install plugins=adva_fckeditor"
 file "config/initializers/fckeditor.rb", <<-src
