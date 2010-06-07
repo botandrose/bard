@@ -15,7 +15,7 @@ plugin 'asset_packager', :git => 'git://github.com/sbecker/asset_packager.git'
  
 # Install gems
 gem "bard-rake", :version => ">=0.1.3"
-gem "haml", :version => "2.2.17"
+gem "haml", :version => "2.2.24"
 gem "compass", :version => "0.8.17"
 rake "gems:install"
 
