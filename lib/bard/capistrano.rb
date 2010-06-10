@@ -1,5 +1,5 @@
 Capistrano::Configuration.instance(:must_exist).load do
-  role :staging, "staging@staging.botandrose.com"
+  role :staging, "www@staging.botandrose.com"
 
   namespace "data" do
     namespace "pull" do
