@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bard}
-  s.version = "0.9.12"
+  s.version = "0.9.13"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Micah Geisel", "Nick Hogle"]
-  s.date = %q{2010-06-10}
+  s.date = %q{2010-07-19}
   s.default_executable = %q{bard}
   s.description = %q{This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.}
   s.email = %q{info@botandrose.com}
@@ -61,7 +61,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/botandrose/bard}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.6}
+  s.rubygems_version = %q{1.3.7}
   s.summary = %q{Tools for collaborating with Bot and Rose Design.}
   s.test_files = [
     "spec/bard_spec.rb",
@@ -72,7 +72,7 @@ Gem::Specification.new do |s|
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<ruby-debug>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
       s.add_development_dependency(%q<cucumber>, [">= 0"])
