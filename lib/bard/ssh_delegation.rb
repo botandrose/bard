@@ -31,6 +31,6 @@ class Bard < Thor
 
     def run_crucial_via_bard(command)
       return if ENV['TESTING']
-      run_crucial %(ssh www@staging.botandrose.com "cd #{project_name} && #{command}")
+      run_crucial %(ssh www@staging.botandrose.com -p22022 "cd #{project_name} && #{command}")
     end
 end
