@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bard}
-  s.version = "0.9.14"
+  s.version = "0.10.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Micah Geisel", "Nick Hogle"]
-  s.date = %q{2010-07-20}
+  s.date = %q{2010-07-22}
   s.default_executable = %q{bard}
   s.description = %q{This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.}
   s.email = %q{info@botandrose.com}
