@@ -1,5 +1,8 @@
+require 'uri'
+
 Capistrano::Configuration.instance(:must_exist).load do
   role :staging, "www@staging.botandrose.com:22022"
+  set :asset_paths, []
 
   namespace "data" do
     namespace "pull" do
@@ -9,8 +12,22 @@ Capistrano::Configuration.instance(:must_exist).load do
         transfer :down, "#{application}/db/data.sql.gz", "db/data.sql.gz"
         system "gunzip -f db/data.sql.gz && rake db:load"
       end
+
+      desc "sync the static assets"
+      task "assets" do
+        uri = URI.parse("ssh://#{roles[ENV['ROLES'].to_sym].first.to_s}")
+        portopt = "-e'ssh -p#{uri.port}'" if uri.port
+
+        [asset_paths].flatten.each do |path|
+          dest_path = path.dup
+          dest_path.sub! %r(/[^/]+$), '/'
+          system "rsync #{portopt} --delete -avz #{uri.user}@#{uri.host}:#{application}/#{path} #{dest_path}"
+        end
+      end
     end
   end
+
+  after 'data:pull', 'data:pull:assets'
 
   desc "push app from staging to production"
   task :deploy, :roles => :production do
