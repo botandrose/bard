@@ -13,12 +13,6 @@ plugin "acts_as_list", :git => "git://github.com/rails/acts_as_list.git"
 plugin 'asset_packager', :git => 'git://github.com/sbecker/asset_packager.git'
 #plugin 'fckeditor', :git => 'git://github.com/originofstorms/fckeditor.git'
  
-# Install gems
-gem "bard-rake", :version => ">=0.1.3"
-gem "haml", :version => "2.2.24"
-gem "compass", :version => "0.8.17"
-rake "gems:install"
-
 # Set up databases
 file "config/database.sample.yml", <<-END
 login: &login
@@ -81,60 +75,6 @@ file "app/views/layouts/application.html.haml", <<-END
     = yield :js
 END
 
-run "compass --rails --sass-dir app/sass --css-dir public/stylesheets ."
-
-# application.sass
-file "app/sass/application.sass", <<-END
-// global
-
-@import constant.sass
-
-@import blueprint.sass
-@import compass/reset.sass
-@import compass/utilities.sass
-@import compass/misc.sass
-@import compass/layout.sass
-@import blueprint/modules/buttons.sass
- 
-=blueprint(!body_selector = "body")
-  +blueprint-typography(!body_selector)
-  +blueprint-utilities
-  +blueprint-debug
-  +blueprint-interaction
-  +blueprint-colors
-  
-.left
-  +float-left
-.right
-  +float-right  
-  
-END
-
-# constant.sass
-file "app/sass/_constant.sass", <<-END
-// constant
-
-!blueprint_grid_columns = 24
-!blueprint_grid_width   = 30px
-!blueprint_grid_margin  = 10px
-
-=caps
-  :font-variant small-caps
-=box-shadow( !blur, !color )
-  :-moz-box-shadow= 0px 0px !blur !color
-=border-radius( !radius )
-  :-moz-border-radius= !radius
-  :-webkit-border-radius= !radius
-  :border-radius= !radius
-=auto
-  :display inline-block
-  +float-left
-  :width auto
-=bordering(!location, !color)
-  :border-\#{!location}= 1px solid !color 
-  
-END
-
 file "public/javascripts/application.js", <<-END
 $(function() {
 });
@@ -153,14 +93,13 @@ stylesheets:
   - ie
 END
 
-run "script/runner 'Sass::Plugin.options[:always_update] = true; Sass::Plugin.update_stylesheets'"
-
 plugin "input_css", :git => "git://github.com/rpheath/input_css.git"
 
 # Set up git repository
 run "touch tmp/.gitignore log/.gitignore vendor/.gitignore"
 run %{find . -type d -empty | grep -v "vendor" | grep -v ".git" | grep -v "tmp" | xargs -I xxx touch xxx/.gitignore}
 file '.gitignore', <<-END
+.bundle
 log/*.log
 tmp/*
 !tmp/.gitignore
@@ -199,4 +138,4 @@ git :commit => "-m'initial commit.'"
 git :checkout => "-b integration"
 
 git :remote => "add origin git@git.botandrose.com:#{project_name}.git"
-run "cap staging:bootstrap"
+# run "cap staging:bootstrap"

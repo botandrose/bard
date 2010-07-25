@@ -1,22 +1,9 @@
 require "bard/template/helper"
 
-# Testing Environment
-with_options :env => :cucumber, :lib => false do |env|
-  env.gem "cucumber",    :version => "0.4.3"
-  env.gem "webrat",      :version => "0.5.3"
-  env.gem "rspec",       :version => "1.2.9"
-  env.gem "rspec-rails", :version => "1.2.9"
-  env.gem "email_spec",  :version => "0.4.0"
-  env.gem "machinist",   :version => "1.0.6"
-  env.gem "pickle",      :version => "0.2.1"
-  env.gem "faker",       :version => "0.3.1"
-end
-rake "gems:install RAILS_ENV=cucumber"
-
 plugin "cucumber_rails_debug", :git => "git://github.com/mischa/cucumber_rails_debug"
 
 generate "rspec"
-generate "cucumber", "--skip"
+generate "cucumber"
 generate "email_spec"
 generate "pickle"
 
@@ -53,5 +40,5 @@ run "rake db:create RAILS_ENV=test"
 git :add => "."
 git :commit => "-m'added rspec and cucumber setups.'"
 
-run "cap stage"
-run "cap staging:bootstrap:ci"
+# run "cap stage"
+# run "cap staging:bootstrap:ci"
