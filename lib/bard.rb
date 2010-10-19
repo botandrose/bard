@@ -97,7 +97,7 @@ class Bard < Thor
       end
     end
 
-    run_crucial_via_bard "cap deploy"
+    run_crucial "cap deploy"
   end
 
   desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
