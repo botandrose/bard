@@ -65,8 +65,7 @@ class Bard < Thor
     raise NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
 
     run_crucial "git push origin #{current_branch}", true
-    
-    run_crucial_via_bard "bard stage"
+    run_crucial "cap stage"
   end
 
   desc "deploy", "pushes, merges integration branch into master and deploys it to production"
@@ -98,16 +97,6 @@ class Bard < Thor
     end
 
     run_crucial "cap deploy"
-  end
-
-  desc "stage", "!!! INTERNAL USE ONLY !!! reset HEAD to integration, update submodules, run migrations, install gems, restart server"
-  def stage
-    ensure_sanity!(true)
-
-    run_crucial "git fetch"
-    run_crucial "git checkout master && git reset --hard origin/master"
-    run_crucial "git checkout integration && git reset --hard origin/integration"
-    run_crucial "rake bootstrap RAILS_ENV=staging"
   end
 
   private

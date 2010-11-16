@@ -1,6 +1,10 @@
 require 'uri'
 
 Capistrano::Configuration.instance(:must_exist).load do
+  $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
+  require "rvm/capistrano"
+  set :rvm_type, :user
+
   role :staging, "www@staging.botandrose.com:22022"
   set :asset_paths, []
 
@@ -29,10 +33,16 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   after 'data:pull', 'data:pull:assets'
 
-  desc "push app from staging to production"
+  desc "push app to production"
   task :deploy, :roles => :production do
     system "git push github" if `git remote` =~ /\bgithub\b/
     run "cd #{application} && git pull origin master && rake bootstrap:production"
     puts "Deploy Succeeded"
+  end
+
+  desc "push app to staging"
+  task :stage, :roles => :staging do
+    run "cd #{application} && git fetch && git checkout -f origin/integration && rake bootstrap"
+    puts "Stage Succeeded"
   end
 end
