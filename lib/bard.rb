@@ -73,6 +73,8 @@ class Bard < Thor
     invoke :push
 
     run_crucial "cap stage BRANCH=#{current_branch}", options.verbose?
+
+    puts green("Stage Succeeded")
   end
 
   method_options %w( verbose -v ) => :boolean
@@ -105,6 +107,8 @@ class Bard < Thor
     end
 
     run_crucial "cap deploy", options.verbose?
+
+    puts green("Deploy Succeeded")
   end
 
   private
