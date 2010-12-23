@@ -42,7 +42,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "push app to staging"
   task :stage, :roles => :staging do
-    run "cd #{application} && git fetch && git checkout -f origin/integration && rake bootstrap"
+    branch = ENV.has_key?("BRANCH") ? ENV["BRANCH"] : "integration"
+    run "cd #{application} && git fetch && git checkout -f origin/#{branch} && rake bootstrap"
     puts "Stage Succeeded"
   end
 end

@@ -65,7 +65,14 @@ class Bard < Thor
     raise NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
 
     run_crucial "git push origin #{current_branch}", true
-    run_crucial "cap stage", options.verbose?
+  end
+
+  method_options %w( verbose -v ) => :boolean
+  desc "stage", "pushes current branch, and stages it"
+  def stage
+    invoke :push
+
+    run_crucial "cap stage BRANCH=#{current_branch}", options.verbose?
   end
 
   method_options %w( verbose -v ) => :boolean
