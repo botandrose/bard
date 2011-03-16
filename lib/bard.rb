@@ -91,27 +91,76 @@ class Bard < Thor
     run_crucial "git push origin master"
     run_crucial "git checkout integration"
 
-    if `curl -s -I --user botandrose:thecakeisalie http://integrity.botandrose.com/#{project_name}` !~ /\bStatus: 404\b/
-      puts "Integrity: verifying build..."
-      system "curl -sX POST --user botandrose:thecakeisalie http://integrity.botandrose.com/#{project_name}/builds"
-      while true
-        response = `curl -s --user botandrose:thecakeisalie http://integrity.botandrose.com/#{project_name}`
-        break unless response =~ /div class='(building|pending)' id='last_build'/
-        sleep(2)
-      end
-      case response
-        when /div class='failed' id='last_build'/ then raise TestsFailedError
-        when /div class='success' id='last_build'/ then puts "Integrity: success! deploying to production"
-        else raise "Unknown response from CI server:\n#{response}"
-      end
-    end
+    invoke :ci
 
     run_crucial "cap deploy", options.verbose?
 
     puts green("Deploy Succeeded")
   end
 
+  method_options %w( verbose -v ) => :boolean
+  desc "ci", "runs ci against master branch"
+  def ci
+    return unless has_ci?
+
+    puts "Continuous integration: starting build..."
+    last_build_number = get_last_build_number
+    last_time_elapsed = get_last_time_elapsed
+    start_ci
+    sleep(2) while last_build_number == get_last_build_number
+
+    start_time = Time.new.to_i
+    while (response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`).include? "<building>true</building>"
+      elapsed_time = Time.new.to_i - start_time
+      percentage = (elapsed_time.to_f / last_time_elapsed.to_f * 100).to_i
+      output = "  Estimated completion: #{percentage}%"
+      print "\x08" * output.length
+      print output
+      $stdout.flush
+      sleep(2)
+    end
+    puts
+
+    case response
+      when /<result>FAILURE<\/result>/ then 
+        puts
+        puts `curl -s #{ci_host}/lastBuild/console?token=botandrose`.match(/<pre>(.+)<\/pre>/m)[1]
+        puts
+        raise TestsFailedError, "#{ci_host}/#{get_last_build_number}/console"
+
+      when /<result>ABORTED<\/result>/ then 
+        raise TestsAbortedError, "#{ci_host}/#{get_last_build_number}/console"
+
+      when /<result>SUCCESS<\/result>/ then
+        puts "Continuous integration: success! deploying to production"
+
+      else raise "Unknown response from CI server:\n#{response}"
+    end
+  end
+
   private
+    def ci_host
+      "http://botandrose:thecakeisalie!@ci.botandrose.com/job/#{project_name}"
+    end
+
+    def has_ci?
+      `curl -s -I #{ci_host}/?token=botandrose` =~ /\b200 OK\b/
+    end
+
+    def start_ci
+      `curl -s -I -X POST #{ci_host}/build?token=botandrose`
+    end
+
+    def get_last_build_number
+      response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`
+      response.match(/<number>(\d+)<\/number>/)[1].to_i
+    end
+
+    def get_last_time_elapsed
+      response = `curl -s #{ci_host}/lastStableBuild/api/xml?token=botandrose`
+      response.match(/<duration>(\d+)<\/duration>/)[1].to_i / 1000
+    end
+
     def ensure_sanity!(dirty_ok = false)
       auto_update!
       check_dependencies
