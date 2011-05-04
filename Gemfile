@@ -1,3 +1,5 @@
-source "http://gemcutter.org"
+source "http://rubygems.org"
 
+# Specify your gem's dependencies in bard.gemspec
 gemspec
+

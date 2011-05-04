@@ -1,8 +1,12 @@
 *.sw?
+*.gem
 .DS_Store
+.bundle
 coverage
 rdoc
-pkg
 tmp
 .bundle
 .rvmrc
+Gemfile.lock
+pkg/*
+
