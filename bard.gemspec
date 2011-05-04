@@ -5,14 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bard}
-  s.version = "0.13.0"
+  s.version = "0.13.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Micah Geisel", "Nick Hogle"]
-  s.date = %q{2011-03-15}
+  s.authors = [%q{Micah Geisel}, %q{Nick Hogle}]
+  s.date = %q{2011-05-04}
   s.description = %q{This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.}
   s.email = %q{info@botandrose.com}
-  s.executables = ["bard"]
+  s.executables = [%q{bard}]
   s.extra_rdoc_files = [
     "LICENSE",
     "README.rdoc"
@@ -62,16 +62,11 @@ Gem::Specification.new do |s|
     "spec/spec_helper.rb"
   ]
   s.homepage = %q{http://github.com/botandrose/bard}
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
+  s.require_paths = [%q{lib}]
+  s.rubygems_version = %q{1.8.0}
   s.summary = %q{Tools for collaborating with Bot and Rose Design.}
-  s.test_files = [
-    "spec/bard_spec.rb",
-    "spec/spec_helper.rb"
-  ]
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
