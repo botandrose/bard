@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bard}
-  s.version = "0.13.1"
+  s.version = "0.13.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Micah Geisel}, %q{Nick Hogle}]
-  s.date = %q{2011-05-04}
+  s.date = %q{2011-06-20}
   s.description = %q{This immaculate work of engineering genius allows mere mortals to collaborate with beings of transcendent intelligence like Micah, Michael, and Nick.}
   s.email = %q{info@botandrose.com}
   s.executables = [%q{bard}]
@@ -63,7 +63,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/botandrose/bard}
   s.require_paths = [%q{lib}]
-  s.rubygems_version = %q{1.8.0}
+  s.rubygems_version = %q{1.8.5}
   s.summary = %q{Tools for collaborating with Bot and Rose Design.}
 
   if s.respond_to? :specification_version then
