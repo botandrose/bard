@@ -52,7 +52,7 @@ class Bard < Thor
     warn NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
 
     run_crucial "git pull --rebase origin #{current_branch}", options.verbose?
-    run_crucial "rake bootstrap:test", options.verbose?
+    run_crucial "bundle && bundle exec rake bootstrap:test", options.verbose?
   end
 
   method_options %w( verbose -v ) => :boolean

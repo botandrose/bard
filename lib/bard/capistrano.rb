@@ -36,12 +36,12 @@ Capistrano::Configuration.instance(:must_exist).load do
   desc "push app to production"
   task :deploy, :roles => :production do
     system "git push github" if `git remote` =~ /\bgithub\b/
-    run "cd #{application} && git pull origin master && rake bootstrap:production"
+    run "cd #{application} && git pull origin master && bundle && bundle exec rake bootstrap:production"
   end
 
   desc "push app to staging"
   task :stage, :roles => :staging do
     branch = ENV.has_key?("BRANCH") ? ENV["BRANCH"] : "integration"
-    run "cd #{application} && git fetch && git checkout -f origin/#{branch} && rake bootstrap"
+    run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bundle && bundle exec rake bootstrap"
   end
 end
