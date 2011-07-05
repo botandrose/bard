@@ -93,7 +93,11 @@ class Bard < Thor
 
     invoke :ci
 
-    run_crucial "cap deploy", options.verbose?
+    if heroku?
+      run_crucial "git push production", options.verbose?
+    else
+      run_crucial "cap deploy", options.verbose?
+    end
 
     puts green("Deploy Succeeded")
   end
@@ -139,6 +143,10 @@ class Bard < Thor
   end
 
   private
+    def heroku?
+      `git remote -v`.include? "production\tgit@heroku.com:"
+    end
+
     def ci_host
       "http://botandrose:thecakeisalie!@ci.botandrose.com/job/#{project_name}"
     end
