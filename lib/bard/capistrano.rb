@@ -12,9 +12,9 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace "pull" do
       desc "pull data"
       task "default" do
-        run "cd #{application} && rake db:dump && gzip -9f db/data.sql"
+        run "cd #{application} && bundle exec rake db:dump && gzip -9f db/data.sql"
         transfer :down, "#{application}/db/data.sql.gz", "db/data.sql.gz"
-        system "gunzip -f db/data.sql.gz && rake db:load"
+        system "gunzip -f db/data.sql.gz && bundle exec rake db:load"
       end
 
       desc "sync the static assets"
