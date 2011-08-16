@@ -41,7 +41,11 @@ class Bard < Thor
   desc "data [ROLE=production]", "copy database and assets down to your local machine from ROLE"
   def data(role = "production")
     ensure_sanity!(true)
-    exec "cap data:pull ROLES=#{role}"
+    if role == "production" and heroku?
+      exec "heroku db:pull --confirm #{project_name}"
+    else
+      exec "cap data:pull ROLES=#{role}"
+    end
   end
 
   method_options %w( verbose -v ) => :boolean
