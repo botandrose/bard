@@ -99,7 +99,7 @@ class Bard < Thor
 
     if heroku?
       run_crucial "git push production", options.verbose?
-      run_crucial "heroku rake bootstrap:production:post", options.verbose?
+      run_crucial "heroku run rake bootstrap:production:post", options.verbose?
     else
       run_crucial "cap deploy", options.verbose?
     end
