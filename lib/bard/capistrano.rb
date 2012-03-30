@@ -1,7 +1,6 @@
 require 'uri'
 
 Capistrano::Configuration.instance(:must_exist).load do
-  $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
   require "rvm/capistrano"
   set :rvm_type, :user
 

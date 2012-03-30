@@ -16,6 +16,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency "thor", "0.11.7"
   gem.add_dependency "capistrano", "2.5.10"
+  gem.add_dependency "rvm-capistrano"
   gem.add_dependency "grit", "1.1.1"
   gem.add_dependency "git_remote_branch", ">=0.3.0"
   gem.add_dependency "versionomy", ">=0.3.0"
