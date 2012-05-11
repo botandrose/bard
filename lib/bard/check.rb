@@ -1,7 +1,7 @@
 class Bard < Thor
   private
     def auto_update!
-      required = `curl -s http://gemcutter.org/api/v1/gems/bard.json`.match(/"version":"([0-9.]+)"/)[1]
+      required = `curl -s http://rubygems.org/api/v1/gems/bard.json`.match(/"version":"([0-9.]+)"/)[1]
       if Versionomy.parse(Bard::VERSION) < Versionomy.parse(required)
         original_command = [ENV["_"], @_invocations[Bard].first, ARGV].flatten.join(" ")
         puts "bard gem is out of date... updating to new version"
