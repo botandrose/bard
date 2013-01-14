@@ -20,6 +20,33 @@ class Bard < Thor
 
   VERSION = File.read(File.expand_path(File.dirname(__FILE__) + "../../VERSION")).chomp
 
+  desc "install [PROJECT NAME]", "install and bootstrap existing project"
+  def install(project_name)
+    auto_update!
+    check_dependencies
+    command = <<-BASH
+    git clone git@git.botandrose.com:#{project_name}.git
+
+    cd #{project_name}
+    rvm . do bundle
+    rvm . do bundle exec rake bootstrap
+
+    sudo -s <#{"<EOF"}
+      echo "<VirtualHost *:80>
+        ServerName #{project_name}.local
+        DocumentRoot `pwd`/public
+</VirtualHost>" > /etc/apache2/sites-available/#{project_name}
+      a2ensite #{project_name}
+      apache2ctl restart
+
+      if ! grep "#{project_name}.local" /etc/hosts; then
+        echo 127.0.0.1 #{project_name}.local >> /etc/hosts
+      fi
+EOF
+    BASH
+    exec command
+  end
+
   desc "create [PROJECT_NAME]", "create new project"
   def create(project_name)
     auto_update!
