@@ -28,6 +28,7 @@ class Bard < Thor
     git clone git@git.botandrose.com:#{project_name}.git
 
     cd #{project_name}
+    git checkout integration
     rvm . do bundle
     rvm . do bundle exec rake bootstrap
 
