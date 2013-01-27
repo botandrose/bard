@@ -18,8 +18,6 @@ Gem::Specification.new do |gem|
   gem.add_dependency "capistrano", "2.5.10"
   gem.add_dependency "rvm-capistrano"
   gem.add_dependency "grit", "1.1.1"
-  gem.add_dependency "git_remote_branch", ">=0.3.0"
-  gem.add_dependency "versionomy", ">=0.3.0"
   gem.add_dependency "systemu", ">=1.2.0"
   gem.add_dependency "term-ansicolor", ">=1.0.3"
   gem.add_dependency "bard-rake", ">=0.1.1"

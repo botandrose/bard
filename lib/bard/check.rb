@@ -2,43 +2,13 @@ class Bard < Thor
   private
     def auto_update!
       required = `curl -s http://rubygems.org/api/v1/gems/bard.json`.match(/"version":"([0-9.]+)"/)[1]
-      if Versionomy.parse(Bard::VERSION) < Versionomy.parse(required)
+      if Bard::VERSION != required
         original_command = [ENV["_"], @_invocations[Bard].first, ARGV].flatten.join(" ")
         puts "bard gem is out of date... updating to new version"
         exec "gem install bard && #{original_command}"
       end
       if options.verbose?
         puts green("#{"bard".ljust(9)} (#{Bard::VERSION})") 
-      end
-    end
-
-    def check_dependencies
-      required = {
-        'git'      => '1.6.4',
-        'rubygems' => '1.3.4',
-        'ruby'     => '1.8.7'
-      }
-      actual = {
-        'git'      => `git --version`[/[0-9.]+/],
-        'rubygems' =>  Gem::VERSION,
-        'ruby'     =>  RUBY_VERSION
-      }
-      help = {
-        'git'      => 'please visit http://git-scm.com/download and install the appropriate package for your architecture',
-        'rubygems' => 'please type `gem update --system` to update',
-        'ruby'     => 'ruby 1.8.7 is required for all projects now. talk to micah for upgrade help'
-      }
-
-      errors = []
-      %w(git rubygems ruby).each do |pkg|
-        if Versionomy.parse(actual[pkg]) < Versionomy.parse(required[pkg])
-          errors << red("#{pkg.ljust(9)} (#{actual[pkg]}) ... NEED (#{required[pkg]})\n  #{help[pkg]}")
-        elsif options.verbose?
-          puts green("#{pkg.ljust(9)} (#{actual[pkg]})") 
-        end
-      end
-      if not errors.empty?
-        fatal "#{errors.length} problems detected:\n  #{errors.join("\n  ")}"
       end
     end
 

@@ -3,7 +3,6 @@ require 'rubygems'
 require 'term/ansicolor'
 require 'net/http'
 require 'systemu'
-require 'versionomy'
 require 'grit'
 require 'thor'
 
@@ -23,7 +22,6 @@ class Bard < Thor
   desc "install [PROJECT NAME]", "install and bootstrap existing project"
   def install(project_name)
     auto_update!
-    check_dependencies
     command = <<-BASH
     git clone git@git.botandrose.com:#{project_name}.git
 
@@ -51,7 +49,6 @@ EOF
   desc "create [PROJECT_NAME]", "create new project"
   def create(project_name)
     auto_update!
-    check_dependencies
     template_path = File.expand_path(File.dirname(__FILE__) + "/bard/template.rb")
     command = "rails --template=#{template_path} #{project_name}"
     exec command
@@ -62,7 +59,6 @@ EOF
   def check(project_path = nil)
     project_path = "." if project_path.nil? and File.directory? ".git" and File.exist? "config/environment.rb"
     auto_update!
-    check_dependencies
     check_project project_path if project_path
   end
 
@@ -204,7 +200,6 @@ EOF
 
     def ensure_sanity!(dirty_ok = false)
       auto_update!
-      check_dependencies
       raise NotInProjectRootError unless File.directory? ".git"
       raise OnMasterBranchError if current_branch == "master"
       raise WorkingTreeDirtyError unless `git status`.include? "working directory clean" unless dirty_ok
