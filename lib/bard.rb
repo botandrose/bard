@@ -145,8 +145,12 @@ EOF
     start_time = Time.new.to_i
     while (response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`).include? "<building>true</building>"
       elapsed_time = Time.new.to_i - start_time
-      percentage = (elapsed_time.to_f / last_time_elapsed.to_f * 100).to_i
-      output = "  Estimated completion: #{percentage}%"
+      if last_time_elapsed
+        percentage = (elapsed_time.to_f / last_time_elapsed.to_f * 100).to_i
+        output = "  Estimated completion: #{percentage}%"
+      else
+        output = "  No estimated completion time. Elapsed time: #{elapsed_time} sec"
+      end
       print "\x08" * output.length
       print output
       $stdout.flush
@@ -195,7 +199,8 @@ EOF
 
     def get_last_time_elapsed
       response = `curl -s #{ci_host}/lastStableBuild/api/xml?token=botandrose`
-      response.match(/<duration>(\d+)<\/duration>/)[1].to_i / 1000
+      response.match(/<duration>(\d+)<\/duration>/)
+      $1 ? $1.to_i / 1000 : nil
     end
 
     def ensure_sanity!(dirty_ok = false)
