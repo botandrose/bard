@@ -10,7 +10,6 @@ require 'bard/error'
 require 'bard/git'
 require 'bard/io'
 
-require 'bard/check'
 require 'bard/ssh_delegation'
 
 class Bard < Thor
@@ -44,14 +43,6 @@ class Bard < Thor
 EOF
     BASH
     exec command
-  end
-
-  method_options %w( verbose -v ) => :boolean
-  desc "check [PROJECT_PATH]", "check current project and environment for missing dependencies and common problems"
-  def check(project_path = nil)
-    project_path = "." if project_path.nil? and File.directory? ".git" and File.exist? "config/environment.rb"
-    auto_update!
-    check_project project_path if project_path
   end
 
   desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
@@ -207,4 +198,19 @@ EOF
       raise OnMasterBranchError if current_branch == "master"
       raise WorkingTreeDirtyError unless `git status`.include? "working directory clean" unless dirty_ok
     end
+
+    def auto_update!
+      match = `curl -s http://rubygems.org/api/v1/gems/bard.json`.match(/"version":"([0-9.]+)"/)
+      return unless match
+      required = match[1]
+      if Bard::VERSION != required
+        original_command = [ENV["_"], @_invocations[Bard].first, ARGV].flatten.join(" ")
+        puts "bard gem is out of date... updating to new version"
+        exec "gem install bard && #{original_command}"
+      end
+      if options.verbose?
+        puts green("#{"bard".ljust(9)} (#{Bard::VERSION})") 
+      end
+    end
 end
+
