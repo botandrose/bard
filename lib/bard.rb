@@ -183,7 +183,8 @@ EOF
 
     def get_last_build_number
       response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`
-      response.match(/<number>(\d+)<\/number>/)[1].to_i
+      response.match(/<number>(\d+)<\/number>/)
+      $1 ? $1.to_i : nil
     end
 
     def get_last_time_elapsed
