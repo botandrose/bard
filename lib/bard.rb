@@ -46,14 +46,6 @@ EOF
     exec command
   end
 
-  desc "create [PROJECT_NAME]", "create new project"
-  def create(project_name)
-    auto_update!
-    template_path = File.expand_path(File.dirname(__FILE__) + "/bard/template.rb")
-    command = "rails --template=#{template_path} #{project_name}"
-    exec command
-  end
-
   method_options %w( verbose -v ) => :boolean
   desc "check [PROJECT_PATH]", "check current project and environment for missing dependencies and common problems"
   def check(project_path = nil)
