@@ -62,13 +62,21 @@ EOF
     check_project project_path if project_path
   end
 
-  desc "data [ROLE=production]", "copy database and assets down to your local machine from ROLE"
-  def data(role = "production")
+  desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
+  def data(from = "production", to = "local")
     ensure_sanity!(true)
-    if role == "production" and heroku?
-      exec "heroku db:pull --confirm #{project_name}"
+
+    if to == "local"
+      if from == "production" and heroku?
+        exec "heroku db:pull --confirm #{project_name}"
+      else
+        exec "cap data:pull ROLES=#{from}"
+      end
+
     else
-      exec "cap data:pull ROLES=#{role}"
+      if from == "local"
+        exec "cap data:push ROLES=#{to}"
+      end
     end
   end
 
