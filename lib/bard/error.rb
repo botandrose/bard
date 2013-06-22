@@ -7,7 +7,7 @@ class Bard::CLI < Thor
 
   class MasterNonFastForwardError < Bard::CLI::Error
     def message
-      "The master branch has advanced since last deploy, probably due to a bugfix.\n  Rebase your integration branch on top of it, and check for breakage."
+      "The master branch has advanced since last deploy, probably due to a bugfix.\n  Rebase your branch on top of it, and check for breakage."
     end
   end
   

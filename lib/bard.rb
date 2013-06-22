@@ -35,8 +35,7 @@ class Bard::CLI < Thor
   method_options %w( verbose -v ) => :boolean
   desc "push", "push local changes out to the remote"
   def push
-    raise NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
-    run_crucial "git push origin #{current_branch}", true
+    run_crucial "git push -u origin #{current_branch}", true
   end
 
   method_options %w( verbose -v ) => :boolean
@@ -50,22 +49,31 @@ class Bard::CLI < Thor
   end
 
   method_options %w( verbose -v ) => :boolean
-  desc "deploy", "pushes, merges integration branch into master and deploys it to production"
+  desc "deploy", "checks that branch is a ff with master, checks with ci, and then merges into master and deploys to production, and deletes branch."
   def deploy
-    invoke :push
+    branch = current_branch
 
-    if has_integration_branch?
-      run_crucial "git fetch origin"
-      run_crucial "git checkout master"
-      run_crucial "git pull --rebase origin master"
-      raise MasterNonFastForwardError if not fast_forward_merge? "master", "integration"
+    run_crucial "git fetch origin"
+    raise MasterNonFastForwardError if not fast_forward_merge? "origin/master", "master"
 
-      run_crucial "git merge integration"
+    if branch == "master"
       run_crucial "git push origin master"
-      run_crucial "git checkout integration"
-    end
+      invoke :ci
 
-    invoke :ci
+    else
+      run_crucial "git checkout master"
+      run_crucial "git merge origin/master"
+      run_crucial "git checkout #{branch}"
+      raise MasterNonFastForwardError if not fast_forward_merge? "master", branch
+
+      run_crucial "git push -f origin #{branch}"
+
+      invoke :ci, current_sha
+
+      run_crucial "git checkout master"
+      run_crucial "git merge #{branch}"
+      run_crucial "git push origin master"
+    end
 
     if heroku?
       run_crucial "git push production master", options.verbose?
@@ -75,17 +83,23 @@ class Bard::CLI < Thor
     end
 
     puts green("Deploy Succeeded")
+
+    if branch != "master"
+      puts "Deleting branch: #{branch}"
+      run_crucial "git push --delete origin #{branch}"
+      run_crucial "git branch -d #{branch}"
+    end
   end
 
   method_options %w( verbose -v ) => :boolean
-  desc "ci", "runs ci against master branch"
-  def ci
+  desc "ci", "runs ci against current HEAD"
+  def ci sha=current_sha
     return unless has_ci?
 
-    puts "Continuous integration: starting build..."
+    puts "Continuous integration: starting build on #{sha}..."
     last_build_number = get_last_build_number
     last_time_elapsed = get_last_time_elapsed
-    start_ci
+    start_ci sha
     sleep(2) while last_build_number == get_last_build_number
 
     start_time = Time.new.to_i
@@ -117,15 +131,11 @@ class Bard::CLI < Thor
       when /<result>SUCCESS<\/result>/ then
         puts "Continuous integration: success! deploying to production"
 
-      else raise "Unknown response from CI server:\n#{response}"
+      else raise "Unknown response from CI server: #{response}"
     end
   end
 
   private
-
-  def has_integration_branch?
-    system 'git show-ref --verify --quiet "refs/heads/integration"'
-  end
 
   def heroku?
     `git remote -v`.include? "production\tgit@heroku.com:"
@@ -139,8 +149,14 @@ class Bard::CLI < Thor
     `curl -s -I #{ci_host}/?token=botandrose` =~ /\b200 OK\b/
   end
 
-  def start_ci
-    `curl -s -I -X POST #{ci_host}/build?token=botandrose`
+  def start_ci sha=nil
+    if sha
+      command = "curl -s -I -X POST '#{ci_host}/buildWithParameters?token=botandrose&GIT_REF=#{sha}'"
+    else
+      command = "curl -s -I -X POST '#{ci_host}/build?token=botandrose'"
+    end
+    puts command if options.verbose?
+    `#{command}`
   end
 
   def get_last_build_number

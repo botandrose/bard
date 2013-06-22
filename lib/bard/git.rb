@@ -7,8 +7,11 @@ module Bard::CLI::Git
     ref.sub(/refs\/heads\//, '') # refs/heads/master ... we want "master"
   end
 
-  def fast_forward_merge?(root = "origin/integration", branch = "HEAD")
-    run_crucial "git fetch origin"
+  def current_sha
+    `git rev-parse HEAD`.chomp
+  end
+
+  def fast_forward_merge?(root, branch)
     root_head = run_crucial "git rev-parse #{root}"
     branch_head = run_crucial "git rev-parse #{branch}"
     @common_ancestor = find_common_ancestor root_head, branch_head 
