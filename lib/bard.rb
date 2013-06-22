@@ -88,8 +88,6 @@ EOF
   def push
     ensure_sanity!
 
-    raise SubmoduleDirtyError if submodule_dirty?
-    raise SubmoduleUnpushedError if submodule_unpushed?
     raise NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
 
     run_crucial "git push origin #{current_branch}", true

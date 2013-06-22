@@ -23,9 +23,6 @@ class Bard < Thor
         errors << "missing database, please run `rake db:create db:migrate" if stderr.include? "Unknown database"
         errors << "pending migrations, please run `rake db:migrate`" if stdout.include? "pending migrations"
 
-        errors << "missing submodule, please run git submodule update --init" if `git submodule status` =~ /^-/
-        errors << "submodule has a detached head, please complain to micah" unless system 'git submodule foreach "git symbolic-ref HEAD 1>/dev/null 2>/dev/null"'
-
         errors << "missing gems, please run `rake gems:install`" if `rake gems` =~ /\[ \]/
 
         errors << "missing integration branch, please complain to micah" if `git branch` !~ /\bintegration\b/

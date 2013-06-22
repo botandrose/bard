@@ -1,7 +1,5 @@
 class Bard < Thor
   {
-    "SubmoduleDirtyError"       => "You have uncommitted changes to a submodule!\n  Please see Micah about this.",
-    "SubmoduleUnpushedError"    => "You have unpushed changes to a submodule!\n  Please see Micah about this.",
     "NonFastForwardError"       => "Someone has pushed some changes since you last pulled.\n  Kindly run bard pull, ensure that your your changes still work, and try again",
     "MasterNonFastForwardError" => "The master branch has advanced since last deploy, probably due to a bugfix.\n  Rebase your integration branch on top of it, and check for breakage.",
     "NotInProjectRootError"     => "You are not in the project's root directory!",
