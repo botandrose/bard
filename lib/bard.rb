@@ -1,54 +1,16 @@
 $:.unshift File.expand_path(File.dirname(__FILE__))
-require 'rubygems'
-require 'term/ansicolor'
-require 'net/http'
-require 'systemu'
-require 'grit'
-require 'thor'
 
-require 'bard/error'
-require 'bard/git'
-require 'bard/io'
+module Bard; end
 
-require 'bard/ssh_delegation'
+require "bard/base"
+require "bard/error"
+require "bard/git"
 
-class Bard < Thor
-  include BardGit
-  include BardIO
-
-  VERSION = File.read(File.expand_path(File.dirname(__FILE__) + "../../VERSION")).chomp
-
-  desc "install [PROJECT NAME]", "install and bootstrap existing project"
-  def install(project_name)
-    auto_update!
-    command = <<-BASH
-    git clone git@git.botandrose.com:#{project_name}.git
-
-    cd #{project_name}
-    git checkout integration
-    rvm . do bundle
-    rvm . do bundle exec rake bootstrap
-
-    sudo -s <#{"<EOF"}
-      echo "<VirtualHost *:80>
-        ServerName #{project_name}.local
-        DocumentRoot `pwd`/public
-</VirtualHost>" > /etc/apache2/sites-available/#{project_name}
-      a2ensite #{project_name}
-      apache2ctl restart
-
-      if ! grep "#{project_name}.local" /etc/hosts; then
-        echo 127.0.0.1 #{project_name}.local >> /etc/hosts
-      fi
-EOF
-    BASH
-    exec command
-  end
+class Bard::CLI < Thor
+  include Bard::CLI::Git
 
   desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
   def data(from = "production", to = "local")
-    ensure_sanity!(true)
-
     if to == "local"
       if from == "production" and heroku?
         exec "heroku db:pull --confirm #{project_name}"
@@ -66,10 +28,6 @@ EOF
   method_options %w( verbose -v ) => :boolean
   desc "pull", "pull changes to your local machine"
   def pull
-    ensure_sanity!
-
-    warn NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
-
     run_crucial "git pull --rebase origin #{current_branch}", options.verbose?
     run_crucial "bundle && bundle exec rake bootstrap", options.verbose?
   end
@@ -77,10 +35,7 @@ EOF
   method_options %w( verbose -v ) => :boolean
   desc "push", "push local changes out to the remote"
   def push
-    ensure_sanity!
-
     raise NonFastForwardError unless fast_forward_merge?("origin/#{current_branch}")
-
     run_crucial "git push origin #{current_branch}", true
   end
 
@@ -165,53 +120,33 @@ EOF
   end
 
   private
-    def heroku?
-      `git remote -v`.include? "production\tgit@heroku.com:"
-    end
 
-    def ci_host
-      "http://botandrose:thecakeisalie!@ci.botandrose.com/job/#{project_name}"
-    end
+  def heroku?
+    `git remote -v`.include? "production\tgit@heroku.com:"
+  end
 
-    def has_ci?
-      `curl -s -I #{ci_host}/?token=botandrose` =~ /\b200 OK\b/
-    end
+  def ci_host
+    "http://botandrose:thecakeisalie!@ci.botandrose.com/job/#{project_name}"
+  end
 
-    def start_ci
-      `curl -s -I -X POST #{ci_host}/build?token=botandrose`
-    end
+  def has_ci?
+    `curl -s -I #{ci_host}/?token=botandrose` =~ /\b200 OK\b/
+  end
 
-    def get_last_build_number
-      response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`
-      response.match(/<number>(\d+)<\/number>/)
-      $1 ? $1.to_i : nil
-    end
+  def start_ci
+    `curl -s -I -X POST #{ci_host}/build?token=botandrose`
+  end
 
-    def get_last_time_elapsed
-      response = `curl -s #{ci_host}/lastStableBuild/api/xml?token=botandrose`
-      response.match(/<duration>(\d+)<\/duration>/)
-      $1 ? $1.to_i / 1000 : nil
-    end
+  def get_last_build_number
+    response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`
+    response.match(/<number>(\d+)<\/number>/)
+    $1 ? $1.to_i : nil
+  end
 
-    def ensure_sanity!(dirty_ok = false)
-      auto_update!
-      raise NotInProjectRootError unless File.directory? ".git"
-      raise OnMasterBranchError if current_branch == "master"
-      raise WorkingTreeDirtyError unless `git status`.include? "working directory clean" unless dirty_ok
-    end
-
-    def auto_update!
-      match = `curl -s http://rubygems.org/api/v1/gems/bard.json`.match(/"version":"([0-9.]+)"/)
-      return unless match
-      required = match[1]
-      if Bard::VERSION != required
-        original_command = [ENV["_"], @_invocations[Bard].first, ARGV].flatten.join(" ")
-        puts "bard gem is out of date... updating to new version"
-        exec "gem install bard && #{original_command}"
-      end
-      if options.verbose?
-        puts green("#{"bard".ljust(9)} (#{Bard::VERSION})") 
-      end
-    end
+  def get_last_time_elapsed
+    response = `curl -s #{ci_host}/lastStableBuild/api/xml?token=botandrose`
+    response.match(/<duration>(\d+)<\/duration>/)
+    $1 ? $1.to_i / 1000 : nil
+  end
 end
 
