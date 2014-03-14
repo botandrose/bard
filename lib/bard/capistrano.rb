@@ -3,6 +3,11 @@ require 'uri'
 Capistrano::Configuration.instance(:must_exist).load do
   require "rvm/capistrano"
   set :rvm_type, :user
+  ruby_version = File.read(".ruby-version").chomp
+  ruby_gemset = File.read(".ruby-gemset").chomp
+  set :rvm_ruby_string, [ruby_version, ruby_gemset].join("@")
+
+  set :application, File.basename(Dir.pwd)
 
   role :staging, "www@staging.botandrose.com:22022"
   set :asset_paths, []
