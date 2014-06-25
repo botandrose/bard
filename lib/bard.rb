@@ -54,14 +54,16 @@ class Bard::CLI < Thor
   def deploy
     invoke :push
 
-    run_crucial "git fetch origin"
-    run_crucial "git checkout master"
-    run_crucial "git pull --rebase origin master"
-    raise MasterNonFastForwardError if not fast_forward_merge? "master", "integration"
+    if has_integration_branch?
+      run_crucial "git fetch origin"
+      run_crucial "git checkout master"
+      run_crucial "git pull --rebase origin master"
+      raise MasterNonFastForwardError if not fast_forward_merge? "master", "integration"
 
-    run_crucial "git merge integration"
-    run_crucial "git push origin master"
-    run_crucial "git checkout integration"
+      run_crucial "git merge integration"
+      run_crucial "git push origin master"
+      run_crucial "git checkout integration"
+    end
 
     invoke :ci
 
@@ -120,6 +122,10 @@ class Bard::CLI < Thor
   end
 
   private
+
+  def has_integration_branch?
+    system 'git show-ref --verify --quiet "refs/heads/integration"'
+  end
 
   def heroku?
     `git remote -v`.include? "production\tgit@heroku.com:"
