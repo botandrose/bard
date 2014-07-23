@@ -68,7 +68,7 @@ class Bard::CLI < Thor
     invoke :ci
 
     if heroku?
-      run_crucial "git push production", options.verbose?
+      run_crucial "git push production master", options.verbose?
       run_crucial "heroku run rake bootstrap:production:post", options.verbose?
     else
       run_crucial "cap deploy", options.verbose?
