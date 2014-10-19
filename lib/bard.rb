@@ -15,12 +15,12 @@ class Bard::CLI < Thor
       if from == "production" and heroku?
         exec "heroku db:pull --confirm #{project_name}"
       else
-        exec "cap data:pull ROLES=#{from}"
+        exec "cap _2.5.10_ data:pull ROLES=#{from}"
       end
 
     else
       if from == "local"
-        exec "cap data:push ROLES=#{to}"
+        exec "cap _2.5.10_ data:push ROLES=#{to}"
       end
     end
   end
@@ -44,7 +44,7 @@ class Bard::CLI < Thor
   def stage
     invoke :push
 
-    run_crucial "cap stage BRANCH=#{current_branch}", options.verbose?
+    run_crucial "cap _2.5.10_ stage BRANCH=#{current_branch}", options.verbose?
 
     puts green("Stage Succeeded")
   end
@@ -71,7 +71,7 @@ class Bard::CLI < Thor
       run_crucial "git push production master", options.verbose?
       run_crucial "heroku run rake bootstrap:production:post", options.verbose?
     else
-      run_crucial "cap deploy", options.verbose?
+      run_crucial "cap _2.5.10_ deploy", options.verbose?
     end
 
     puts green("Deploy Succeeded")
