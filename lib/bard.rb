@@ -97,5 +97,17 @@ class Bard::CLI < Thor
       puts "Automated tests failed!"
     end
   end
+
+  desc "hurt", "reruns a command until it fails"
+  def hurt *args
+    1.upto(Float::INFINITY) do |count|
+      puts "Running attempt #{count}"
+      system *args
+      unless $?.success?
+        puts "Ran #{count-1} times before failing"
+        break
+      end
+    end
+  end
 end
 
