@@ -11,18 +11,8 @@ class Bard::CLI < Thor
 
   desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
   def data(from = "production", to = "local")
-    if to == "local"
-      if from == "production" and heroku?
-        exec "heroku db:pull --confirm #{project_name}"
-      else
-        exec "cap _2.5.10_ data:pull ROLES=#{from}"
-      end
-
-    else
-      if from == "local"
-        exec "cap _2.5.10_ data:push ROLES=#{to}"
-      end
-    end
+    exec "cap _2.5.10_ data:pull ROLES=#{from}" if to == "local"
+    exec "cap _2.5.10_ data:push ROLES=#{to}" if from == "local"
   end
 
   method_options %w( verbose -v ) => :boolean
@@ -75,12 +65,7 @@ class Bard::CLI < Thor
       run_crucial "git push origin master"
     end
 
-    if heroku?
-      run_crucial "git push production master", options.verbose?
-      run_crucial "heroku run rake bootstrap:production:post", options.verbose?
-    else
-      run_crucial "cap _2.5.10_ deploy", options.verbose?
-    end
+    run_crucial "cap _2.5.10_ deploy", options.verbose?
 
     puts green("Deploy Succeeded")
 
@@ -136,10 +121,6 @@ class Bard::CLI < Thor
   end
 
   private
-
-  def heroku?
-    `git remote -v`.include? "production\tgit@heroku.com:"
-  end
 
   def ci_host
     "http://botandrose:thecakeisalie!@ci.botandrose.com/job/#{project_name}"

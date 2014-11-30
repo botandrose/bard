@@ -16,6 +16,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace "pull" do
       desc "pull data"
       task "default" do
+        exec "heroku db:pull --confirm #{project_name}" if heroku?
+
         run "cd #{application} && bundle exec rake db:dump && gzip -9f db/data.sql"
         transfer :down, "#{application}/db/data.sql.gz", "db/data.sql.gz"
         system "gunzip -f db/data.sql.gz && bundle exec rake db:load"
@@ -60,14 +62,28 @@ Capistrano::Configuration.instance(:must_exist).load do
   after 'data:push', 'data:push:assets'
 
   desc "push app to production"
-  task :deploy, :roles => :production do
-    system "git push github" if `git remote` =~ /\bgithub\b/
-    run "cd #{application} && git pull origin master && bundle && bundle exec rake bootstrap:production"
+  task :deploy do
+    if heroku? "production"
+      system "git push production master"
+      system "heroku run rake bootstrap:production:post"
+    else
+      system "git push github" if `git remote` =~ /\bgithub\b/
+      run "cd #{application} && git pull origin master && bundle && bundle exec rake bootstrap:production", :roles => :production
+    end
   end
 
   desc "push app to staging"
-  task :stage, :roles => :staging do
-    branch = ENV.fetch("BRANCH")
-    run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bundle && bundle exec rake bootstrap:production"
+  task :stage do
+    if heroku? "staging"
+      system "git push -f staging master"
+      system "heroku run rake bootstrap:production:post"
+    else
+      branch = ENV.fetch("BRANCH")
+      run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bundle && bundle exec rake bootstrap:production", :roles => :staging
+    end
+  end
+
+  def heroku? role
+    `git remote -v`.include? "#{role}\tgit@heroku.com:"
   end
 end
