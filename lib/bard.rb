@@ -23,15 +23,9 @@ class Bard::CLI < Thor
   end
 
   method_options %w( verbose -v ) => :boolean
-  desc "push", "push local changes out to the remote"
-  def push
-    run_crucial "git push -u origin #{current_branch}", true
-  end
-
-  method_options %w( verbose -v ) => :boolean
   desc "stage", "pushes current branch, and stages it"
   def stage
-    invoke :push
+    run_crucial "git push -u origin #{current_branch}", true
 
     run_crucial "cap _2.5.10_ stage BRANCH=#{current_branch}", options.verbose?
 
