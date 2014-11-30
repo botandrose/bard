@@ -1,5 +1,5 @@
 module Bard::CLI::Git
-  private
+  module_function
 
   def current_branch
     ref = `git symbolic-ref HEAD 2>&1`.chomp
@@ -12,14 +12,10 @@ module Bard::CLI::Git
   end
 
   def fast_forward_merge?(root, branch)
-    root_head = run_crucial "git rev-parse #{root}"
-    branch_head = run_crucial "git rev-parse #{branch}"
-    @common_ancestor = find_common_ancestor root_head, branch_head 
-    @common_ancestor == root_head
-  end
-
-  def find_common_ancestor(head1, head2)
-    run_crucial "git merge-base #{head1} #{head2}"
+    root_head = `git rev-parse #{root}`.chomp
+    branch_head = `git rev-parse #{branch}`.chomp
+    common_ancestor = `git merge-base #{root_head} #{branch_head}`.chomp
+    common_ancestor == root_head
   end
 end
 
