@@ -10,16 +10,5 @@ class Bard::CLI < Thor
       "The master branch has advanced since last deploy, probably due to a bugfix.\n  Rebase your branch on top of it, and check for breakage."
     end
   end
-  
-  class TestsFailedError < Bard::CLI::Error
-    def message
-      "Automated tests failed!\n  See #{super} for more info."
-    end
-  end
-
-  class TestsAbortedError < Bard::CLI::Error
-    def message
-      "Automated tests aborted!\n  See #{super} for more info."
-    end
-  end
 end
+
