@@ -3,7 +3,6 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
 module Bard; end
 
 require "bard/base"
-require "bard/error"
 require "bard/git"
 require "bard/ci"
 
@@ -37,26 +36,23 @@ class Bard::CLI < Thor
   def deploy
     branch = current_branch
 
-    run_crucial "git fetch origin"
-    raise MasterNonFastForwardError if not fast_forward_merge? "origin/master", "master"
+    run_crucial "git fetch origin master:master"
 
     if branch == "master"
-      run_crucial "git push origin master"
+      run_crucial "git push origin master:master"
       invoke :ci
 
     else
-      run_crucial "git checkout master"
-      run_crucial "git merge origin/master"
-      run_crucial "git checkout #{branch}"
-      raise MasterNonFastForwardError if not fast_forward_merge? "master", branch
+      if not fast_forward_merge? "master", branch
+        raise "The master branch has advanced since last deploy, probably due to a bugfix.\n  Rebase your branch on top of it, and check for breakage."
+      end
 
-      run_crucial "git push -f origin #{branch}"
+      run_crucial "git push -f origin #{branch}:#{branch}"
 
       invoke :ci
 
-      run_crucial "git checkout master"
-      run_crucial "git merge #{branch}"
-      run_crucial "git push origin master"
+      run_crucial "git push origin #{branch}:master"
+      run_crucial "git fetch origin master:master"
     end
 
     run_crucial "cap _2.5.10_ deploy", options.verbose?
@@ -65,6 +61,7 @@ class Bard::CLI < Thor
 
     if branch != "master"
       puts "Deleting branch: #{branch}"
+      run_crucial "git checkout master" if current_branch == branch
       run_crucial "git push --delete origin #{branch}"
       run_crucial "git branch -d #{branch}"
     end

@@ -8,7 +8,7 @@ class Bard::CLI < Thor
   private
 
   def fatal(message)
-    raise Bard::CLI::Error, red("!!! ") + message
+    raise red("!!! ") + message
   end
 
   def run_crucial(command, verbose = false)
