@@ -63,9 +63,17 @@ class Bard::CLI < Thor
 
     if branch != "master"
       puts "Deleting branch: #{branch}"
-      run_crucial "git checkout master" if Git.current_branch == branch
       run_crucial "git push --delete origin #{branch}"
-      run_crucial "git branch -D #{branch}"
+
+      case Git.current_branch
+      when branch
+        run_crucial "git checkout master"
+        run_crucial "git branch -d #{branch}"
+      when "master"
+        run_crucial "git branch -d #{branch}"
+      else
+        run_crucial "git branch -D #{branch}"
+      end
     end
   end
 
