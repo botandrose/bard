@@ -16,7 +16,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace "pull" do
       desc "pull data"
       task "default" do
-        exec "heroku db:pull --confirm #{project_name}" if heroku?
+        exec "heroku db:pull --confirm #{project_name}" if heroku?(ENV["ROLES"])
 
         run "cd #{application} && bundle exec rake db:dump && gzip -9f db/data.sql"
         transfer :down, "#{application}/db/data.sql.gz", "db/data.sql.gz"
