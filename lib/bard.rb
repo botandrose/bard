@@ -38,13 +38,13 @@ class Bard::CLI < Thor
   def deploy
     branch = Git.current_branch
 
-    run_crucial "git fetch origin master:master"
-
     if branch == "master"
       run_crucial "git push origin master:master"
       invoke :ci
 
     else
+      run_crucial "git fetch origin master:master"
+
       if not Git.fast_forward_merge? "master", branch
         raise "The master branch has advanced since last deploy, probably due to a bugfix.\n  Rebase your branch on top of it, and check for breakage."
       end
