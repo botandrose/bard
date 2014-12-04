@@ -103,6 +103,7 @@ class Bard::CLI < Thor
       puts
       puts ci.console
       puts "Automated tests failed!"
+      exit 1
     end
   end
 
