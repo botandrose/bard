@@ -22,7 +22,7 @@ class Bard::CLI < Thor
 
     def console
       raw = `curl -s #{ci_host}/lastBuild/console?token=botandrose`
-      raw[/<pre>(.+)<\/pre>/m, 1]
+      raw[%r{<pre.*?>(.+)</pre>}m, 1]
     end
 
     private
