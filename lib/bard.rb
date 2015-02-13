@@ -33,7 +33,7 @@ class Bard::CLI < Thor
     puts green("Stage Succeeded")
   end
 
-  method_options %w( verbose -v ) => :boolean
+  method_options %w( verbose -v ) => :boolean, %w( force ) => :boolean
   desc "deploy", "checks that branch is a ff with master, checks with ci, and then merges into master and deploys to production, and deletes branch."
   def deploy
     branch = Git.current_branch
@@ -81,29 +81,39 @@ class Bard::CLI < Thor
   desc "ci", "runs ci against current HEAD"
   def ci
     ci = CI.new(project_name, Git.current_sha)
-    return unless ci.exists?
-    puts "Continuous integration: starting build on #{Git.current_branch}..."
+    if ci.exists?
+      puts "Continuous integration: starting build on #{Git.current_branch}..."
 
-    success = ci.run do |elapsed_time, last_time|
-      if last_time
-        percentage = (elapsed_time.to_f / last_time.to_f * 100).to_i
-        output = "  Estimated completion: #{percentage}%"
-      else
-        output = "  No estimated completion time. Elapsed time: #{elapsed_time} sec"
+      success = ci.run do |elapsed_time, last_time|
+        if last_time
+          percentage = (elapsed_time.to_f / last_time.to_f * 100).to_i
+          output = "  Estimated completion: #{percentage}%"
+        else
+          output = "  No estimated completion time. Elapsed time: #{elapsed_time} sec"
+        end
+        print "\x08" * output.length
+        print output
+        $stdout.flush
       end
-      print "\x08" * output.length
-      print output
-      $stdout.flush
-    end
 
-    if success
-      puts
-      puts "Continuous integration: success! deploying to production"
+      if success
+        puts
+        puts "Continuous integration: success! deploying to production"
+      else
+        puts
+        puts ci.console
+        puts red("Automated tests failed!")
+        exit 1
+      end
+
     else
-      puts
-      puts ci.console
-      puts "Automated tests failed!"
-      exit 1
+      puts red("No CI found for #{project_name}!")
+      if options.force?
+        puts "Forcing deploy, anyways. I hope you know what you're doing!"
+      else
+        puts "Re-run with --force to bypass CI, if you absolutely must, and know what you're doing."
+        exit 1
+      end
     end
   end
 
