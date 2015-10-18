@@ -7,13 +7,13 @@ class Bard::CLI < Thor
       sleep(2) while last_build_number == get_last_build_number
 
       start_time = Time.new.to_i
-      while (response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`).include? "<building>true</building>"
+      while (self.last_response = `curl -s #{ci_host}/lastBuild/api/xml?token=botandrose`).include? "<building>true</building>"
         elapsed_time = Time.new.to_i - start_time
         yield elapsed_time, last_time_elapsed
         sleep(2)
       end
 
-      response =~ /<result>SUCCESS<\/result>/
+      self.last_response =~ /<result>SUCCESS<\/result>/
     end
 
     def exists?
@@ -24,6 +24,8 @@ class Bard::CLI < Thor
       raw = `curl -s #{ci_host}/lastBuild/console?token=botandrose`
       raw[%r{<pre.*?>(.+)</pre>}m, 1]
     end
+
+    attr_accessor :last_response
 
     private
 

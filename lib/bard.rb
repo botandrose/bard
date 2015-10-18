@@ -101,6 +101,7 @@ class Bard::CLI < Thor
         puts "Continuous integration: success! deploying to production"
       else
         puts
+        puts ci.last_response
         puts ci.console
         puts red("Automated tests failed!")
         exit 1
