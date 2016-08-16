@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "thor", "= 0.11.7"
   spec.add_dependency "capistrano", "= 2.5.10"
+  spec.add_dependency "net-ssh", "= 3.0.1"
   spec.add_dependency "rvm-capistrano"
   spec.add_dependency "systemu", ">= 1.2.0"
   spec.add_dependency "term-ansicolor", ">= 1.0.3"
