@@ -68,7 +68,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       system "heroku run rake bootstrap:production:post"
     else
       system "git push github" if `git remote` =~ /\bgithub\b/
-      run "cd #{application} && git pull origin master && bundle && bundle exec rake bootstrap:production", :roles => :production
+      run "cd #{application} && git pull origin master && bin/setup", :roles => :production
     end
   end
 
@@ -79,7 +79,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       system "heroku run rake bootstrap:production:post"
     else
       branch = ENV.fetch("BRANCH")
-      run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bundle && bundle exec rake bootstrap:production", :roles => :staging
+      run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bin/setup", :roles => :staging
     end
   end
 

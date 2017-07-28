@@ -19,7 +19,7 @@ class Bard::CLI < Thor
     branch = Git.current_branch
 
     run_crucial "git pull --rebase origin #{branch}", options.verbose?
-    run_crucial "bundle && bundle exec rake bootstrap", options.verbose?
+    run_crucial "bin/setup", options.verbose?
   end
 
   method_options %w( verbose -v ) => :boolean
