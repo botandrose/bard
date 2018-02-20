@@ -40,7 +40,7 @@ class Bard::CLI < Thor
 
     if branch == "master"
       run_crucial "git push origin master:master"
-      invoke :ci unless options.skip_ci?
+      invoke :ci unless options["skip-ci"]
 
     else
       run_crucial "git fetch origin master:master"
@@ -51,7 +51,7 @@ class Bard::CLI < Thor
 
       run_crucial "git push -f origin #{branch}:#{branch}"
 
-      invoke :ci unless options.skip_ci?
+      invoke :ci unless options["skip-ci"]
 
       run_crucial "git push origin #{branch}:master"
       run_crucial "git fetch origin master:master"
