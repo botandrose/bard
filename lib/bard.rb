@@ -33,14 +33,14 @@ class Bard::CLI < Thor
     puts green("Stage Succeeded")
   end
 
-  method_options %w( verbose -v ) => :boolean, %w( force ) => :boolean
+  method_options %w( verbose -v ) => :boolean, %w( skip-ci ) => :boolean
   desc "deploy", "checks that branch is a ff with master, checks with ci, and then merges into master and deploys to production, and deletes branch."
   def deploy
     branch = Git.current_branch
 
     if branch == "master"
       run_crucial "git push origin master:master"
-      invoke :ci
+      invoke :ci unless options.skip_ci?
 
     else
       run_crucial "git fetch origin master:master"
@@ -51,7 +51,7 @@ class Bard::CLI < Thor
 
       run_crucial "git push -f origin #{branch}:#{branch}"
 
-      invoke :ci
+      invoke :ci unless options.skip_ci?
 
       run_crucial "git push origin #{branch}:master"
       run_crucial "git fetch origin master:master"
@@ -109,12 +109,8 @@ class Bard::CLI < Thor
 
     else
       puts red("No CI found for #{project_name}!")
-      if options.force?
-        puts "Forcing deploy, anyways. I hope you know what you're doing!"
-      else
-        puts "Re-run with --force to bypass CI, if you absolutely must, and know what you're doing."
-        exit 1
-      end
+      puts "Re-run with --skip-ci to bypass CI, if you absolutely must, and know what you're doing."
+      exit 1
     end
   end
 
