@@ -125,5 +125,10 @@ class Bard::CLI < Thor
       end
     end
   end
+
+  desc "ssh [TO=production]", "logs into the specified server via SSH"
+  def ssh to="production"
+    exec "cap _2.5.10_ ssh ROLES=#{to}"
+  end
 end
 

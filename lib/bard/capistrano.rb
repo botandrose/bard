@@ -86,4 +86,10 @@ Capistrano::Configuration.instance(:must_exist).load do
   def heroku? role
     `git remote -v`.include? "#{role}\tgit@heroku.com:"
   end
+
+  desc "log in via ssh"
+  task :ssh do
+     uri = URI.parse("ssh://#{roles[ENV['ROLES'].to_sym].first.to_s}")
+     exec "ssh -t #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} 'cd #{application} && exec $SHELL'"
+  end
 end
