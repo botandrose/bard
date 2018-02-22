@@ -130,5 +130,11 @@ class Bard::CLI < Thor
   def ssh to="production"
     exec "cap _2.5.10_ ssh ROLES=#{to}"
   end
+
+  desc "install", "copies bin/setup and bin/ci scripts into current project."
+  def install
+    install_files_path = File.expand_path(File.join(__dir__, "../install_files/*"))
+    system "cp #{install_files_path} bin/"
+  end
 end
 
