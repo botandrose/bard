@@ -16,8 +16,6 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace "pull" do
       desc "pull data"
       task "default" do
-        exec "heroku db:pull --confirm #{project_name}" if heroku?(ENV["ROLES"])
-
         run "cd #{application} && bundle exec rake db:dump && gzip -9f db/data.sql"
         transfer :down, "#{application}/db/data.sql.gz", "db/data.sql.gz"
         system "gunzip -f db/data.sql.gz && bundle exec rake db:load"
@@ -63,32 +61,18 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "push app to production"
   task :deploy do
-    if heroku? "production"
-      system "git push production master"
-      system "heroku run rake bootstrap:production:post"
-    else
-      ENV["ROLES"] = "production"
-      find_and_execute_task "rvm:install_ruby"
-      system "git push github" if `git remote` =~ /\bgithub\b/
-      run "cd #{application} && git pull origin master && bin/setup", :roles => :production
-    end
+    ENV["ROLES"] = "production"
+    find_and_execute_task "rvm:install_ruby"
+    system "git push github" if `git remote` =~ /\bgithub\b/
+    run "cd #{application} && git pull origin master && bin/setup", :roles => :production
   end
 
   desc "push app to staging"
   task :stage do
-    if heroku? "staging"
-      system "git push -f staging master"
-      system "heroku run rake bootstrap:production:post"
-    else
-      ENV["ROLES"] = "staging"
-      find_and_execute_task "rvm:install_ruby"
-      branch = ENV.fetch("BRANCH")
-      run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bin/setup", :roles => :staging
-    end
-  end
-
-  def heroku? role
-    `git remote -v`.include? "#{role}\tgit@heroku.com:"
+    ENV["ROLES"] = "staging"
+    find_and_execute_task "rvm:install_ruby"
+    branch = ENV.fetch("BRANCH")
+    run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bin/setup", :roles => :staging
   end
 
   desc "log in via ssh"
