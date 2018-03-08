@@ -61,10 +61,11 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "push app to production"
   task :deploy do
-    ENV["ROLES"] = "production"
+    deploy_roles = roles.keys.include?(:production) ? :production : :staging
+    ENV["ROLES"] = deploy_roles.to_s
     find_and_execute_task "rvm:install_ruby"
     system "git push github" if `git remote` =~ /\bgithub\b/
-    run "cd #{application} && git pull origin master && bin/setup", :roles => :production
+    run "cd #{application} && git pull origin master && bin/setup", roles: deploy_roles
   end
 
   desc "push app to staging"

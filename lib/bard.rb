@@ -25,6 +25,10 @@ class Bard::CLI < Thor
   method_options %w( verbose -v ) => :boolean
   desc "stage", "pushes current branch, and stages it"
   def stage
+    unless File.read("Capfile").include?("role :production")
+      raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
+    end
+
     branch = Git.current_branch
 
     run_crucial "git push -u origin #{branch}", true
