@@ -81,4 +81,11 @@ Capistrano::Configuration.instance(:must_exist).load do
      uri = URI.parse("ssh://#{roles[ENV['ROLES'].to_sym].first.to_s}")
      exec "ssh -t #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} 'cd #{application} && exec $SHELL'"
   end
+
+  desc "download latest test coverage information from CI"
+  task :download_ci_test_coverage do
+    uri = URI.parse("ssh://#{roles[:staging].first}")
+    portopt = "-e'ssh -p#{uri.port}'" if uri.port
+    system "rsync #{portopt} --delete -avz #{uri.user}@#{uri.host}:~jenkins/jobs/#{application}/workspace/coverage ./"
+  end
 end

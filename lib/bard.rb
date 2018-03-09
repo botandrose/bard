@@ -100,7 +100,12 @@ class Bard::CLI < Thor
 
       if success
         puts
-        puts "Continuous integration: success! deploying to production"
+        puts "Continuous integration: success!"
+        if File.exist?("coverage")
+          puts "Downloading test coverage from CI..."
+          run_crucial "cap _2.5.10_ download_ci_test_coverage"
+        end
+        puts "Deploying..."
       else
         puts
         puts ci.last_response
