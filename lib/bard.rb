@@ -38,10 +38,8 @@ class Bard::CLI < Thor
   end
 
   method_options %w( verbose -v ) => :boolean, %w( skip-ci ) => :boolean
-  desc "deploy", "checks that branch is a ff with master, checks with ci, and then merges into master and deploys to production, and deletes branch."
-  def deploy
-    branch = Git.current_branch
-
+  desc "deploy [BRANCH=HEAD]", "checks that branch is a ff with master, checks with ci, and then merges into master and deploys to production, and deletes branch."
+  def deploy branch=Git.current_branch
     if branch == "master"
       run_crucial "git push origin master:master"
       invoke :ci unless options["skip-ci"]
@@ -82,11 +80,11 @@ class Bard::CLI < Thor
   end
 
   method_options %w( verbose -v ) => :boolean
-  desc "ci", "runs ci against current HEAD"
-  def ci
-    ci = CI.new(project_name, Git.current_sha)
+  desc "ci [BRANCH=HEAD]", "runs ci against BRANCH"
+  def ci branch=Git.current_branch
+    ci = CI.new(project_name, `git rev-parse #{branch}`.chomp)
     if ci.exists?
-      puts "Continuous integration: starting build on #{Git.current_branch}..."
+      puts "Continuous integration: starting build on #{branch}..."
 
       success = ci.run do |elapsed_time, last_time|
         if last_time

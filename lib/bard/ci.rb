@@ -1,5 +1,5 @@
 class Bard::CLI < Thor
-  class CI < Struct.new(:project_name, :current_sha)
+  class CI < Struct.new(:project_name, :sha)
     def run
       last_time_elapsed = get_last_time_elapsed
       start
@@ -39,7 +39,7 @@ class Bard::CLI < Thor
     end
 
     def start
-      command = "curl -s -I -X POST '#{ci_host}/buildWithParameters?token=botandrose&GIT_REF=#{current_sha}'"
+      command = "curl -s -I -X POST '#{ci_host}/buildWithParameters?token=botandrose&GIT_REF=#{sha}'"
       output = `#{command}`
       @queueId = output[%r{Location: .+/queue/item/(\d+)/}, 1].to_i
     end
