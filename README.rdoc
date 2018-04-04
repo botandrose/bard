@@ -3,7 +3,6 @@
 This is a collection of tools designed to ease collaboration within Bot and Rose Design.
 It wraps git, capistrano, and rake to make things as simple as:
 
-  bard pull
   bard stage
   bard deploy
 
@@ -12,5 +11,5 @@ Seed database from staging or production:
 
 == Copyright
 
-Copyright (c) 2014 Micah Geisel. See LICENSE for details.
+Copyright (c) 2018 Micah Geisel. See LICENSE for details.
 
