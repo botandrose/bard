@@ -14,15 +14,6 @@ class Bard::CLI < Thor
   end
 
   method_options %w( verbose -v ) => :boolean
-  desc "pull", "pull changes to your local machine"
-  def pull
-    branch = Git.current_branch
-
-    run_crucial "git pull --rebase origin #{branch}", options.verbose?
-    run_crucial "bin/setup", options.verbose?
-  end
-
-  method_options %w( verbose -v ) => :boolean
   desc "stage", "pushes current branch, and stages it"
   def stage
     unless File.read("Capfile").include?("role :production")
