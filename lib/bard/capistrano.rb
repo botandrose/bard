@@ -78,8 +78,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "log in via ssh"
   task :ssh do
-     uri = URI.parse("ssh://#{roles[ENV['ROLES'].to_sym].first.to_s}")
-     exec "ssh -t #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} 'cd #{application} && exec $SHELL -l'"
+    uri = URI.parse("ssh://#{roles[ENV['ROLES'].to_sym].first.to_s}")
+    exec "ssh -t #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{"cd #{application} && " unless ENV['NOCD']}exec $SHELL -l'"
   end
 
   desc "download latest test coverage information from CI"
