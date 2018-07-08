@@ -126,7 +126,11 @@ class Bard::CLI < Thor
 
   desc "ssh [TO=production]", "logs into the specified server via SSH"
   def ssh to="production"
-    exec "cap _2.5.10_ ssh ROLES=#{to}"
+    if to == "gubs"
+      exec %(ssh -t gubito@gubs.pagekite.me 'cd vagrant && exec vagrant ssh -c"cd Sites/#{project_name} && exec $SHELL"')
+    else
+      exec "cap _2.5.10_ ssh ROLES=#{to}"
+    end
   end
 
   desc "install", "copies bin/setup and bin/ci scripts into current project."
