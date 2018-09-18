@@ -128,7 +128,10 @@ class Bard::CLI < Thor
   desc "ssh [TO=production]", "logs into the specified server via SSH"
   def ssh to="production"
     if to == "gubs"
-      exec %(ssh -t gubito@gubs.pagekite.me 'cd vagrant && exec vagrant ssh -c"#{"cd Sites/#{project_name} && " unless options["home"]}exec $SHELL"')
+      command = "exec $SHELL"
+      command = "cd Sites/#{project_name} && #{command}" unless options["home"]
+      command = %(ssh -t gubito@gubs.pagekite.me 'bash -l -c "cd vagrant && exec vagrant ssh -c\\"#{command}\\""')
+      exec command
     else
       exec "cap _2.5.10_ ssh ROLES=#{to}#{" NOCD=1" if options["home"]}"
     end
