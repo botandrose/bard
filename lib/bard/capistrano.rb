@@ -10,6 +10,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :application, File.basename(Dir.pwd)
 
   role :staging, "www@staging.botandrose.com:22022"
+  role :ci, "jenkins@ci.botandrose.com:22022"
+
   set :asset_paths, []
 
   namespace "data" do
@@ -78,8 +80,10 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "log in via ssh"
   task :ssh do
-    uri = URI.parse("ssh://#{roles[ENV['ROLES'].to_sym].first.to_s}")
-    exec "ssh -t #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{"cd #{application} && " unless ENV['NOCD']}exec $SHELL -l'"
+    role = ENV['ROLES'].to_sym
+    path = role == :ci ? "jobs/#{application}/workspace" : application
+    uri = URI.parse("ssh://#{roles[role].first.to_s}")
+    exec "ssh -t #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{"cd #{path} && " unless ENV['NOCD']}exec $SHELL -l'"
   end
 
   desc "download latest test coverage information from CI"
