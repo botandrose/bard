@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 require "rubygems"
-require File.dirname(__FILE__) + "/../lib/bard"
+require_relative "../lib/bard"
 Bard::CLI.start ARGV
 
