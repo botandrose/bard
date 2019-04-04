@@ -24,6 +24,7 @@ class Bard::CLI < Thor
 
     run_crucial "git push -u origin #{branch}", true
     run_crucial "cap _2.5.10_ stage BRANCH=#{branch}", options.verbose?
+    run_crucial "cap _2.5.10_ ping ROLES=staging"
 
     puts green("Stage Succeeded")
   end
@@ -51,6 +52,7 @@ class Bard::CLI < Thor
     end
 
     run_crucial "cap _2.5.10_ deploy", options.verbose?
+    run_crucial "cap _2.5.10_ ping ROLES=production"
 
     puts green("Deploy Succeeded")
 

@@ -78,6 +78,17 @@ Capistrano::Configuration.instance(:must_exist).load do
     run "cd #{application} && git fetch && git checkout -f origin/#{branch} && bin/setup", :roles => :staging
   end
 
+  desc "test app for downtime"
+  task :ping do
+    role = ENV.fetch("ROLES", "production").to_sym
+    uri = URI.parse("ssh://#{roles[role].first.to_s}")
+    command = "curl -sfLI #{uri.hostname} 2>&1 1>/dev/null"
+    unless system command
+      puts "#{uri.hostname} is down!"
+      exit 1
+    end
+  end
+
   desc "log in via ssh"
   task :ssh do
     role = ENV['ROLES'].to_sym
