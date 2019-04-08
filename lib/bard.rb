@@ -24,9 +24,11 @@ class Bard::CLI < Thor
 
     run_crucial "git push -u origin #{branch}", true
     run_crucial "cap _2.5.10_ stage BRANCH=#{branch}", options.verbose?
-    run_crucial "cap _2.5.10_ ping ROLES=staging"
-
     puts green("Stage Succeeded")
+
+    unless system("cap _2.5.10_ ping ROLES=staging >/dev/null 2>&1")
+      puts red("Staging is now down!")
+    end
   end
 
   method_options %w( verbose -v ) => :boolean, %w( skip-ci ) => :boolean
@@ -52,7 +54,6 @@ class Bard::CLI < Thor
     end
 
     run_crucial "cap _2.5.10_ deploy", options.verbose?
-    run_crucial "cap _2.5.10_ ping ROLES=production"
 
     puts green("Deploy Succeeded")
 
@@ -69,6 +70,10 @@ class Bard::CLI < Thor
       else
         run_crucial "git branch -D #{branch}"
       end
+    end
+
+    unless system("cap _2.5.10_ ping ROLES=production >/dev/null 2>&1")
+      puts red("Production is now down!")
     end
   end
 

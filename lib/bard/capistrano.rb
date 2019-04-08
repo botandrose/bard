@@ -80,11 +80,18 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "test app for downtime"
   task :ping do
-    role = ENV.fetch("ROLES", "production").to_sym
-    uri = URI.parse("ssh://#{roles[role].first.to_s}")
-    command = "curl -sfLI #{uri.hostname} 2>&1 1>/dev/null"
+    role_name = ENV.fetch("ROLES", "production").to_sym
+    server_definition = roles[role_name].first
+
+    url = server_definition.host
+    if role_name == :staging && server_definition.host == "staging.botandrose.com"
+      url = "#{application}.botandrose.com"
+    end
+    url += server_definition.options.fetch(:ping, "")
+
+    command = "curl -sfLI #{url} 2>&1 1>/dev/null"
     unless system command
-      puts "#{uri.hostname} is down!"
+      puts "#{role_name.to_s.capitalize} is down!"
       exit 1
     end
   end
