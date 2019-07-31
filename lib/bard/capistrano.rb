@@ -80,6 +80,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "test app for downtime"
   task :ping do
+    deploy_roles = roles.keys.include?(:production) ? :production : :staging
+    ENV["ROLES"] = deploy_roles.to_s
     role_name = ENV.fetch("ROLES", "production").to_sym
     server_definition = roles[role_name].first
 
