@@ -41,8 +41,9 @@ class Bard::CLI < Thor
     else
       run_crucial "git fetch origin master:master"
 
-      if not Git.fast_forward_merge? "master", branch
-        raise "The master branch has advanced since last deploy, probably due to a bugfix.\n  Rebase your branch on top of it, and check for breakage."
+      if not Git.fast_forward_merge? "origin/master", branch
+        puts "The master branch has advanced. Attempting rebase..."
+        run_crucial "git rebase origin/master"
       end
 
       run_crucial "git push -f origin #{branch}:#{branch}"
