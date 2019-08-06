@@ -138,7 +138,7 @@ class Bard::CLI < Thor
     if to == "gubs"
       command = "exec $SHELL"
       command = "cd Sites/#{project_name} && #{command}" unless options["home"]
-      command = %(ssh -t gubito@gubs.pagekite.me 'bash -l -c "cd vagrant && exec vagrant ssh -c\\"#{command}\\""')
+      command = %(ssh -t gubito@gubs.pagekite.me 'bash -l -c "exec ./vagrant \\"#{command}\\""')
       exec command
     else
       exec "cap _2.5.10_ ssh ROLES=#{to}#{" NOCD=1" if options["home"]}"
