@@ -98,6 +98,16 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
 
+  desc "push master key"
+  task :push_master_key do
+    transfer :up, "config/master.key", "#{application}/config/master.key"
+  end
+
+  desc "pull master key"
+  task :pull_master_key do
+    transfer :down, "#{application}/config/master.key", "config/master.key"
+  end
+
   desc "log in via ssh"
   task :ssh do
     role = ENV['ROLES'].to_sym
