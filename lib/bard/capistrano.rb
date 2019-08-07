@@ -89,7 +89,13 @@ Capistrano::Configuration.instance(:must_exist).load do
     if role_name == :staging && server_definition.host == "staging.botandrose.com"
       url = "#{application}.botandrose.com"
     end
-    url += server_definition.options.fetch(:ping, "")
+
+    ping_option = server_definition.options.fetch(:ping, "")
+    if ping_option =~ %r{^/}
+      url += ping_option
+    else
+      url = ping_option
+    end
 
     command = "curl -sfLI #{url} 2>&1 1>/dev/null"
     unless system command
