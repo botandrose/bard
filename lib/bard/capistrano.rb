@@ -97,7 +97,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       url = ping_option
     end
 
-    command = "curl -sfLI #{url} 2>&1 1>/dev/null"
+    command = "curl -sfL #{url} 2>&1 1>/dev/null"
     unless system command
       puts "#{role_name.to_s.capitalize} is down!"
       exit 1
