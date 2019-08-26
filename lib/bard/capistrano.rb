@@ -93,7 +93,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     ping_option = server_definition.options.fetch(:ping, "")
     if ping_option =~ %r{^/}
       url += ping_option
-    else
+    elsif ping_option.to_s.length > 0
       url = ping_option
     end
 
