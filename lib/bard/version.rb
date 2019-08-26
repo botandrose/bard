@@ -1,4 +1,4 @@
 module Bard
-  VERSION = "0.41.1"
+  VERSION = "0.41.2"
 end
 
