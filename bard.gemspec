@@ -19,10 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "thor", ">= 0.19.0"
-  spec.add_dependency "capistrano", "= 2.5.10"
-  spec.add_dependency "net-ssh", "~> 4.0"
   spec.add_dependency "rvm"
-  spec.add_dependency "rvm-capistrano"
   spec.add_dependency "systemu", ">= 1.2.0"
   spec.add_dependency "term-ansicolor", ">= 1.0.3"
   spec.add_dependency "bard-rake", ">= 0.1.1"

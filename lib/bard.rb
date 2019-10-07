@@ -1,34 +1,69 @@
-$:.unshift File.expand_path(File.dirname(__FILE__))
-
 module Bard; end
 
 require "bard/base"
 require "bard/git"
 require "bard/ci"
+require "bard/config"
 
 class Bard::CLI < Thor
+  def initialize(*args, **kwargs, &block)
+    super
+    @config = Config.new(project_name, "bard.rb")
+  end
+
   desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
-  def data(from = "production", to = "local")
-    exec "cap _2.5.10_ data:pull ROLES=#{from}" if to == "local"
-    exec "cap _2.5.10_ data:push ROLES=#{to}" if from == "local"
+  def data(from="production", to="local")
+    if to == "local"
+      data_pull_db from.to_sym
+      data_pull_assets from.to_sym
+    end
+    if from == "local"
+      data_push_db to.to_sym
+      data_push_assets to.to_sym
+    end
+  end
+
+  desc "data_pull_db FROM", "copy database down from server"
+  def data_pull_db server
+    run_crucial ssh_command(server, "bin/rake db:dump && gzip -9f db/data.sql")
+    copy :from, server, "db/data.sql.gz"
+    run_crucial "gunzip -f db/data.sql.gz && bin/rake db:load"
+  end
+
+  desc "data_push_db TO", "copy database up to server"
+  def data_push_db server
+    run_crucial "bin/rake db:dump && gzip -9f db/data.sql"
+    copy :to, server, "db/data.sql.gz"
+    run_crucial ssh_command(server, "gunzip -f db/data.sql.gz && bin/rake db:load")
+  end
+
+  desc "data_pull_assets FROM", "copy file assets down from server"
+  def data_pull_assets server
+    @config.data.each do |path|
+      rsync :from, server, path
+    end
+  end
+
+  desc "data_push_assets FROM", "copy file assets up to server"
+  def data_push_assets server
+    @config.data.each do |path|
+      rsync :to, server, path
+    end
   end
 
   method_options %w( verbose -v ) => :boolean
-  desc "stage", "pushes current branch, and stages it"
-  def stage
-    unless File.read("Capfile").include?("role :production")
+  desc "stage [BRANCH=HEAD]", "pushes current branch, and stages it"
+  def stage branch=Git.current_branch
+    unless @config.servers.key?(:production)
       raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
     end
 
-    branch = Git.current_branch
-
     run_crucial "git push -u origin #{branch}", true
-    run_crucial "cap _2.5.10_ stage BRANCH=#{branch}", options.verbose?
+    command = "git fetch && git checkout -f origin/#{branch} && bin/setup"
+    run_crucial ssh_command(:staging, command)
     puts green("Stage Succeeded")
 
-    unless system("cap _2.5.10_ ping ROLES=staging >/dev/null 2>&1")
-      puts red("Staging is now down!")
-    end
+    ping :staging
   end
 
   method_options %w( verbose -v ) => :boolean, %w( skip-ci ) => :boolean
@@ -41,7 +76,7 @@ class Bard::CLI < Thor
     else
       run_crucial "git fetch origin master:master"
 
-      if not Git.fast_forward_merge? "origin/master", branch
+      unless Git.fast_forward_merge?("origin/master", branch)
         puts "The master branch has advanced. Attempting rebase..."
         run_crucial "git rebase origin/master"
       end
@@ -54,7 +89,13 @@ class Bard::CLI < Thor
       run_crucial "git fetch origin master:master"
     end
 
-    run_crucial "cap _2.5.10_ deploy", options.verbose?
+    if `git remote` =~ /\bgithub\b/
+      run_crucial "git push github"
+    end
+
+    to = @config.servers.key?(:production) ? :production : :staging
+    command = "git pull origin master && bin/setup"
+    run_crucial ssh_command(to, command)
 
     puts green("Deploy Succeeded")
 
@@ -62,20 +103,14 @@ class Bard::CLI < Thor
       puts "Deleting branch: #{branch}"
       run_crucial "git push --delete origin #{branch}"
 
-      case Git.current_branch
-      when branch
+      if branch == Git.current_branch
         run_crucial "git checkout master"
-        run_crucial "git branch -d #{branch}"
-      when "master"
-        run_crucial "git branch -d #{branch}"
-      else
-        run_crucial "git branch -D #{branch}"
       end
+
+      run_crucial "git branch -D #{branch}"
     end
 
-    unless system("cap _2.5.10_ ping ROLES=production >/dev/null 2>&1")
-      puts red("Production is now down!")
-    end
+    ping to
   end
 
   method_options %w( verbose -v ) => :boolean
@@ -102,7 +137,7 @@ class Bard::CLI < Thor
         puts "Continuous integration: success!"
         if File.exist?("coverage")
           puts "Downloading test coverage from CI..."
-          run_crucial "cap _2.5.10_ download_ci_test_coverage"
+          download_ci_test_coverage
         end
         puts "Deploying..."
       else
@@ -132,23 +167,92 @@ class Bard::CLI < Thor
     end
   end
 
-  method_options %w( home ) => :boolean
+  method_options %w[home] => :boolean
   desc "ssh [TO=production]", "logs into the specified server via SSH"
-  def ssh to="production"
-    if to == "gubs"
-      command = "exec $SHELL"
-      command = "cd Sites/#{project_name} && #{command}" unless options["home"]
-      command = %(ssh -t gubito@gubs.pagekite.me 'bash -l -c "exec ./vagrant \\"#{command}\\""')
-      exec command
-    else
-      exec "cap _2.5.10_ ssh ROLES=#{to}#{" NOCD=1" if options["home"]}"
-    end
+  def ssh to=:production
+    command = "exec $SHELL -l"
+    command = "bash -lic 'exec ./vagrant \'#{command}\''" if to == "gubs"
+    exec ssh_command(to, command, home: options["home"])
   end
 
   desc "install", "copies bin/setup and bin/ci scripts into current project."
   def install
     install_files_path = File.expand_path(File.join(__dir__, "../install_files/*"))
     system "cp #{install_files_path} bin/"
+  end
+
+  desc "ping [SERVER=production]", "hits the server over http to verify that its up."
+  def ping server=:production
+    server = @config.servers[server.to_sym]
+    return false if server.ping == false
+
+    url = server.default_ping
+    if server.ping =~ %r{^/}
+      url += server.ping
+    elsif server.ping.to_s.length > 0
+      url = server.ping
+    end
+
+    command = "curl -sfL #{url} 2>&1 1>/dev/null"
+    unless system command
+      puts "#{server.to_s.capitalize} is down!"
+      exit 1
+    end
+  end
+
+  desc "push_master_key", "copy master key to server"
+  def push_master_key server
+    copy :to, server, "config/master.key"
+  end
+
+  desc "pull_master_key", "copy master key from server"
+  def pull_master_key server
+    copy :from, server, "config/master.key"
+  end
+
+  desc "download_ci_test_coverage", "download latest test coverage information from CI"
+  def download_ci_test_coverage
+    rsync :from, :ci, "coverage ./"
+  end
+
+  private
+
+  def ssh_command server, command, home: false
+    server = @config.servers[server.to_sym]
+    uri = URI.parse("ssh://#{server.ssh}")
+    command = "cd #{server.path} && #{command}" unless home
+    command = "ssh -tt #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{command}'"
+    if server.gateway
+      uri = URI.parse("ssh://#{server.gateway}")
+      command = "ssh -tt #{" -p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} \"#{command}\""
+    end
+    command
+  end
+
+  def copy direction, server, path
+    server = @config.servers[server.to_sym]
+    uri = URI.parse("ssh://#{server.ssh}")
+    gateway = "-oProxyJump=#{server.gateway}" if server.gateway
+    port = "-P#{uri.port}" if uri.port
+    from_and_to = [path, "#{uri.user}@#{uri.host}:#{server.path}/#{path}"]
+    from_and_to.reverse! if direction == :from
+    command = "scp #{gateway} #{port} #{from_and_to.join(" ")}"
+    run_crucial command
+  end
+
+  def rsync direction, server, path
+    server = @config.servers[server.to_sym]
+    uri = URI.parse("ssh://#{server.ssh}")
+    port = uri.port || 22
+    gateway = "-oProxyJump=#{server.gateway}" if server.gateway
+    ssh = "-e'ssh -p#{port} #{gateway}'"
+
+    dest_path = path.dup
+    dest_path.sub! %r(/[^/]+$), '/'
+    from_and_to = [dest_path, "#{uri.user}@#{uri.host}:#{project_name}/#{path}"]
+    from_and_to.reverse! if direction == :from
+    command = "rsync #{ssh} --delete -avz #{from_and_to.join(" ")}"
+    run_crucial command
   end
 end
 
