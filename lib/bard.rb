@@ -3,6 +3,8 @@ module Bard; end
 require "bard/base"
 require "bard/git"
 require "bard/ci"
+require "bard/data"
+
 require "bard/config"
 
 class Bard::CLI < Thor
@@ -13,42 +15,7 @@ class Bard::CLI < Thor
 
   desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
   def data(from="production", to="local")
-    if to == "local"
-      data_pull_db from.to_sym
-      data_pull_assets from.to_sym
-    end
-    if from == "local"
-      data_push_db to.to_sym
-      data_push_assets to.to_sym
-    end
-  end
-
-  desc "data_pull_db FROM", "copy database down from server"
-  def data_pull_db server
-    run_crucial ssh_command(server, "bin/rake db:dump && gzip -9f db/data.sql")
-    copy :from, server, "db/data.sql.gz"
-    run_crucial "gunzip -f db/data.sql.gz && bin/rake db:load"
-  end
-
-  desc "data_push_db TO", "copy database up to server"
-  def data_push_db server
-    run_crucial "bin/rake db:dump && gzip -9f db/data.sql"
-    copy :to, server, "db/data.sql.gz"
-    run_crucial ssh_command(server, "gunzip -f db/data.sql.gz && bin/rake db:load")
-  end
-
-  desc "data_pull_assets FROM", "copy file assets down from server"
-  def data_pull_assets server
-    @config.data.each do |path|
-      rsync :from, server, path
-    end
-  end
-
-  desc "data_push_assets FROM", "copy file assets up to server"
-  def data_push_assets server
-    @config.data.each do |path|
-      rsync :to, server, path
-    end
+    Data.new(self, from, to).call
   end
 
   method_options %w( verbose -v ) => :boolean
@@ -205,71 +172,19 @@ class Bard::CLI < Thor
     end
   end
 
-  desc "push_master_key", "copy master key to server"
-  def push_master_key server
-    copy :to, server, "config/master.key"
-  end
-
-  desc "pull_master_key", "copy master key from server"
-  def pull_master_key server
-    copy :from, server, "config/master.key"
+  desc "master_key [FROM=production, TO=local]", "copy master key from FROM to TO"
+  def master_key from="production", to="local"
+    if to == "local"
+      copy :from, from, "config/master.key"
+    end
+    if from == "local"
+      copy :to, to, "config/master.key"
+    end
   end
 
   desc "download_ci_test_coverage", "download latest test coverage information from CI"
   def download_ci_test_coverage
     rsync :from, :ci, "coverage ./"
-  end
-
-  private
-
-  def ssh_command server, command, home: false
-    server = @config.servers[server.to_sym]
-    uri = URI.parse("ssh://#{server.ssh}")
-    command = "cd #{server.path} && #{command}" unless home
-    command = "ssh -tt #{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{command}'"
-    if server.gateway
-      uri = URI.parse("ssh://#{server.gateway}")
-      command = "ssh -tt #{" -p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} \"#{command}\""
-    end
-    command
-  end
-
-  def copy direction, server, path
-    server = @config.servers[server.to_sym]
-
-    uri = URI.parse("ssh://#{server.gateway}")
-    port = uri.port ? "-p#{uri.port}" : ""
-    gateway = server.gateway ? "-oProxyCommand='ssh #{port} #{uri.user}@#{uri.host} -W %h:%p'" : ""
-
-    uri = URI.parse("ssh://#{server.ssh}")
-    port = uri.port ? "-P#{uri.port}" : ""
-    from_and_to = [path, "#{uri.user}@#{uri.host}:#{server.path}/#{path}"]
-
-    from_and_to.reverse! if direction == :from
-    command = "scp #{gateway} #{port} #{from_and_to.join(" ")}"
-
-    run_crucial command
-  end
-
-  def rsync direction, server, path
-    server = @config.servers[server.to_sym]
-
-    uri = URI.parse("ssh://#{server.gateway}")
-    port = uri.port ? "-p#{uri.port}" : ""
-    gateway = server.gateway ? "-oProxyCommand=\"ssh #{port} #{uri.user}@#{uri.host} -W %h:%p\"" : ""
-
-    uri = URI.parse("ssh://#{server.ssh}")
-    port = uri.port ? "-p#{uri.port}" : ""
-    ssh = "-e'ssh #{port} #{gateway}'"
-
-    dest_path = path.dup
-    dest_path.sub! %r(/[^/]+$), '/'
-    from_and_to = [dest_path, "#{uri.user}@#{uri.host}:#{project_name}/#{path}"]
-
-    from_and_to.reverse! if direction == :from
-    command = "rsync #{ssh} --delete -avz #{from_and_to.join(" ")}"
-
-    run_crucial command
   end
 end
 
