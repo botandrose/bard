@@ -67,7 +67,7 @@ class Bard::CLI < Thor
 
     dest_path = path.dup
     dest_path.sub! %r(/[^/]+$), '/'
-    from_and_to = [dest_path, "#{uri.user}@#{uri.host}:#{project_name}/#{path}"]
+    from_and_to = [dest_path, "#{uri.user}@#{uri.host}:#{server.path}/#{path}"]
 
     from_and_to.reverse! if direction == :from
     command = "rsync #{ssh} --delete -avz #{from_and_to.join(" ")}"
