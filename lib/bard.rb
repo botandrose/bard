@@ -184,7 +184,7 @@ class Bard::CLI < Thor
 
   desc "download_ci_test_coverage", "download latest test coverage information from CI"
   def download_ci_test_coverage
-    rsync :from, :ci, "./coverage"
+    rsync :from, :ci, "coverage"
   end
 end
 

@@ -66,10 +66,11 @@ class Bard::CLI < Thor
     ssh = "-e'ssh #{port} #{gateway}'"
 
     dest_path = path.dup
-    dest_path.sub! %r(/[^/]+$), '/'
+    dest_path = "./#{dest_path}"
     from_and_to = [dest_path, "#{uri.user}@#{uri.host}:#{server.path}/#{path}"]
-
     from_and_to.reverse! if direction == :from
+    from_and_to[-1].sub! %r(/[^/]+$), '/'
+
     command = "rsync #{ssh} --delete -avz #{from_and_to.join(" ")}"
 
     run_crucial command
