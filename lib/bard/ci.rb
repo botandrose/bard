@@ -1,3 +1,4 @@
+require "json"
 require "forwardable"
 require "open3"
 
@@ -68,7 +69,7 @@ class Bard::CLI < Thor
       def started?
         command = "curl -s -g '#{ci_host}/api/json?depth=1&tree=builds[queueId,number]'"
         output = `#{command}`
-        output =~ /"queueId":#{@queueId}\b/
+        JSON.parse(output)["builds"][0]["queueId"] == @queueId
       end
 
       def job_id
