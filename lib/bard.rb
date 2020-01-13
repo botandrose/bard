@@ -33,12 +33,12 @@ class Bard::CLI < Thor
     ping :staging
   end
 
-  method_options %w( verbose -v ) => :boolean, %w( skip-ci ) => :boolean
+  method_options %w[verbose -v] => :boolean, %w[skip-ci] => :boolean, %w[local-ci -l] => :boolean
   desc "deploy [BRANCH=HEAD]", "checks that branch is a ff with master, checks with ci, and then merges into master and deploys to production, and deletes branch."
   def deploy branch=Git.current_branch
     if branch == "master"
       run_crucial "git push origin master:master"
-      invoke :ci unless options["skip-ci"]
+      invoke :ci, options.slice("local-ci") unless options["skip-ci"]
 
     else
       run_crucial "git fetch origin master:master"
@@ -50,7 +50,7 @@ class Bard::CLI < Thor
 
       run_crucial "git push -f origin #{branch}:#{branch}"
 
-      invoke :ci unless options["skip-ci"]
+      invoke :ci, options.slice("local-ci") unless options["skip-ci"]
 
       run_crucial "git push origin #{branch}:master"
       run_crucial "git fetch origin master:master"
@@ -80,10 +80,10 @@ class Bard::CLI < Thor
     ping to
   end
 
-  method_options %w( verbose -v ) => :boolean
+  method_options %w[verbose -v] => :boolean, %w[local-ci -l] => :boolean
   desc "ci [BRANCH=HEAD]", "runs ci against BRANCH"
   def ci branch=Git.current_branch
-    ci = CI.new(project_name, `git rev-parse #{branch}`.chomp)
+    ci = CI.new(project_name, `git rev-parse #{branch}`.chomp, local: options["local-ci"])
     if ci.exists?
       puts "Continuous integration: starting build on #{branch}..."
 
@@ -102,7 +102,7 @@ class Bard::CLI < Thor
       if success
         puts
         puts "Continuous integration: success!"
-        if File.exist?("coverage")
+        if !options["local-ci"] && File.exist?("coverage")
           puts "Downloading test coverage from CI..."
           download_ci_test_coverage
         end
