@@ -81,6 +81,13 @@ class Bard::CLI < Thor
 
       def building?
         self.last_response = `curl -s #{ci_host}/#{job_id}/api/json?tree=building,result`
+        if last_response.blank?
+          sleep(2) # retry
+          self.last_response = `curl -s #{ci_host}/#{job_id}/api/json?tree=building,result`
+          if last_response.blank?
+            raise "Blank response from CI twice in a row. Aborting!"
+          end
+        end
         last_response.include? '"building":true'
       end
 
