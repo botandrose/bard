@@ -34,8 +34,10 @@ class Bard::CLI < Thor
   end
 
   method_options %w[verbose -v] => :boolean, %w[skip-ci] => :boolean, %w[local-ci -l] => :boolean
-  desc "deploy [BRANCH=HEAD]", "checks that branch is a ff with master, checks with ci, and then merges into master and deploys to production, and deletes branch."
-  def deploy branch=Git.current_branch
+  desc "deploy [TO=production]", "checks that current branch is a ff with master, checks with ci, merges into master, deploys to target, and then deletes branch."
+  def deploy to=nil
+    branch = Git.current_branch
+
     if branch == "master"
       run_crucial "git push origin master:master"
       invoke :ci, options.slice("local-ci") unless options["skip-ci"]
@@ -60,7 +62,8 @@ class Bard::CLI < Thor
       run_crucial "git push github"
     end
 
-    to = @config.servers.key?(:production) ? :production : :staging
+    to ||= @config.servers.key?(:production) ? :production : :staging
+
     command = "git pull origin master && bin/setup"
     run_crucial ssh_command(to, command)
 
