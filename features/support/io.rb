@@ -1,5 +1,6 @@
+require "open3"
 def type(command)
-  @status, @stdout, @stderr = systemu command, :env => @env
+  @stdout, @stderr, @status = Open3.capture3(@env, command)
   if ENV['DEBUG']
     puts '-' * 20
     puts "Executing command: #{command}"

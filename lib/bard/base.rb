@@ -1,22 +1,22 @@
 require "thor"
 require "term/ansicolor"
-require "systemu"
+require "open3"
 
 class Bard::CLI < Thor
   include Term::ANSIColor
 
   private
 
-  def fatal(message)
-    raise red("!!! ") + message
-  end
-
   def run_crucial(command, verbose = false)
-    status, stdout, stderr = systemu command
-    fatal "Running command: #{yellow(command)}: #{stderr}" if status.to_i.nonzero?
-    if verbose
+    stdout, stderr, status = Open3.capture3(command)
+    failed = status.to_i.nonzero?
+    if verbose || failed
       $stdout.puts stdout
       $stderr.puts stderr
+    end
+    if failed
+      puts red("!!! ") + "Running command failed: #{yellow(command)}"
+      exit 1
     end
     stdout.chomp
   end
