@@ -43,7 +43,7 @@ class Bard::CLI < Thor
 
     def data *paths
       if paths.length == 0
-        @data
+        Array(@data)
       else
         @data = paths
       end
