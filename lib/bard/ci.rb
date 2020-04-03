@@ -108,6 +108,7 @@ class Bard::CLI < Thor
         end
 
         @stdin.close
+        @console = @stdout_and_stderr.read
         @stdout_and_stderr.close
 
         success?
@@ -118,7 +119,7 @@ class Bard::CLI < Thor
       end
 
       def console
-        @stdout_and_stderr.read
+        @console
       end
 
       attr_accessor :last_response
