@@ -7,6 +7,7 @@ rdoc
 tmp
 .bundle
 .rvmrc
+.ruby-version
 Gemfile.lock
 pkg/*
 
