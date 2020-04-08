@@ -1,45 +1,31 @@
 module SpecifiedNode
-  class NVMError < StandardError; end
-
-  NVM_PATH = File.expand_path("~/.nvm/nvm.sh")
-
   extend self
 
+  NODE_VERSION = "v12.16.1"
+  NODE_PATH = "tmp/node-#{NODE_VERSION}-linux-x64/bin/node"
+
   def ensure!
-    install_nvm unless nvm_installed?
-    restart unless nvm_active?
     install_node unless node_installed?
-    "true"
+    install_binstub
+    "bin/node --version"
   end
 
   private
 
-  def install_nvm
-    system("curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash")\
-      or raise "Couldn't install nvm"
-  end
-
-  def nvm_installed?
-    File.exist?(NVM_PATH)
-  end
-
   def install_node
-    nvm "install" or raise NVMError.new($?.exitstatus)
+    system("wget -cO- https://nodejs.org/dist/#{NODE_VERSION}/node-#{NODE_VERSION}-linux-x64.tar.xz | tar xJ -C tmp/")
+  end
+
+  def install_binstub
+    system("cd bin && ln -fs ../#{NODE_PATH}")
   end
 
   def node_installed?
-    nvm "use"
+    File.exist?(NODE_PATH) && `#{NODE_PATH} --version`.chomp == NODE_VERSION
   end
 
-  def restart
-    exec %(bash -lc ". #{NVM_PATH}; #{$0}")
-  end
-
-  def nvm_active?
-    ENV.key?("NVM_DIR")
-  end
-
-  def nvm command
-    system(". #{NVM_PATH}; nvm #{command}")
+  def binstub_installed?
+    File.exist?("bin/node")
   end
 end
+
