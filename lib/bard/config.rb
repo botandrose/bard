@@ -77,8 +77,14 @@ class Bard::CLI < Thor
         "http://#{uri.host}"
       end
 
-      def path
-        super || project_name
+      def path(*args)
+        if args.length == 1
+          self.path = args.first
+        elsif args.length == 0
+          super() || project_name
+        else
+          raise ArgumentError
+        end
       end
     end
   end
