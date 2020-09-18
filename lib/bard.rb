@@ -14,7 +14,8 @@ class Bard::CLI < Thor
   end
 
   desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
-  def data(from="production", to="local")
+  def data(from=nil, to="local")
+    from ||= @config.servers.key?(:production) ? "production" : "staging"
     Data.new(self, from, to).call
   end
 
