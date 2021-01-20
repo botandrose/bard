@@ -126,6 +126,13 @@ class Bard::CLI < Thor
     end
   end
 
+  desc "open [SERVER=production]", "opens the url in the web browser."
+  def open server=nil
+    server ||= @config.servers.key?(:production) ? :production : :staging
+    server = @config.servers[server.to_sym]
+    exec "xdg-open #{server.default_ping}"
+  end
+
   desc "hurt", "reruns a command until it fails"
   def hurt *args
     1.upto(Float::INFINITY) do |count|
