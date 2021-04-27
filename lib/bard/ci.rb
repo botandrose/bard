@@ -38,11 +38,11 @@ class Bard::CLI < Thor
       end
 
       def exists?
-        `curl -s -I #{ci_host}/?token=botandrose` =~ /\b200 OK\b/
+        `curl -s -I #{ci_host}/` =~ /\b200 OK\b/
       end
 
       def console
-        raw = `curl -s #{ci_host}/lastBuild/console?token=botandrose`
+        raw = `curl -s #{ci_host}/lastBuild/console`
         raw[%r{<pre.*?>(.+)</pre>}m, 1]
       end
 
@@ -51,17 +51,21 @@ class Bard::CLI < Thor
       private
 
       def get_last_time_elapsed
-        response = `curl -s #{ci_host}/lastStableBuild/api/xml?token=botandrose`
+        response = `curl -s #{ci_host}/lastStableBuild/api/xml`
         response.match(/<duration>(\d+)<\/duration>/)
         $1 ? $1.to_i / 1000 : nil
       end
 
+      def auth
+        "botandrose:11cc2ba6ef2e43fbfbedc1f466724f6290"
+      end
+
       def ci_host
-        "http://botandrose:thecakeisalie!@ci.botandrose.com/job/#{project_name}"
+        "http://#{auth}@ci.botandrose.com/job/#{project_name}"
       end
 
       def start
-        command = "curl -s -I -X POST '#{ci_host}/buildWithParameters?token=botandrose&GIT_REF=#{sha}'"
+        command = "curl -s -I -X POST -L '#{ci_host}/buildWithParameters?GIT_REF=#{sha}'"
         output = `#{command}`
         @queueId = output[%r{Location: .+/queue/item/(\d+)/}, 1].to_i
       end
