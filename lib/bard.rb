@@ -178,7 +178,7 @@ class Bard::CLI < Thor
 
     command = "curl -sfL #{url} 2>&1 1>/dev/null"
     unless system command
-      puts "#{server.to_s.capitalize} is down!"
+      puts "#{server.key.to_s.capitalize} is down!"
       exit 1
     end
   end
