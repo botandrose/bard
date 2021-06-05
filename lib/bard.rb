@@ -197,5 +197,10 @@ class Bard::CLI < Thor
   def download_ci_test_coverage
     rsync :from, :ci, "coverage"
   end
+
+  desc "vim", "open all files that have changed since master"
+  def vim
+    exec "vim -p `git diff master --name-only | grep -v sass$ | tac`"
+  end
 end
 
