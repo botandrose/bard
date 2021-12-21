@@ -1,3 +1,5 @@
+require "uri"
+
 class Bard::CLI < Thor
   class Config
     def initialize project_name, path

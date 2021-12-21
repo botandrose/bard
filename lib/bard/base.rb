@@ -1,6 +1,7 @@
 require "thor"
 require "term/ansicolor"
 require "open3"
+require "uri"
 
 class Bard::CLI < Thor
   include Term::ANSIColor
