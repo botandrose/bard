@@ -30,6 +30,7 @@ class Bard::CLI < Thor
     server = @config.servers[server.to_sym]
     uri = URI.parse("ssh://#{server.ssh}")
     ssh_key = server.ssh_key ? "-i #{server.ssh_key} " : ""
+    command = "#{server.env} #{command}" if server.env
     command = "cd #{server.path} && #{command}" unless home
     command = "ssh -tt #{ssh_key}#{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{command}'"
     if server.gateway

@@ -57,7 +57,7 @@ class Bard::CLI < Thor
       instance_eval File.read(File.expand_path(path)) if File.exist?(path)
     end
 
-    class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key)
+    class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env)
       def self.setting *fields
         fields.each do |field|
           define_method field do |*args|
@@ -72,7 +72,7 @@ class Bard::CLI < Thor
         end
       end
 
-      setting :ssh, :path, :ping, :gateway, :ssh_key
+      setting :ssh, :path, :ping, :gateway, :ssh_key, :env
 
       def default_ping
         uri = URI.parse("ssh://#{ssh}")
