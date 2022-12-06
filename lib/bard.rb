@@ -199,8 +199,8 @@ class Bard::CLI < Thor
   end
 
   desc "vim", "open all files that have changed since master"
-  def vim
-    exec "vim -p `git diff master --name-only | grep -v sass$ | tac`"
+  def vim branch="master"
+    exec "vim -p `git diff #{branch} --name-only | grep -v sass$ | tac`"
   end
 end
 
