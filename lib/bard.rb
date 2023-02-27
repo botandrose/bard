@@ -87,7 +87,7 @@ class Bard::CLI < Thor
   method_options %w[verbose -v] => :boolean, %w[local-ci -l] => :boolean
   desc "ci [BRANCH=HEAD]", "runs ci against BRANCH"
   def ci branch=Git.current_branch
-    ci = CI.new(project_name, `git rev-parse #{branch}`.chomp, local: options["local-ci"])
+    ci = CI.new(project_name, branch, local: options["local-ci"])
     if ci.exists?
       puts "Continuous integration: starting build on #{branch}..."
 

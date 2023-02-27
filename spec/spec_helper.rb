@@ -1,10 +1,8 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'rubygems'
-require 'bard'
-require 'spec'
-require 'spec/autorun'
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+require "byebug"
 
-Spec::Runner.configure do |config|
-  
+RSpec.configure do |config|
+  config.filter_run focus: true
+  config.run_all_when_everything_filtered = true
 end
+
