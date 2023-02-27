@@ -11,12 +11,24 @@ end
 describe Bard::CLI::CI::GithubActions::API do
   subject { described_class.new("metrc") }
 
-  it "works" do
-    puts subject.last_successful_run.time_elapsed
+  describe "#last_successful_run" do
+    xit "has #time_elapsed" do
+      subject.last_successful_run.time_elapsed
+    end
+
+    xit "has #console" do
+      subject.last_successful_run.console
+    end
   end
 
-  it "works" do
-    puts subject.last_successful_run.console
+  describe "#create_run!" do
+    xit "returns a run" do
+      subject.create_run! "master"
+    end
   end
+end
+
+describe Bard::CLI::CI::GithubActions::Client do
+  subject { described_class.new("metrc") }
 end
 
