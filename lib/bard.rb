@@ -149,8 +149,8 @@ class Bard::CLI < Thor
   desc "ssh [TO=production]", "logs into the specified server via SSH"
   def ssh to=:production
     command = "exec $SHELL -l"
-    if to == "gubs" && !options["home"]
-      server = @config.servers[:gubs]
+    if to == "theia" && !options["home"]
+      server = @config.servers[:theia]
       command = %(bash -lic "exec ./vagrant \\"cd #{server.path} && #{command}\\"")
       exec ssh_command(to, command, home: true)
     else

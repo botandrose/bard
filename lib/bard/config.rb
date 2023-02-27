@@ -12,10 +12,17 @@ class Bard::CLI < Thor
           "./",
           false,
         ),
+        theia: Server.new(
+          project_name,
+          :theia,
+          "gubito@gubs.pagekite.me",
+          "Sites/#{project_name}",
+          false,
+        ),
         gubs: Server.new(
           project_name,
           :gubs,
-          "gubito@gubs.pagekite.me",
+          "botandrose@cloud.hackett.world:22022",
           "Sites/#{project_name}",
           false,
         ),
