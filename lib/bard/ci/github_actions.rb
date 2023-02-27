@@ -170,7 +170,7 @@ class Bard::CLI < Thor
               Net::HTTP::Get.new(uri)
             end
           when Net::HTTPSuccess then
-            if response["Content-Type"].include?("/json")
+            if response["Content-Type"].to_s.include?("/json")
               JSON.load(response.body)
             else
               response.body
