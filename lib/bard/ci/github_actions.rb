@@ -52,11 +52,11 @@ class Bard::CLI < Thor
 
           loop do
             runs = client.get("runs", head_sha: sha, created: ">#{start_time.iso8601}")
-            break if json = runs["workflow_runs"].first
+            if json = runs["workflow_runs"].first
+              return Run.new(self, json)
+            end
             sleep 1
           end
-
-          Run.new(self, json)
         end
 
         def find_job_by_run_id run_id
