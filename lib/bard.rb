@@ -161,7 +161,7 @@ class Bard::CLI < Thor
   desc "install", "copies bin/setup and bin/ci scripts into current project."
   def install
     install_files_path = File.expand_path(File.join(__dir__, "../install_files/*"))
-    system "cp #{install_files_path} bin/"
+    system "cp -R #{install_files_path} bin/"
   end
 
   desc "ping [SERVER=production]", "hits the server over http to verify that its up."
