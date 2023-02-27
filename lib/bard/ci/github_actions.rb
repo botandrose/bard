@@ -91,7 +91,7 @@ class Bard::CLI < Thor
         end
 
         def success?
-          json["status"] == "success"
+          json["status"] == "completed" && json["conclusion"] == "success"
         end
 
         def job
@@ -101,16 +101,6 @@ class Bard::CLI < Thor
         def console
           job.logs
         end
-
-        # OTHER STATUSES
-        # completed
-        # action_required
-        # cancelled
-        # failure
-        # neutral
-        # skipped
-        # stale
-        # timed_out
       end
 
       class Job < Struct.new(:api, :json)

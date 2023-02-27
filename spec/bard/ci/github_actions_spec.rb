@@ -13,7 +13,8 @@ describe Bard::CLI::CI::GithubActions::API do
 
   describe "#last_successful_run" do
     xit "has #time_elapsed" do
-      subject.last_successful_run.time_elapsed
+      run = subject.last_successful_run
+      run.time_elapsed
     end
 
     xit "has #console" do
