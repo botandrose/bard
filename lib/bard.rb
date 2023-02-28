@@ -162,6 +162,8 @@ class Bard::CLI < Thor
   def install
     install_files_path = File.expand_path(File.join(__dir__, "../install_files/*"))
     system "cp -R #{install_files_path} bin/"
+    github_files_path = File.expand_path(File.join(__dir__, "../install_files/.github"))
+    system "cp -R #{github_files_path} ./"
   end
 
   desc "ping [SERVER=production]", "hits the server over http to verify that its up."
