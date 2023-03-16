@@ -147,7 +147,7 @@ class Bard::CLI < Thor
           uri = if path =~ /^http/
             URI(path)
           else
-            URI("https://api.github.com/repos/botandrose/#{project_name}/actions/#{path}")
+            URI("https://api.github.com/repos/botandrosedesign/#{project_name}/actions/#{path}")
           end
 
           response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
