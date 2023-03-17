@@ -4,17 +4,17 @@ module AptDependencies
   def self.ensure!
     return "true" if deps_to_install.none?
     if sudo_password_required? && ENV["RAILS_ENV"] != "development"
-      $stderr.puts "sudo requires password! cannot install #{deps_to_install.join}"
+      $stderr.puts "sudo requires password! cannot install #{deps_to_install.join(' ')}"
       exit 1
     else
-      "sudo apt install -y #{deps_to_install.join}"
+      "sudo apt install -y #{deps_to_install.join(' ')}"
     end
   end
 
   private
 
   def deps_to_install
-    installed_deps = `apt list imagemagick thunderbird  --installed 2>/dev/null`.chomp.split("\n")[1..]
+    installed_deps = `apt list #{deps.join(' ')} --installed 2>/dev/null`.chomp.split("\n")[1..]
       .map { |line| line.split("/")[0] }
     deps - installed_deps
   end
