@@ -151,12 +151,13 @@ class Bard::CLI < Thor
             URI("https://api.github.com/repos/botandrosedesign/#{project_name}/actions/#{path}")
           end
 
+          req = nil
           response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-            request = block.call(uri)
-            request["Accept"] = "application/vnd.github+json"
-            request["Authorization"] = "Token #{github_apikey}"
-            request["X-GitHub-Api-Version"] = "2022-11-28"
-            http.request(request)
+            req = block.call(uri)
+            req["Accept"] = "application/vnd.github+json"
+            req["Authorization"] = "Bearer #{github_apikey}"
+            req["X-GitHub-Api-Version"] = "2022-11-28"
+            http.request(req)
           end
 
           case response
@@ -172,7 +173,7 @@ class Bard::CLI < Thor
               response.body
             end
           else
-            raise response.inspect
+            raise [req.method, req.uri, req.to_hash, response].inspect
           end
         end
       end
