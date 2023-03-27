@@ -8,7 +8,7 @@ class Bard::CLI < Thor
     class GithubActions < Struct.new(:project_name, :branch, :sha)
       def run
         api = API.new(project_name)
-        last_time_elapsed = api.last_successful_run.time_elapsed
+        last_time_elapsed = api.last_successful_run&.time_elapsed
         @run = api.create_run!(branch)
 
         start_time = Time.new.to_i
@@ -35,9 +35,10 @@ class Bard::CLI < Thor
 
       class API < Struct.new(:project_name)
         def last_successful_run
-          successful_runs = client.get("runs", status: "success", per_page: 1)
-          json = successful_runs["workflow_runs"][0]
-          Run.new(self, json)
+          successful_runs = client.get("runs", event: "workflow_dispatch", status: "success", per_page: 1)
+          if json = successful_runs["workflow_runs"][0]
+            Run.new(self, json)
+          end
         end
 
         def find_run id
