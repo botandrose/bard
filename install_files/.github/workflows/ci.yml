@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-20.04-16core
     env:
       RAILS_ENV: test
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
     steps:
       - name: Set up MySQL
         run: |
