@@ -2,6 +2,8 @@ name: cache-ci
 on:
   push:
     branches: [ master ]
+  schedule:
+    - cron: '0 0 */3 * *'
 jobs:
   build_ruby_cache:
     runs-on: ubuntu-20.04
