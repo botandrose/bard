@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Bard::VERSION
   spec.authors       = ["Micah Geisel"]
   spec.email         = ["micah@botandrose.com"]
-  spec.summary       = %Q{CLI to automate common development tasks.}
-  spec.description   = %Q{CLI to automate common development tasks.}
+  spec.summary       = "CLI to automate common development tasks."
+  spec.description   = "CLI to automate common development tasks."
   spec.homepage      = "http://github.com/botandrose/bard"
   spec.license       = "MIT"
 
@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thor", ">= 0.19.0"
   spec.add_dependency "rvm"
   spec.add_dependency "term-ansicolor", ">= 1.0.3"
-  spec.add_dependency "bard-rake", ">= 0.1.1"
+  spec.add_dependency "bard-rake", ">= 0.19.0"
 
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "rspec"

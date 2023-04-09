@@ -15,17 +15,17 @@ class Bard::CLI < Thor
 
     def data_pull_db server
       bard.instance_eval do
-        run_crucial ssh_command(server, "bin/rake db:dump && gzip -9f db/data.sql")
+        run_crucial ssh_command(server, "bin/rake db:dump")
         copy :from, server, "db/data.sql.gz"
-        run_crucial "gunzip -f db/data.sql.gz && bin/rake db:load"
+        run_crucial "bin/rake db:load"
       end
     end
 
     def data_push_db server
       bard.instance_eval do
-        run_crucial "bin/rake db:dump && gzip -9f db/data.sql"
+        run_crucial "bin/rake db:dump"
         copy :to, server, "db/data.sql.gz"
-        run_crucial ssh_command(server, "gunzip -f db/data.sql.gz && bin/rake db:load")
+        run_crucial ssh_command(server, "bin/rake db:load")
       end
     end
 
