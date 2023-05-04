@@ -43,7 +43,7 @@ class Bard::CLI < Thor
     end
 
     def github_actions?
-      `git remote get-url origin` =~ /^git@github\.com/
+      File.exist?(".github/workflows/ci.yml")
     end
   end
 end
