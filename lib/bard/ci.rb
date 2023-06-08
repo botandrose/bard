@@ -19,7 +19,7 @@ class Bard::CLI < Thor
     end
 
     extend Forwardable
-    delegate [:run, :exists?, :console, :last_response] => :runner
+    delegate [:run, :exists?, :console, :last_response, :status] => :runner
 
     private
 

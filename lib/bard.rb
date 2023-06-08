@@ -84,11 +84,13 @@ class Bard::CLI < Thor
     ping to
   end
 
-  method_options %w[verbose -v] => :boolean, %w[local-ci -l] => :boolean
+  method_options %w[verbose -v] => :boolean, %w[local-ci -l] => :boolean, %w[status -s] => :boolean
   desc "ci [BRANCH=HEAD]", "runs ci against BRANCH"
   def ci branch=Git.current_branch
     ci = CI.new(project_name, branch, local: options["local-ci"])
     if ci.exists?
+      return puts ci.status if options["status"]
+
       puts "Continuous integration: starting build on #{branch}..."
 
       success = ci.run do |elapsed_time, last_time|

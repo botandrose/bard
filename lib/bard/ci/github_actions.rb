@@ -7,7 +7,6 @@ class Bard::CLI < Thor
   class CI
     class GithubActions < Struct.new(:project_name, :branch, :sha)
       def run
-        api = API.new(project_name)
         last_time_elapsed = api.last_successful_run&.time_elapsed
         @run = api.create_run!(branch)
 
@@ -33,7 +32,33 @@ class Bard::CLI < Thor
       def last_response
       end
 
+      def status
+        last_run = api.last_run
+        if last_run.building?
+          puts "Building..."
+        elsif last_run.success?
+          puts "Succeeded!"
+        elsif last_run.failure?
+          puts "Failed!\n\n#{last_run.console}"
+        else
+          raise "Unknown job status: #{last_run.inspect}"
+        end
+      end
+
+      private
+
+      def api
+        @api ||= API.new(project_name)
+      end
+
       class API < Struct.new(:project_name)
+        def last_run
+          response = client.get("runs", event: "workflow_dispatch", per_page: 1)
+          if json = response["workflow_runs"][0]
+            Run.new(self, json)
+          end
+        end
+
         def last_successful_run
           successful_runs = client.get("runs", event: "workflow_dispatch", status: "success", per_page: 1)
           if json = successful_runs["workflow_runs"][0]
@@ -92,7 +117,11 @@ class Bard::CLI < Thor
         end
 
         def success?
-          json["status"] == "completed" && json["conclusion"] == "success"
+          status == "completed" && conclusion == "success"
+        end
+
+        def failure?
+          conclusion == "failure"
         end
 
         def job
@@ -101,6 +130,30 @@ class Bard::CLI < Thor
 
         def console
           job.logs
+        end
+
+        def branch
+          json["head_branch"]
+        end
+
+        def sha
+          json["head_sha"]
+        end
+
+        def status
+          json["status"]
+        end
+
+        def conclusion
+          json["conclusion"]
+        end
+
+        def started_at
+          Time.parse(json["run_started_at"])
+        end
+
+        def updated_at
+          Time.parse(json["updated_at"])
         end
       end
 
