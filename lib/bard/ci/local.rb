@@ -33,7 +33,7 @@ class Bard::CLI < Thor
       private
 
       def start
-        @stdin, @stdout_and_stderr, @wait_thread = Open3.popen2e("bin/rake ci")
+        @stdin, @stdout_and_stderr, @wait_thread = Open3.popen2e("CLEAN=true bin/rake ci")
       end
 
       def building?
