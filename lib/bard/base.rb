@@ -8,18 +8,24 @@ class Bard::CLI < Thor
 
   private
 
-  def run_crucial(command, verbose = false)
-    stdout, stderr, status = Open3.capture3(command)
-    failed = status.to_i.nonzero?
-    if verbose || failed
-      $stdout.puts stdout
-      $stderr.puts stderr
+  def run_crucial command, verbose: false
+    failed = false
+
+    if verbose
+      failed = !(system command)
+    else
+      stdout, stderr, status = Open3.capture3(command)
+      failed = status.to_i.nonzero?
+      if failed
+        $stdout.puts stdout
+        $stderr.puts stderr
+      end
     end
+
     if failed
       puts red("!!! ") + "Running command failed: #{yellow(command)}"
       exit 1
     end
-    stdout.chomp
   end
 
   def project_name
@@ -40,7 +46,7 @@ class Bard::CLI < Thor
     command
   end
 
-  def copy direction, server, path
+  def copy direction, server, path, verbose: false
     server = @config.servers[server.to_sym]
 
     uri = URI.parse("ssh://#{server.gateway}")
@@ -56,10 +62,10 @@ class Bard::CLI < Thor
     from_and_to.reverse! if direction == :from
     command = "scp #{gateway} #{ssh_key} #{port} #{from_and_to.join(" ")}"
 
-    run_crucial command
+    run_crucial command, verbose: verbose
   end
 
-  def rsync direction, server, path
+  def rsync direction, server, path, verbose: false
     server = @config.servers[server.to_sym]
 
     uri = URI.parse("ssh://#{server.gateway}")
@@ -77,9 +83,9 @@ class Bard::CLI < Thor
     from_and_to.reverse! if direction == :from
     from_and_to[-1].sub! %r(/[^/]+$), '/'
 
-    command = "rsync #{ssh} --delete -avz #{from_and_to.join(" ")}"
+    command = "rsync #{ssh} --delete --info=progress2 -az #{from_and_to.join(" ")}"
 
-    run_crucial command
+    run_crucial command, verbose: verbose
   end
 end
 

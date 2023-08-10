@@ -26,7 +26,7 @@ class Bard::CLI < Thor
       raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
     end
 
-    run_crucial "git push -u origin #{branch}", true
+    run_crucial "git push -u origin #{branch}", verbose: true
     command = "git fetch && git checkout -f origin/#{branch} && bin/setup"
     run_crucial ssh_command(:staging, command)
     puts green("Stage Succeeded")
