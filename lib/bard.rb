@@ -40,7 +40,7 @@ class Bard::CLI < Thor
     branch = Git.current_branch
 
     if branch == "master"
-      run_crucial "git push origin master:master"
+      run_crucial "git push origin #{branch}:#{branch}" if !Git.up_to_date_with_remote?(branch)
       invoke :ci, [branch], options.slice("local-ci") unless options["skip-ci"]
 
     else
