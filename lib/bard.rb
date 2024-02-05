@@ -13,9 +13,12 @@ class Bard::CLI < Thor
     @config = Config.new(project_name, "bard.rb")
   end
 
-  desc "data [FROM=production, TO=local]", "copy database and assets from FROM to TO"
-  def data(from=nil, to="local")
-    from ||= @config.servers.key?(:production) ? "production" : "staging"
+  desc "data --from=production --to=local", "copy database and assets from from to to"
+  method_options %w[from] => :string, %w[to] => :string
+  def data
+    default_from = @config.servers.key?(:production) ? "production" : "staging"
+    from = options.fetch(:from, default_from)
+    to = options.fetch(:to, "local")
     Data.new(self, from, to).call
   end
 
