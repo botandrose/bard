@@ -1,7 +1,17 @@
 class Bard::CLI < Thor
   class Data < Struct.new(:bard, :from, :to)
     def call
-      # raise "this is a bad idea" if to == "production"
+      if to == "production"
+        server = bard.instance_variable_get(:@config).servers[to.to_sym]
+        url = server.normalized_ping
+        puts bard.yellow("WARNING: You are about to push data to production, overwriting everything that is there!")
+        answer = bard.ask("If you really want to do this, please type in the full HTTPS url of the production server:")
+        if answer != url
+          puts bard.red("!!! ") + "Failed! We expected #{url}. Is this really where you want to overwrite all the data?"
+          exit 1
+        end
+      end
+
       if to == "local"
         data_pull_db from.to_sym
         data_pull_assets from.to_sym

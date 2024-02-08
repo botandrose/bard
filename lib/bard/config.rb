@@ -83,7 +83,13 @@ class Bard::CLI < Thor
 
       def default_ping
         uri = URI.parse("ssh://#{ssh}")
-        "http://#{uri.host}"
+        "https://#{uri.host}"
+      end
+
+      def normalized_ping
+        normalized = ping || default_ping
+        normalized = "https://#{normalized}" unless normalized =~ /^http/
+        normalized
       end
 
       def path(*args)
