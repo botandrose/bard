@@ -65,6 +65,22 @@ class Bard::CLI < Thor
     run_crucial command, verbose: verbose
   end
 
+  def move from, to, path, verbose: false
+    from = @config.servers[from.to_sym]
+    to = @config.servers[to.to_sym]
+    raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
+
+    from_uri = URI.parse("ssh://#{from.ssh}")
+    from_str = "scp://#{from_uri.user}@#{from_uri.host}:#{from_uri.port || 22}/#{from.path}/#{path}"
+
+    to_uri = URI.parse("ssh://#{to.ssh}")
+    to_str = "scp://#{to_uri.user}@#{to_uri.host}:#{to_uri.port || 22}/#{to.path}/#{path}"
+
+    command = "scp -o ForwardAgent=yes #{from_str} #{to_str}"
+
+    run_crucial command, verbose: verbose
+  end
+
   def rsync direction, server, path, verbose: false
     server = @config.servers[server.to_sym]
 
@@ -84,6 +100,26 @@ class Bard::CLI < Thor
     from_and_to[-1].sub! %r(/[^/]+$), '/'
 
     command = "rsync #{ssh} --delete --info=progress2 -az #{from_and_to.join(" ")}"
+
+    run_crucial command, verbose: verbose
+  end
+
+  def rsync_remote from, to, path, verbose: false
+    from = @config.servers[from.to_sym]
+    to = @config.servers[to.to_sym]
+    raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
+
+    dest_path = path.dup
+    dest_path = "./#{dest_path}"
+
+    from_uri = URI.parse("ssh://#{from.ssh}")
+    from_str = "-p#{from_uri.port || 22} #{from_uri.user}@#{from_uri.host}"
+
+    to_uri = URI.parse("ssh://#{to.ssh}")
+    to_str = "#{to_uri.user}@#{to_uri.host}:#{to.path}/#{path}"
+    to_str.sub! %r(/[^/]+$), '/'
+
+    command = %(ssh -A #{from_str} 'rsync -e \"ssh -A -p#{to_uri.port || 22} -o StrictHostKeyChecking=no\" --delete --info=progress2 -az #{from.path}/#{path} #{to_str}')
 
     run_crucial command, verbose: verbose
   end
