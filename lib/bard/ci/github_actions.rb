@@ -215,10 +215,7 @@ class Bard::CLI < Thor
 
           case response
           when Net::HTTPRedirection then
-            url = response["Location"]
-            request(url) do |uri|
-              Net::HTTP::Get.new(uri)
-            end
+            get(response["Location"])
           when Net::HTTPSuccess then
             if response["Content-Type"].to_s.include?("/json")
               JSON.load(response.body)
