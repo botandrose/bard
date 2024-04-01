@@ -111,7 +111,7 @@ class Bard::CLI < Thor
       if success
         puts
         puts "Continuous integration: success!"
-        if !options["local-ci"] && File.exist?("coverage")
+        if ci.jenkins? && File.exist?("coverage")
           puts "Downloading test coverage from CI..."
           download_ci_test_coverage
         end
