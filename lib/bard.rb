@@ -209,5 +209,7 @@ class Bard::CLI < Thor
   def vim branch="master"
     exec "vim -p `git diff #{branch} --name-only | grep -v sass$ | tac`"
   end
+
+  def self.exit_on_failure? = true
 end
 
