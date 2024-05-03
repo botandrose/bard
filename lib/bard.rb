@@ -8,6 +8,8 @@ require "bard/data"
 require "bard/config"
 
 class Bard::CLI < Thor
+  include Thor::Actions
+
   def initialize(*args, **kwargs, &block)
     super
     @config = Config.new(project_name, "bard.rb")
@@ -169,6 +171,37 @@ class Bard::CLI < Thor
     system "cp -R #{install_files_path} bin/"
     github_files_path = File.expand_path(File.join(__dir__, "../install_files/.github"))
     system "cp -R #{github_files_path} ./"
+  end
+
+  desc "setup", "installs app in nginx"
+  def setup
+    path = "/etc/nginx/sites-available/#{project_name}"
+    dest_path = path.sub("sites-available", "sites-enabled")
+    server_name = "#{project_name}.localhost"
+
+    create_file path, <<~NGINX
+      server {
+        listen 80;
+        server_name #{server_name};
+
+        root #{Dir.pwd}/public;
+        passenger_enabled on;
+
+        location ~* \\.(ico|css|js|gif|jp?g|png|webp) {
+          access_log off;
+          if ($request_filename ~ "-[0-9a-f]{32}\\.") {
+            expires max;
+            add_header Cache-Control public;
+          }
+        }
+        gzip_static on;
+      }
+    NGINX
+
+    FileUtils.ln_sf(path, dest_path) if !File.exist?(dest_path)
+    run "service nginx restart"
+  rescue Errno::EACCES
+    raise InvocationError.new("please re-run with sudo")
   end
 
   desc "ping [SERVER=production]", "hits the server over http to verify that its up."
