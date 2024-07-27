@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
     inputs:
       git-ref:
-        description: Git Ref
-        default: master
         required: true
 
 permissions:
@@ -14,7 +12,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04-16core
+    runs-on: ubuntu-22.04-16core
     env:
       RAILS_ENV: test
       RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
@@ -26,7 +24,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.git-ref }}
+          ref: ${{ github.event.inputs.git-ref || github.event.pull_request.head.sha }}
       - name: Install Ruby and gems
         uses: ruby/setup-ruby@v1
         with:
@@ -38,7 +36,7 @@ jobs:
 
   autodeploy-dependabot-prs:
     needs: test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: github.actor == 'dependabot[bot]'
     steps:
       - name: Merge Dependabot PR
