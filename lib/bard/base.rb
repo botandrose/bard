@@ -32,8 +32,8 @@ class Bard::CLI < Thor
     @project_name ||= File.expand_path(".").split("/").last
   end
 
-  def ssh_command server, command, home: false
-    server = @config.servers[server.to_sym]
+  def ssh_command server_name, command, home: false
+    server = @config.servers.fetch(server_name.to_sym)
     uri = URI.parse("ssh://#{server.ssh}")
     ssh_key = server.ssh_key ? "-i #{server.ssh_key} " : ""
     command = "#{server.env} #{command}" if server.env
@@ -46,8 +46,8 @@ class Bard::CLI < Thor
     command
   end
 
-  def copy direction, server, path, verbose: false
-    server = @config.servers[server.to_sym]
+  def copy direction, server_name, path, verbose: false
+    server = @config.servers.fetch(server_name.to_sym)
 
     uri = URI.parse("ssh://#{server.gateway}")
     port = uri.port ? "-p#{uri.port}" : ""
@@ -65,9 +65,9 @@ class Bard::CLI < Thor
     run_crucial command, verbose: verbose
   end
 
-  def move from, to, path, verbose: false
-    from = @config.servers[from.to_sym]
-    to = @config.servers[to.to_sym]
+  def move from_name, to_name, path, verbose: false
+    from = @config.servers.fecth(from_name.to_sym)
+    to = @config.servers.fetch(to_name.to_sym)
     raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
 
     from_uri = URI.parse("ssh://#{from.ssh}")
@@ -81,8 +81,8 @@ class Bard::CLI < Thor
     run_crucial command, verbose: verbose
   end
 
-  def rsync direction, server, path, verbose: false
-    server = @config.servers[server.to_sym]
+  def rsync direction, server_name, path, verbose: false
+    server = @config.servers.fetch(server_name.to_sym)
 
     uri = URI.parse("ssh://#{server.gateway}")
     port = uri.port ? "-p#{uri.port}" : ""
@@ -104,9 +104,9 @@ class Bard::CLI < Thor
     run_crucial command, verbose: verbose
   end
 
-  def rsync_remote from, to, path, verbose: false
-    from = @config.servers[from.to_sym]
-    to = @config.servers[to.to_sym]
+  def rsync_remote from_name, to_name, path, verbose: false
+    from = @config.servers.fetch(from_name.to_sym)
+    to = @config.servers.fetch(to_name.to_sym)
     raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
 
     dest_path = path.dup
