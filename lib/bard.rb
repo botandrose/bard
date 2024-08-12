@@ -223,8 +223,12 @@ class Bard::CLI < Thor
     end
   end
 
-  desc "master_key [FROM=production, TO=local]", "copy master key from FROM to TO"
-  def master_key from="production", to="local"
+  desc "master_key --from=production --to=local", "copy master key from from to to"
+  method_options %w[from] => :string, %w[to] => :string
+  def master_key
+    default_from = @config.servers.key?(:production) ? "production" : "staging"
+    from = options.fetch(:from, default_from)
+    to = options.fetch(:to, "local")
     if to == "local"
       copy :from, from, "config/master.key"
     end
