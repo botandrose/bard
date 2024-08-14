@@ -4,7 +4,8 @@ require "bard/base"
 require "bard/git"
 require "bard/ci"
 require "bard/data"
-
+require "bard/github"
+require "bard/ping"
 require "bard/config"
 
 class Bard::CLI < Thor
@@ -12,7 +13,7 @@ class Bard::CLI < Thor
 
   def initialize(*args, **kwargs, &block)
     super
-    @config = Config.new(project_name, "bard.rb")
+    @config = Bard::Config.new(project_name, path: "bard.rb")
   end
 
   desc "data --from=production --to=local", "copy database and assets from from to to"
@@ -207,17 +208,7 @@ class Bard::CLI < Thor
   desc "ping [SERVER=production]", "hits the server over http to verify that its up."
   def ping server=:production
     server = @config.servers[server.to_sym]
-    return false if server.ping == false
-
-    url = server.default_ping
-    if server.ping =~ %r{^/}
-      url += server.ping
-    elsif server.ping.to_s.length > 0
-      url = server.ping
-    end
-
-    command = "curl -sfL #{url} 2>&1 1>/dev/null"
-    unless system command
+    unless Bard::Ping.call(server)
       puts "#{server.key.to_s.capitalize} is down!"
       exit 1
     end

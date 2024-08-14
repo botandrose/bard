@@ -1,8 +1,8 @@
 require "uri"
 
-class Bard::CLI < Thor
+module Bard
   class Config
-    def initialize project_name, path
+    def initialize project_name, path: nil, source: nil
       @project_name = project_name
       @servers = {
         local: Server.new(
@@ -39,7 +39,10 @@ class Bard::CLI < Thor
           "www@#{project_name}.botandrose.com:22022",
         ),
       }
-      load_local_config! path
+      if path && File.exist?(path)
+        source = File.read(File.expand_path(path))
+      end
+      instance_eval source
     end
 
     attr_reader :servers
@@ -59,10 +62,6 @@ class Bard::CLI < Thor
     end
 
     private
-
-    def load_local_config! path
-      instance_eval File.read(File.expand_path(path)) if File.exist?(path)
-    end
 
     class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env)
       def self.setting *fields

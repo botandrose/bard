@@ -1,7 +1,6 @@
 require "thor"
 require "time"
-require "json"
-require "net/http"
+require "bard/github"
 
 class Bard::CLI < Thor
   class CI
@@ -53,31 +52,31 @@ class Bard::CLI < Thor
 
       class API < Struct.new(:project_name)
         def last_run
-          response = client.get("runs", event: "workflow_dispatch", per_page: 1)
+          response = client.get("actions/runs", event: "workflow_dispatch", per_page: 1)
           if json = response["workflow_runs"][0]
             Run.new(self, json)
           end
         end
 
         def last_successful_run
-          successful_runs = client.get("runs", event: "workflow_dispatch", status: "success", per_page: 1)
+          successful_runs = client.get("actions/runs", event: "workflow_dispatch", status: "success", per_page: 1)
           if json = successful_runs["workflow_runs"][0]
             Run.new(self, json)
           end
         end
 
         def find_run id
-          json = client.get("runs/#{id}")
+          json = client.get("actions/runs/#{id}")
           Run.new(self, json)
         end
 
         def create_run! branch
           start_time = Time.now
-          client.post("workflows/ci.yml/dispatches", ref: branch, inputs: { "git-ref": branch })
+          client.post("actions/workflows/ci.yml/dispatches", ref: branch, inputs: { "git-ref": branch })
           sha = `git rev-parse #{branch}`.chomp
 
           loop do
-            runs = client.get("runs", head_sha: sha, created: ">#{start_time.iso8601}")
+            runs = client.get("actions/runs", head_sha: sha, created: ">#{start_time.iso8601}")
             if json = runs["workflow_runs"].first
               return Run.new(self, json)
             end
@@ -86,19 +85,19 @@ class Bard::CLI < Thor
         end
 
         def find_job_by_run_id run_id
-          jobs = client.get("runs/#{run_id}/jobs", filter: "latest", per_page: 1)
+          jobs = client.get("actions/runs/#{run_id}/jobs", filter: "latest", per_page: 1)
           job_json = jobs["jobs"][0]
           Job.new(self, job_json)
         end
 
         def download_logs_by_job_id job_id
-          client.get("jobs/#{job_id}/logs")
+          client.get("actions/jobs/#{job_id}/logs")
         end
 
         private
 
         def client
-          @client ||= Client.new(project_name)
+          @client ||= Bard::Github.new(project_name)
         end
       end
 
@@ -169,62 +168,6 @@ class Bard::CLI < Thor
 
         def logs
           @logs ||= api.download_logs_by_job_id(id)
-        end
-      end
-
-      class Client < Struct.new(:project_name)
-        def get path, params={}
-          request(path) do |uri|
-            uri.query = URI.encode_www_form(params)
-            Net::HTTP::Get.new(uri)
-          end
-        end
-
-        def post path, params={}
-          request(path) do |uri|
-            Net::HTTP::Post.new(uri).tap do |r|
-              r.body = JSON.dump(params)
-            end
-          end
-        end
-
-        private
-
-        def github_apikey
-          @github_apikey ||= begin
-            raw = `git ls-remote -t git@github.com:botandrose/bard`
-            raw[/github-apikey\|(.+)$/, 1]
-          end
-        end
-
-        def request path, &block
-          uri = if path =~ /^http/
-            URI(path)
-          else
-            URI("https://api.github.com/repos/botandrosedesign/#{project_name}/actions/#{path}")
-          end
-
-          req = nil
-          response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-            req = block.call(uri)
-            req["Accept"] = "application/vnd.github+json"
-            req["Authorization"] = "Bearer #{github_apikey}"
-            req["X-GitHub-Api-Version"] = "2022-11-28"
-            http.request(req)
-          end
-
-          case response
-          when Net::HTTPRedirection then
-            Net::HTTP.get(URI(response["Location"]))
-          when Net::HTTPSuccess then
-            if response["Content-Type"].to_s.include?("/json")
-              JSON.load(response.body)
-            else
-              response.body
-            end
-          else
-            raise [req.method, req.uri, req.to_hash, response].inspect
-          end
         end
       end
     end
