@@ -81,12 +81,10 @@ module Bard
       setting :ssh, :path, :ping, :gateway, :ssh_key, :env
 
       def ping(*args)
-        if args.length == 1
-          self.ping = args.first
-        elsif args.length == 0
-          normalize_ping(super())
+        if args.length == 0
+          (super() || [nil]).map(&method(:normalize_ping))
         else
-          raise ArgumentError
+          self.ping = args
         end
       end
 

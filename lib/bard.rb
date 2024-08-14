@@ -138,7 +138,7 @@ class Bard::CLI < Thor
   def open server=nil
     server ||= @config.servers.key?(:production) ? :production : :staging
     server = @config.servers[server.to_sym]
-    exec "xdg-open #{server.default_ping}"
+    exec "xdg-open #{server.ping.first}"
   end
 
   desc "hurt", "reruns a command until it fails"
@@ -208,10 +208,9 @@ class Bard::CLI < Thor
   desc "ping [SERVER=production]", "hits the server over http to verify that its up."
   def ping server=:production
     server = @config.servers[server.to_sym]
-    unless Bard::Ping.call(server)
-      puts "#{server.key.to_s.capitalize} is down!"
-      exit 1
-    end
+    down_urls = Bard::Ping.call(server)
+    down_urls.each { |url| puts "#{url} is down!" }
+    exit 1 if down_urls.any?
   end
 
   desc "master_key --from=production --to=local", "copy master key from from to to"
