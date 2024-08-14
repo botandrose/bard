@@ -80,14 +80,28 @@ module Bard
 
       setting :ssh, :path, :ping, :gateway, :ssh_key, :env
 
-      def default_ping
-        uri = URI.parse("ssh://#{ssh}")
-        "https://#{uri.host}"
+      def ping(*args)
+        if args.length == 1
+          self.ping = args.first
+        elsif args.length == 0
+          normalize_ping(super())
+        else
+          raise ArgumentError
+        end
       end
 
-      def normalized_ping
-        normalized = ping || default_ping
-        normalized = "https://#{normalized}" unless normalized =~ /^http/
+      private def normalize_ping value
+        return value if value == false
+        uri = URI.parse("ssh://#{ssh}")
+        normalized = "https://#{uri.host}" # default if none specified
+        if value =~ %r{^/}
+          normalized += value
+        elsif value.to_s.length > 0
+          normalized = value
+        end
+        if normalized !~ /^http/
+          normalized = "https://#{normalized}"
+        end
         normalized
       end
 

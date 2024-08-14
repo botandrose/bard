@@ -3,7 +3,7 @@ class Bard::CLI < Thor
     def call
       if to == "production"
         server = bard.instance_variable_get(:@config).servers[to.to_sym]
-        url = server.normalized_ping
+        url = server.ping
         puts bard.yellow("WARNING: You are about to push data to production, overwriting everything that is there!")
         answer = bard.ask("If you really want to do this, please type in the full HTTPS url of the production server:")
         if answer != url
