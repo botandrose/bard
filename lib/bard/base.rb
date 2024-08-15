@@ -2,6 +2,7 @@ require "thor"
 require "term/ansicolor"
 require "open3"
 require "uri"
+require "bard/remote_command"
 
 class Bard::CLI < Thor
   include Term::ANSIColor
@@ -34,16 +35,7 @@ class Bard::CLI < Thor
 
   def ssh_command server_name, command, home: false
     server = @config.servers.fetch(server_name.to_sym)
-    uri = URI.parse("ssh://#{server.ssh}")
-    ssh_key = server.ssh_key ? "-i #{server.ssh_key} " : ""
-    command = "#{server.env} #{command}" if server.env
-    command = "cd #{server.path} && #{command}" unless home
-    command = "ssh -tt #{ssh_key}#{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{command}'"
-    if server.gateway
-      uri = URI.parse("ssh://#{server.gateway}")
-      command = "ssh -tt #{" -p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} \"#{command}\""
-    end
-    command
+    Bard::RemoteCommand.new(server, command, home).local_command
   end
 
   def copy direction, server_name, path, verbose: false
