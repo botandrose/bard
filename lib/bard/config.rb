@@ -61,6 +61,17 @@ module Bard
       end
     end
 
+    def backup *args
+      if args.length == 1
+        @backup = args.first
+      elsif args.length == 0
+        return @backup if defined?(@backup)
+        @backup = true
+      else
+        raise ArgumentError
+      end
+    end
+
     private
 
     class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env)
