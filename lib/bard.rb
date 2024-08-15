@@ -7,6 +7,7 @@ require "bard/data"
 require "bard/github"
 require "bard/ping"
 require "bard/config"
+require "bard/remote_command"
 
 class Bard::CLI < Thor
   include Thor::Actions
@@ -211,6 +212,16 @@ class Bard::CLI < Thor
     down_urls = Bard::Ping.call(server)
     down_urls.each { |url| puts "#{url} is down!" }
     exit 1 if down_urls.any?
+  end
+
+  desc "command <command> --on=production", "run the given command on the remote server"
+  method_options %w[on] => :string
+  def command command
+    default_from = @config.servers.key?(:production) ? "production" : "staging"
+    on = options.fetch(:on, default_from)
+    server = @config.servers[on.to_sym]
+    remote_command = Bard::RemoteCommand.new(server, command).local_command
+    run_crucial remote_command, verbose: true
   end
 
   desc "master_key --from=production --to=local", "copy master key from from to to"
