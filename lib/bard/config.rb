@@ -45,10 +45,10 @@ module Bard
       instance_eval source
     end
 
-    attr_reader :servers
+    attr_reader :project_name, :servers
 
     def server key, &block
-      @servers[key] ||= Server.new(@project_name, key)
+      @servers[key] ||= Server.new(project_name, key)
       @servers[key].instance_eval &block if block_given?
       @servers[key]
     end
