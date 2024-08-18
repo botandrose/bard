@@ -1,6 +1,6 @@
 require "bard/ci/github_actions"
 
-describe Bard::CLI::CI::GithubActions do
+describe Bard::CI::GithubActions do
   subject { described_class.new("metrc", "master", "0966308e204b256fdcc11457eb53306d84884c60") }
 
   xit "works" do
@@ -8,7 +8,7 @@ describe Bard::CLI::CI::GithubActions do
   end
 end
 
-describe Bard::CLI::CI::GithubActions::API do
+describe Bard::CI::GithubActions::API do
   subject { described_class.new("metrc") }
 
   describe "#last_successful_run" do
@@ -29,7 +29,7 @@ describe Bard::CLI::CI::GithubActions::API do
   end
 end
 
-describe Bard::CLI::CI::GithubActions::Client do
+describe Bard::Github do
   subject { described_class.new("metrc") }
 end
 

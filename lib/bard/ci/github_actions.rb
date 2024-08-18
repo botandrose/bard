@@ -1,8 +1,7 @@
-require "thor"
 require "time"
 require "bard/github"
 
-class Bard::CLI < Thor
+module Bard
   class CI
     class GithubActions < Struct.new(:project_name, :branch, :sha)
       def run

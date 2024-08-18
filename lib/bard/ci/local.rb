@@ -1,6 +1,6 @@
 require "open3"
 
-class Bard::CLI < Thor
+module Bard
   class CI
     class Local < Struct.new(:project_name, :branch, :sha)
       def run

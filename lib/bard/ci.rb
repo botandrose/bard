@@ -1,6 +1,6 @@
 require "forwardable"
 
-class Bard::CLI < Thor
+module Bard
   class CI
     def initialize project_name, branch, local: false
       @project_name = project_name

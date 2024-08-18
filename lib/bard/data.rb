@@ -1,8 +1,8 @@
-class Bard::CLI < Thor
+module Bard
   class Data < Struct.new(:bard, :from, :to)
     def call
       if to == "production"
-        server = bard.instance_variable_get(:@config).servers[to.to_sym]
+        server = bard.send(:config).servers[to.to_sym]
         url = server.ping.first
         puts bard.yellow("WARNING: You are about to push data to production, overwriting everything that is there!")
         answer = bard.ask("If you really want to do this, please type in the full HTTPS url of the production server:")
@@ -67,7 +67,7 @@ class Bard::CLI < Thor
 
     def data_pull_assets server
       bard.instance_eval do
-        @config.data.each do |path|
+        config.data.each do |path|
           puts "Downloading files..."
           rsync :from, server, path, verbose: true
         end
@@ -76,7 +76,7 @@ class Bard::CLI < Thor
 
     def data_push_assets server
       bard.instance_eval do
-        @config.data.each do |path|
+        config.data.each do |path|
           puts "Uploading files..."
           rsync :to, server, path, verbose: true
         end
@@ -85,7 +85,7 @@ class Bard::CLI < Thor
 
     def data_move_assets from, to
       bard.instance_eval do
-        @config.data.each do |path|
+        config.data.each do |path|
           puts "Copying files..."
           rsync_remote from, to, path, verbose: true
         end

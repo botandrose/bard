@@ -1,6 +1,6 @@
 require "json"
 
-class Bard::CLI < Thor
+module Bard
   class CI
     class Jenkins < Struct.new(:project_name, :branch, :sha)
       def run

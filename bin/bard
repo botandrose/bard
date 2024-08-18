@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-require "rubygems"
-require_relative "../lib/bard"
+require_relative "../lib/bard/cli"
 Bard::CLI.start ARGV
 
