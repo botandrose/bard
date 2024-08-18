@@ -241,12 +241,7 @@ module Bard
       default_from = config.servers.key?(:production) ? "production" : "staging"
       from = options.fetch(:from, default_from)
       to = options.fetch(:to)
-      if to == "local"
-        copy :from, from, "config/master.key"
-      end
-      if from == "local"
-        copy :to, to, "config/master.key"
-      end
+      Bard::Copy.file "config/master.key", from:, to:
     end
 
     desc "vim [branch=master]", "open all files that have changed since master"
@@ -289,25 +284,6 @@ module Bard
     def ssh_command server_name, command, home: false
       server = config.servers.fetch(server_name.to_sym)
       Bard::RemoteCommand.new(server, command, home).local_command
-    end
-
-    def copy direction, server_name, path, verbose: false
-      server = config.servers.fetch(server_name.to_sym)
-
-      uri = URI.parse("ssh://#{server.gateway}")
-      port = uri.port ? "-p#{uri.port}" : ""
-      gateway = server.gateway ? "-oProxyCommand='ssh #{port} #{uri.user}@#{uri.host} -W %h:%p'" : ""
-
-      ssh_key = server.ssh_key ? "-i #{server.ssh_key}" : ""
-
-      uri = URI.parse("ssh://#{server.ssh}")
-      port = uri.port ? "-P#{uri.port}" : ""
-      from_and_to = [path, "#{uri.user}@#{uri.host}:#{server.path}/#{path}"]
-
-      from_and_to.reverse! if direction == :from
-      command = "scp #{gateway} #{ssh_key} #{port} #{from_and_to.join(" ")}"
-
-      run_crucial command, verbose: verbose
     end
   end
 end
