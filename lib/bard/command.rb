@@ -4,6 +4,10 @@ module Bard
       new(command, on, home).run! verbose: verbose
     end
 
+    def self.exec! command, on: :local, home: false
+      new(command, on, home).exec!
+    end
+
     def run! verbose: false
       failed = false
 
@@ -21,6 +25,10 @@ module Bard
       if failed
         raise "Running command failed: #{full_command}"
       end
+    end
+
+    def exec!
+      exec full_command
     end
 
     private

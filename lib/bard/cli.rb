@@ -165,16 +165,10 @@ module Bard
     end
 
     option :home, type: :boolean
-    desc "ssh [TO=production]", "logs into the specified server via SSH"
+    desc "ssh [to=production]", "logs into the specified server via SSH"
     def ssh to=:production
       command = "exec $SHELL -l"
-      if to == "theia" && !options[:home]
-        server = config.servers[:theia]
-        command = %(bash -lic "exec ./vagrant \\"cd #{server.path} && #{command}\\"")
-        exec ssh_command(to, command, home: true)
-      else
-        exec ssh_command(to, command, home: options["home"])
-      end
+      Bard::Command.exec! command, on: config[to], home: options[:home]
     end
 
     desc "install", "copies bin/setup and bin/ci scripts into current project."
