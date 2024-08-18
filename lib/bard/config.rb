@@ -48,10 +48,12 @@ module Bard
     attr_reader :project_name, :servers
 
     def server key, &block
+      key = key.to_sym
       @servers[key] ||= Server.new(project_name, key)
       @servers[key].instance_eval &block if block_given?
       @servers[key]
     end
+    alias [] server
 
     def data *paths
       if paths.length == 0
@@ -122,6 +124,10 @@ module Bard
         else
           raise ArgumentError
         end
+      end
+
+      def to_sym
+        key
       end
     end
   end

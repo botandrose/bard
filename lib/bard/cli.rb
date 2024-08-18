@@ -14,15 +14,29 @@ require "uri"
 
 module Bard
   class CLI < Thor
+    include Term::ANSIColor
+
     class_option :verbose, type: :boolean, aliases: :v
 
     desc "data --from=production --to=local", "copy database and assets from from to to"
     option :from
     option :to, default: "local"
     def data
-      default_from = config.servers.key?(:production) ? "production" : "staging"
-      from = options.fetch(:from, default_from)
-      Data.new(self, from, options[:to]).call
+      default_from_key = config.servers.key?(:production) ? "production" : "staging"
+      from_key = options.fetch(:from, default_from_key)
+      to_key = options[:to]
+
+      if to_key == "production"
+        url = config[to_key].ping.first
+        context.warn "WARNING: You are about to push data to production, overwriting everything that is there!"
+        answer = bard.ask("If you really want to do this, please type in the full HTTPS url of the production server:")
+        if answer != url
+          puts bard.red("!!! ") + "Failed! We expected #{url}. Is this really where you want to overwrite all the data?"
+          exit 1
+        end
+      end
+
+      Data.call(config.data, from: config[from_key], to: config[to_key])
     end
 
     desc "stage [branch=HEAD]", "pushes current branch, and stages it"
@@ -115,10 +129,6 @@ module Bard
         if success
           puts
           puts "Continuous integration: success!"
-          if ci.jenkins? && File.exist?("coverage")
-            puts "Downloading test coverage from CI..."
-            download_ci_test_coverage
-          end
           puts "Deploying..."
         else
           puts
@@ -239,19 +249,12 @@ module Bard
       end
     end
 
-    desc "download_ci_test_coverage", "download latest test coverage information from CI"
-    def download_ci_test_coverage
-      rsync :from, :ci, "coverage"
-    end
-
     desc "vim [branch=master]", "open all files that have changed since master"
     def vim branch="master"
       exec "vim -p `git diff #{branch} --name-only | grep -v sass$ | tac`"
     end
 
     def self.exit_on_failure? = true
-
-    include Term::ANSIColor
 
     private
 
@@ -303,65 +306,6 @@ module Bard
 
       from_and_to.reverse! if direction == :from
       command = "scp #{gateway} #{ssh_key} #{port} #{from_and_to.join(" ")}"
-
-      run_crucial command, verbose: verbose
-    end
-
-    def move from_name, to_name, path, verbose: false
-      from = config.servers.fecth(from_name.to_sym)
-      to = config.servers.fetch(to_name.to_sym)
-      raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
-
-      from_uri = URI.parse("ssh://#{from.ssh}")
-      from_str = "scp://#{from_uri.user}@#{from_uri.host}:#{from_uri.port || 22}/#{from.path}/#{path}"
-
-      to_uri = URI.parse("ssh://#{to.ssh}")
-      to_str = "scp://#{to_uri.user}@#{to_uri.host}:#{to_uri.port || 22}/#{to.path}/#{path}"
-
-      command = "scp -o ForwardAgent=yes #{from_str} #{to_str}"
-
-      run_crucial command, verbose: verbose
-    end
-
-    def rsync direction, server_name, path, verbose: false
-      server = config.servers.fetch(server_name.to_sym)
-
-      uri = URI.parse("ssh://#{server.gateway}")
-      port = uri.port ? "-p#{uri.port}" : ""
-      gateway = server.gateway ? "-oProxyCommand=\"ssh #{port} #{uri.user}@#{uri.host} -W %h:%p\"" : ""
-
-      ssh_key = server.ssh_key ? "-i #{server.ssh_key}" : ""
-      uri = URI.parse("ssh://#{server.ssh}")
-      port = uri.port ? "-p#{uri.port}" : ""
-      ssh = "-e'ssh #{ssh_key} #{port} #{gateway}'"
-
-      dest_path = path.dup
-      dest_path = "./#{dest_path}"
-      from_and_to = [dest_path, "#{uri.user}@#{uri.host}:#{server.path}/#{path}"]
-      from_and_to.reverse! if direction == :from
-      from_and_to[-1].sub! %r(/[^/]+$), '/'
-
-      command = "rsync #{ssh} --delete --info=progress2 -az #{from_and_to.join(" ")}"
-
-      run_crucial command, verbose: verbose
-    end
-
-    def rsync_remote from_name, to_name, path, verbose: false
-      from = config.servers.fetch(from_name.to_sym)
-      to = config.servers.fetch(to_name.to_sym)
-      raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
-
-      dest_path = path.dup
-      dest_path = "./#{dest_path}"
-
-      from_uri = URI.parse("ssh://#{from.ssh}")
-      from_str = "-p#{from_uri.port || 22} #{from_uri.user}@#{from_uri.host}"
-
-      to_uri = URI.parse("ssh://#{to.ssh}")
-      to_str = "#{to_uri.user}@#{to_uri.host}:#{to.path}/#{path}"
-      to_str.sub! %r(/[^/]+$), '/'
-
-      command = %(ssh -A #{from_str} 'rsync -e \"ssh -A -p#{to_uri.port || 22} -o StrictHostKeyChecking=no\" --delete --info=progress2 -az #{from.path}/#{path} #{to_str}')
 
       run_crucial command, verbose: verbose
     end
