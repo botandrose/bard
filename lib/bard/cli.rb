@@ -1,3 +1,5 @@
+# this file gets loaded in the CLI context, not the Rails boot context
+
 require "thor"
 require "bard/git"
 require "bard/ci"
@@ -12,19 +14,18 @@ require "uri"
 
 module Bard
   class CLI < Thor
-    include Thor::Actions
+    class_option :verbose, type: :boolean, aliases: :v
 
     desc "data --from=production --to=local", "copy database and assets from from to to"
-    method_options %w[from] => :string, %w[to] => :string
+    option :from
+    option :to, default: "local"
     def data
       default_from = config.servers.key?(:production) ? "production" : "staging"
       from = options.fetch(:from, default_from)
-      to = options.fetch(:to, "local")
-      Data.new(self, from, to).call
+      Data.new(self, from, options[:to]).call
     end
 
-    method_options %w( verbose -v ) => :boolean
-    desc "stage [BRANCH=HEAD]", "pushes current branch, and stages it"
+    desc "stage [branch=HEAD]", "pushes current branch, and stages it"
     def stage branch=Git.current_branch
       unless config.servers.key?(:production)
         raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
@@ -38,7 +39,8 @@ module Bard
       ping :staging
     end
 
-    method_options %w[verbose -v] => :boolean, %w[skip-ci] => :boolean, %w[local-ci -l] => :boolean
+    option :"skip-ci", type: :boolean
+    option :"local-ci", type: :boolean
     desc "deploy [TO=production]", "checks that current branch is a ff with master, checks with ci, merges into master, deploys to target, and then deletes branch."
     def deploy to=nil
       branch = Git.current_branch
@@ -88,8 +90,9 @@ module Bard
       ping to
     end
 
-    method_options %w[verbose -v] => :boolean, %w[local-ci -l] => :boolean, %w[status -s] => :boolean
-    desc "ci [BRANCH=HEAD]", "runs ci against BRANCH"
+    option :"local-ci", type: :boolean
+    option :status, type: :boolean
+    desc "ci [branch=HEAD]", "runs ci against BRANCH"
     def ci branch=Git.current_branch
       ci = CI.new(project_name, branch, local: options["local-ci"])
       if ci.exists?
@@ -139,7 +142,7 @@ module Bard
       exec "xdg-open #{server.ping.first}"
     end
 
-    desc "hurt", "reruns a command until it fails"
+    desc "hurt <command>", "reruns a command until it fails"
     def hurt *args
       1.upto(Float::INFINITY) do |count|
         puts "Running attempt #{count}"
@@ -151,11 +154,11 @@ module Bard
       end
     end
 
-    method_options %w[home] => :boolean
+    option :home, type: :boolean
     desc "ssh [TO=production]", "logs into the specified server via SSH"
     def ssh to=:production
       command = "exec $SHELL -l"
-      if to == "theia" && !options["home"]
+      if to == "theia" && !options[:home]
         server = config.servers[:theia]
         command = %(bash -lic "exec ./vagrant \\"cd #{server.path} && #{command}\\"")
         exec ssh_command(to, command, home: true)
@@ -203,7 +206,7 @@ module Bard
       raise InvocationError.new("please re-run with sudo")
     end
 
-    desc "ping [SERVER=production]", "hits the server over http to verify that its up."
+    desc "ping [server=production]", "hits the server over http to verify that its up."
     def ping server=:production
       server = config.servers[server.to_sym]
       down_urls = Bard::Ping.call(server)
@@ -211,8 +214,8 @@ module Bard
       exit 1 if down_urls.any?
     end
 
+    option :on
     desc "command <command> --on=production", "run the given command on the remote server"
-    method_options %w[on] => :string
     def command command
       default_from = config.servers.key?(:production) ? "production" : "staging"
       on = options.fetch(:on, default_from)
@@ -222,11 +225,12 @@ module Bard
     end
 
     desc "master_key --from=production --to=local", "copy master key from from to to"
-    method_options %w[from] => :string, %w[to] => :string
+    option :from
+    option :to, default: "local"
     def master_key
       default_from = config.servers.key?(:production) ? "production" : "staging"
       from = options.fetch(:from, default_from)
-      to = options.fetch(:to, "local")
+      to = options.fetch(:to)
       if to == "local"
         copy :from, from, "config/master.key"
       end
@@ -240,7 +244,7 @@ module Bard
       rsync :from, :ci, "coverage"
     end
 
-    desc "vim", "open all files that have changed since master"
+    desc "vim [branch=master]", "open all files that have changed since master"
     def vim branch="master"
       exec "vim -p `git diff #{branch} --name-only | grep -v sass$ | tac`"
     end
