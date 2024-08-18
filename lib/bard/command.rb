@@ -24,6 +24,8 @@ module Bard
 
       if failed
         raise "Running command failed: #{full_command}"
+        # puts red("!!! ") + "Running command failed: #{yellow(command)}"
+        # exit 1
       end
     end
 

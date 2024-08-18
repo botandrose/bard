@@ -45,7 +45,7 @@ module Bard
         raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
       end
 
-      run_crucial "git push -u origin #{branch}", verbose: true
+      Bard::Command.run! "git push -u origin #{branch}", verbose: true
       command = "git fetch && git checkout -f origin/#{branch} && bin/setup"
       Bard::Command.run! command, on: config[:staging]
       puts green("Stage Succeeded")
@@ -60,27 +60,27 @@ module Bard
       branch = Git.current_branch
 
       if branch == "master"
-        run_crucial "git push origin #{branch}:#{branch}" if !Git.up_to_date_with_remote?(branch)
+        Bard::Command.run! "git push origin #{branch}:#{branch}" if !Git.up_to_date_with_remote?(branch)
         invoke :ci, [branch], options.slice("local-ci") unless options["skip-ci"]
 
       else
-        run_crucial "git fetch origin master:master"
+        Bard::Command.run! "git fetch origin master:master"
 
         unless Git.fast_forward_merge?("origin/master", branch)
           puts "The master branch has advanced. Attempting rebase..."
-          run_crucial "git rebase origin/master"
+          Bard::Command.run! "git rebase origin/master"
         end
 
-        run_crucial "git push -f origin #{branch}:#{branch}"
+        Bard::Command.run! "git push -f origin #{branch}:#{branch}"
 
         invoke :ci, [branch], options.slice("local-ci") unless options["skip-ci"]
 
-        run_crucial "git push origin #{branch}:master"
-        run_crucial "git fetch origin master:master"
+        Bard::Command.run! "git push origin #{branch}:master"
+        Bard::Command.run! "git fetch origin master:master"
       end
 
       if `git remote` =~ /\bgithub\b/
-        run_crucial "git push github"
+        Bard::Command.run! "git push github"
       end
 
       to ||= config.servers.key?(:production) ? :production : :staging
@@ -92,13 +92,13 @@ module Bard
 
       if branch != "master"
         puts "Deleting branch: #{branch}"
-        run_crucial "git push --delete origin #{branch}"
+        Bard::Command.run! "git push --delete origin #{branch}"
 
         if branch == Git.current_branch
-          run_crucial "git checkout master"
+          Bard::Command.run! "git checkout master"
         end
 
-        run_crucial "git branch -D #{branch}"
+        Bard::Command.run! "git branch -D #{branch}"
       end
 
       ping to
@@ -225,7 +225,7 @@ module Bard
       on = options.fetch(:on, default_from)
       server = config.servers[on.to_sym]
       remote_command = Bard::RemoteCommand.new(server, command).local_command
-      run_crucial remote_command, verbose: true
+      Bard::Command.run! remote_command, verbose: true
     end
 
     desc "master_key --from=production --to=local", "copy master key from from to to"
@@ -249,26 +249,6 @@ module Bard
 
     def config
       @config ||= Bard::Config.new(project_name, path: "bard.rb")
-    end
-
-    def run_crucial command, verbose: false
-      failed = false
-
-      if verbose
-        failed = !(system command)
-      else
-        stdout, stderr, status = Open3.capture3(command)
-        failed = status.to_i.nonzero?
-        if failed
-          $stdout.puts stdout
-          $stderr.puts stderr
-        end
-      end
-
-      if failed
-        puts red("!!! ") + "Running command failed: #{yellow(command)}"
-        exit 1
-      end
     end
 
     def project_name
