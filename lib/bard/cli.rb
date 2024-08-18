@@ -47,7 +47,7 @@ module Bard
 
       run_crucial "git push -u origin #{branch}", verbose: true
       command = "git fetch && git checkout -f origin/#{branch} && bin/setup"
-      run_crucial ssh_command(:staging, command)
+      Bard::Command.run! command, on: config[:staging]
       puts green("Stage Succeeded")
 
       ping :staging
@@ -86,7 +86,7 @@ module Bard
       to ||= config.servers.key?(:production) ? :production : :staging
 
       command = "git pull origin master && bin/setup"
-      run_crucial ssh_command(to, command)
+      Bard::Command.run! command, on: config[to]
 
       puts green("Deploy Succeeded")
 
@@ -273,11 +273,6 @@ module Bard
 
     def project_name
       @project_name ||= File.expand_path(".").split("/").last
-    end
-
-    def ssh_command server_name, command, home: false
-      server = config.servers.fetch(server_name.to_sym)
-      Bard::RemoteCommand.new(server, command, home).local_command
     end
   end
 end
