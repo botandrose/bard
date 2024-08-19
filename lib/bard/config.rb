@@ -1,4 +1,6 @@
 require "uri"
+require "bard/command"
+require "bard/copy"
 
 module Bard
   class Config
@@ -135,6 +137,22 @@ module Bard
 
       def to_sym
         key
+      end
+
+      def run! command, home: false, verbose: false
+        Bard::Command.run! command, on: self, home:, verbose:
+      end
+
+      def exec! command, home: false
+        Bard::Command.exec! command, on: self, home:
+      end
+
+      def copy_file path, to:, verbose: false
+        Bard::Copy.file path, from: self, to:, verbose:
+      end
+
+      def copy_dir
+        Bard::Copy.dir path, from: self, to:, verbose:
       end
     end
   end

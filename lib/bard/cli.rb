@@ -36,17 +36,17 @@ module Bard
       end
 
       puts "Dumping #{from.key} database to file..."
-      Bard::Command.run! "bin/rake db:dump", on: from
+      from.run! "bin/rake db:dump"
 
       puts "Transfering file from #{from.key} to #{to.key}..."
-      Bard::Copy.file "db/data.sql.gz", from: from, to: to, verbose: true
+      from.copy_file "db/data.sql.gz", to: to, verbose: true
 
       puts "Loading file into #{to.key} database..."
-      Bard::Command.run! "bin/rake db:load", on: to
+      to.run! "bin/rake db:load"
 
       config.data.each do |path|
         puts "Synchronizing files in #{path}..."
-        Bard::Copy.dir path, from: from, to: to, verbose: true
+        from.copy_dir path, to: to, verbose: true
       end
     end
 
@@ -56,9 +56,8 @@ module Bard
         raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
       end
 
-      Bard::Command.run! "git push -u origin #{branch}", verbose: true
-      command = "git fetch && git checkout -f origin/#{branch} && bin/setup"
-      Bard::Command.run! command, on: config[:staging]
+      run! "git push -u origin #{branch}", verbose: true
+      config[:staging].run! "git fetch && git checkout -f origin/#{branch} && bin/setup"
       puts green("Stage Succeeded")
 
       ping :staging
@@ -71,43 +70,44 @@ module Bard
       branch = Git.current_branch
 
       if branch == "master"
-        Bard::Command.run! "git push origin #{branch}:#{branch}" if !Git.up_to_date_with_remote?(branch)
+        if !Git.up_to_date_with_remote?(branch)
+          run! "git push origin #{branch}:#{branch}"
+        end
         invoke :ci, [branch], options.slice("local-ci") unless options["skip-ci"]
 
       else
-        Bard::Command.run! "git fetch origin master:master"
+        run! "git fetch origin master:master"
 
         unless Git.fast_forward_merge?("origin/master", branch)
           puts "The master branch has advanced. Attempting rebase..."
-          Bard::Command.run! "git rebase origin/master"
+          run! "git rebase origin/master"
         end
 
-        Bard::Command.run! "git push -f origin #{branch}:#{branch}"
+        run! "git push -f origin #{branch}:#{branch}"
 
         invoke :ci, [branch], options.slice("local-ci") unless options["skip-ci"]
 
-        Bard::Command.run! "git push origin #{branch}:master"
-        Bard::Command.run! "git fetch origin master:master"
+        run! "git push origin #{branch}:master"
+        run! "git fetch origin master:master"
       end
 
       if `git remote` =~ /\bgithub\b/
-        Bard::Command.run! "git push github"
+        run! "git push github"
       end
 
-      command = "git pull origin master && bin/setup"
-      Bard::Command.run! command, on: config[to]
+      config[to].run! "git pull origin master && bin/setup"
 
       puts green("Deploy Succeeded")
 
       if branch != "master"
         puts "Deleting branch: #{branch}"
-        Bard::Command.run! "git push --delete origin #{branch}"
+        run! "git push --delete origin #{branch}"
 
         if branch == Git.current_branch
-          Bard::Command.run! "git checkout master"
+          run! "git checkout master"
         end
 
-        Bard::Command.run! "git branch -D #{branch}"
+        run! "git branch -D #{branch}"
       end
 
       ping to
@@ -174,7 +174,7 @@ module Bard
     option :home, type: :boolean
     desc "ssh [to=production]", "logs into the specified server via SSH"
     def ssh to=:production
-      Bard::Command.exec! "exec $SHELL -l", on: config[to], home: options[:home]
+      config[to].exec! "exec $SHELL -l", home: options[:home]
     end
 
     desc "install", "copies bin/setup and bin/ci scripts into current project."
@@ -227,14 +227,17 @@ module Bard
     option :on, default: "production"
     desc "command <command> --on=production", "run the given command on the remote server"
     def command command
-      Bard::Command.run! remote_command, on: config[options[:on]], verbose: true
+      server = config[options[:on]]
+      server.run! remote_command, verbose: true
     end
 
     desc "master_key --from=production --to=local", "copy master key from from to to"
     option :from, default: "production"
     option :to, default: "local"
     def master_key
-      Bard::Copy.file "config/master.key", from: config[options[:from]], to: config[options[:to]]
+      from = config[options[:from]]
+      to = config[options[:to]]
+      from.copy_file "config/master.key", to:
     end
 
     desc "vim [branch=master]", "open all files that have changed since master"
@@ -252,6 +255,10 @@ module Bard
 
     def project_name
       @project_name ||= File.expand_path(".").split("/").last
+    end
+
+    def run!(...)
+      Bard::Command.run!(...)
     end
   end
 end
