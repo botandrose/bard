@@ -191,29 +191,26 @@ module Bard
       dest_path = path.sub("sites-available", "sites-enabled")
       server_name = "#{project_name}.localhost"
 
-      create_file path, <<~NGINX
-        server {
-          listen 80;
-          server_name #{server_name};
+      system "sudo tee #{path} >/dev/null <<-EOF
+server {
+  listen 80;
+  server_name #{server_name};
 
-          root #{Dir.pwd}/public;
-          passenger_enabled on;
+  root #{Dir.pwd}/public;
+  passenger_enabled on;
 
-          location ~* \\.(ico|css|js|gif|jp?g|png|webp) {
-            access_log off;
-            if ($request_filename ~ "-[0-9a-f]{32}\\.") {
-              expires max;
-              add_header Cache-Control public;
-            }
-          }
-          gzip_static on;
-        }
-      NGINX
-
-      FileUtils.ln_sf(path, dest_path) if !File.exist?(dest_path)
-      run "service nginx restart"
-    rescue Errno::EACCES
-      raise InvocationError.new("please re-run with sudo")
+  location ~* \\.(ico|css|js|gif|jp?g|png|webp) {
+    access_log off;
+    if (\\$request_filename ~ \"-[0-9a-f]{32}\\.\") {
+      expires max;
+      add_header Cache-Control public;
+    }
+  }
+  gzip_static on;
+}
+EOF"
+      system "sudo ln -sf #{path} #{dest_path}" if !File.exist?(dest_path)
+      system "sudo service nginx restart"
     end
 
     desc "ping [server=production]", "hits the server over http to verify that its up."
