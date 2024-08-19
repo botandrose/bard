@@ -44,7 +44,9 @@ module Bard
       if path && File.exist?(path)
         source = File.read(File.expand_path(path))
       end
-      instance_eval source
+      if source
+        instance_eval source
+      end
     end
 
     attr_reader :project_name, :servers
