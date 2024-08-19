@@ -53,7 +53,14 @@ module Bard
       @servers[key].instance_eval &block if block_given?
       @servers[key]
     end
-    alias [] server
+
+    def [] key
+      key = key.to_sym
+      if @servers[key].nil? && key == :production
+        key = :staging
+      end
+      @servers[key]
+    end
 
     def data *paths
       if paths.length == 0

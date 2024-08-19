@@ -3,11 +3,11 @@
 require "thor"
 require "bard/git"
 require "bard/ci"
-require "bard/data"
+require "bard/copy"
 require "bard/github"
 require "bard/ping"
 require "bard/config"
-require "bard/remote_command"
+require "bard/command"
 require "term/ansicolor"
 require "open3"
 require "uri"
@@ -19,24 +19,35 @@ module Bard
     class_option :verbose, type: :boolean, aliases: :v
 
     desc "data --from=production --to=local", "copy database and assets from from to to"
-    option :from
+    option :from, default: "production"
     option :to, default: "local"
     def data
-      default_from_key = config.servers.key?(:production) ? "production" : "staging"
-      from_key = options.fetch(:from, default_from_key)
-      to_key = options[:to]
+      from = config[options[:from]]
+      to = config[options[:to]]
 
-      if to_key == "production"
-        url = config[to_key].ping.first
-        context.warn "WARNING: You are about to push data to production, overwriting everything that is there!"
-        answer = bard.ask("If you really want to do this, please type in the full HTTPS url of the production server:")
+      if to.key == :production
+        url = to.ping.first
+        puts yellow "WARNING: You are about to push data to production, overwriting everything that is there!"
+        answer = ask("If you really want to do this, please type in the full HTTPS url of the production server:")
         if answer != url
-          puts bard.red("!!! ") + "Failed! We expected #{url}. Is this really where you want to overwrite all the data?"
+          puts red("!!! ") + "Failed! We expected #{url}. Is this really where you want to overwrite all the data?"
           exit 1
         end
       end
 
-      Data.call(config.data, from: config[from_key], to: config[to_key])
+      puts "Dumping #{from.key} database to file..."
+      Bard::Command.run! "bin/rake db:dump", on: from
+
+      puts "Transfering file from #{from.key} to #{to.key}..."
+      Bard::Copy.file "db/data.sql.gz", from: from, to: to, verbose: true
+
+      puts "Loading file into #{to.key} database..."
+      Bard::Command.run! "bin/rake db:load", on: to
+
+      config.data.each do |path|
+        puts "Synchronizing files in #{path}..."
+        Bard::Copy.dir path, from: from, to: to, verbose: true
+      end
     end
 
     desc "stage [branch=HEAD]", "pushes current branch, and stages it"
@@ -56,7 +67,7 @@ module Bard
     option :"skip-ci", type: :boolean
     option :"local-ci", type: :boolean
     desc "deploy [TO=production]", "checks that current branch is a ff with master, checks with ci, merges into master, deploys to target, and then deletes branch."
-    def deploy to=nil
+    def deploy to=:production
       branch = Git.current_branch
 
       if branch == "master"
@@ -82,8 +93,6 @@ module Bard
       if `git remote` =~ /\bgithub\b/
         Bard::Command.run! "git push github"
       end
-
-      to ||= config.servers.key?(:production) ? :production : :staging
 
       command = "git pull origin master && bin/setup"
       Bard::Command.run! command, on: config[to]
@@ -145,11 +154,9 @@ module Bard
       end
     end
 
-    desc "open [SERVER=production]", "opens the url in the web browser."
-    def open server=nil
-      server ||= config.servers.key?(:production) ? :production : :staging
-      server = config.servers[server.to_sym]
-      exec "xdg-open #{server.ping.first}"
+    desc "open [server=production]", "opens the url in the web browser."
+    def open server=:production
+      exec "xdg-open #{config[server].ping.first}"
     end
 
     desc "hurt <command>", "reruns a command until it fails"
@@ -167,8 +174,7 @@ module Bard
     option :home, type: :boolean
     desc "ssh [to=production]", "logs into the specified server via SSH"
     def ssh to=:production
-      command = "exec $SHELL -l"
-      Bard::Command.exec! command, on: config[to], home: options[:home]
+      Bard::Command.exec! "exec $SHELL -l", on: config[to], home: options[:home]
     end
 
     desc "install", "copies bin/setup and bin/ci scripts into current project."
@@ -212,30 +218,23 @@ module Bard
 
     desc "ping [server=production]", "hits the server over http to verify that its up."
     def ping server=:production
-      server = config.servers[server.to_sym]
-      down_urls = Bard::Ping.call(server)
+      server = config[server]
+      down_urls = Bard::Ping.call(config[server])
       down_urls.each { |url| puts "#{url} is down!" }
       exit 1 if down_urls.any?
     end
 
-    option :on
+    option :on, default: "production"
     desc "command <command> --on=production", "run the given command on the remote server"
     def command command
-      default_from = config.servers.key?(:production) ? "production" : "staging"
-      on = options.fetch(:on, default_from)
-      server = config.servers[on.to_sym]
-      remote_command = Bard::RemoteCommand.new(server, command).local_command
-      Bard::Command.run! remote_command, verbose: true
+      Bard::Command.run! remote_command, on: config[options[:on]], verbose: true
     end
 
     desc "master_key --from=production --to=local", "copy master key from from to to"
-    option :from
+    option :from, default: "production"
     option :to, default: "local"
     def master_key
-      default_from = config.servers.key?(:production) ? "production" : "staging"
-      from = options.fetch(:from, default_from)
-      to = options.fetch(:to)
-      Bard::Copy.file "config/master.key", from:, to:
+      Bard::Copy.file "config/master.key", from: config[options[:from]], to: config[options[:to]]
     end
 
     desc "vim [branch=master]", "open all files that have changed since master"
