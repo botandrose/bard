@@ -225,7 +225,7 @@ EOF"
     desc "command <command> --on=production", "run the given command on the remote server"
     def command command
       server = config[options[:on]]
-      server.run! remote_command, verbose: true
+      server.run! command, verbose: true
     end
 
     desc "master_key --from=production --to=local", "copy master key from from to to"
