@@ -8,6 +8,7 @@ require "bard/github"
 require "bard/ping"
 require "bard/config"
 require "bard/command"
+require "bard/provision"
 require "term/ansicolor"
 require "open3"
 require "uri"
@@ -182,11 +183,22 @@ module Bard
       system "cp -R #{github_files_path} ./"
     end
 
+    desc "provision [ssh_url]", "takes an ssh url to a raw ubuntu 22.04 install, and readies it in the shape of :production"
+    def provision ssh_url
+      server = config[:production]
+      server.provision ssh_url
+      Provision.call(server, config.data)
+    end
+
     desc "setup", "installs app in nginx"
     def setup
       path = "/etc/nginx/sites-available/#{project_name}"
       dest_path = path.sub("sites-available", "sites-enabled")
-      server_name = "#{project_name}.localhost"
+      server_name = case ENV["RAILS_ENV"]
+      when "production" then "_"
+      when "staging" then "#{project_name}.botandrose.com"
+      else "#{project_name}.localhost"
+      end
 
       system "sudo tee #{path} >/dev/null <<-EOF
 server {

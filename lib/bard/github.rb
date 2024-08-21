@@ -24,6 +24,10 @@ module Bard
       Base64.decode64(metadata["content"])
     end
 
+    def add_deploy_key title:, key:
+      post("keys", title:, key:)
+    end
+
     private
 
     def github_apikey
