@@ -50,6 +50,15 @@ module Bard
       end
     end
 
+    desc "master_key --from=production --to=local", "copy master key from from to to"
+    option :from, default: "production"
+    option :to, default: "local"
+    def master_key
+      from = config[options[:from]]
+      to = config[options[:to]]
+      from.copy_file "config/master.key", to:
+    end
+
     desc "stage [branch=HEAD]", "pushes current branch, and stages it"
     def stage branch=Git.current_branch
       unless config.servers.key?(:production)
@@ -159,18 +168,6 @@ module Bard
       exec "xdg-open #{config[server].ping.first}"
     end
 
-    desc "hurt <command>", "reruns a command until it fails"
-    def hurt *args
-      1.upto(Float::INFINITY) do |count|
-        puts "Running attempt #{count}"
-        system *args
-        unless $?.success?
-          puts "Ran #{count-1} times before failing"
-          break
-        end
-      end
-    end
-
     option :home, type: :boolean
     desc "ssh [to=production]", "logs into the specified server via SSH"
     def ssh to=:production
@@ -221,20 +218,27 @@ EOF"
       exit 1 if down_urls.any?
     end
 
-    option :on, default: "production"
-    desc "command <command> --on=production", "run the given command on the remote server"
-    def command command
-      server = config[options[:on]]
-      server.run! command, verbose: true
+    # HACK: we don't use Thor::Base#run, so its okay to stomp on it here
+    original_verbose, $VERBOSE = $VERBOSE, nil
+    Thor::THOR_RESERVED_WORDS -= ["run"]
+    $VERBOSE = original_verbose
+
+    desc "run <command>", "run the given command on production"
+    def run *args
+      server = config[:production]
+      server.run! *args, verbose: true
     end
 
-    desc "master_key --from=production --to=local", "copy master key from from to to"
-    option :from, default: "production"
-    option :to, default: "local"
-    def master_key
-      from = config[options[:from]]
-      to = config[options[:to]]
-      from.copy_file "config/master.key", to:
+    desc "hurt <command>", "reruns a command until it fails"
+    def hurt *args
+      1.upto(Float::INFINITY) do |count|
+        puts "Running attempt #{count}"
+        system *args
+        unless $?.success?
+          puts "Ran #{count-1} times before failing"
+          break
+        end
+      end
     end
 
     desc "vim [branch=master]", "open all files that have changed since master"
