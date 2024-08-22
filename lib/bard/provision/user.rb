@@ -3,6 +3,7 @@
 class Bard::Provision::User < Bard::Provision
   def call
     print "User:"
+
     if !ssh_with_user?(provision_server.ssh_uri, user: new_user)
       if !ssh_with_user?(provision_server.ssh_uri)
         raise "can't ssh in with user #{new_user} or #{old_user}"
@@ -18,8 +19,8 @@ class Bard::Provision::User < Bard::Provision
       ].join("; "), home: true
     end
 
-    # provision with new port from now on
-    server.provision server.provision.gsub("#{old_user}@", "#{new_user}@")
+    # provision with new user from now on
+    ssh_url.gsub!("#{old_user}@", "#{new_user}@")
     puts " ✓"
   end
 

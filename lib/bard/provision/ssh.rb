@@ -4,6 +4,7 @@
 class Bard::Provision::SSH < Bard::Provision
   def call
     print "SSH:"
+
     if !ssh_available?(provision_server.ssh_uri, port: server.ssh_uri.port)
       if !ssh_available?(provision_server.ssh_uri)
         raise "can't find SSH on port #{server.ssh_uri.port} or #{provision_server.ssh_uri.port}"
@@ -22,7 +23,8 @@ class Bard::Provision::SSH < Bard::Provision
     end
 
     # provision with new port from now on
-    server.provision server.provision.gsub(/(:\d+)?$/, ":#{server.ssh_uri.port}")
+    ssh_url.gsub!(/:\d+$/, "")
+    ssh_url << ":#{server.ssh_uri.port}"
     puts " ✓"
   end
   

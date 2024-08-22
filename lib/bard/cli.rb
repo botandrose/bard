@@ -185,9 +185,7 @@ module Bard
 
     desc "provision [ssh_url]", "takes an ssh url to a raw ubuntu 22.04 install, and readies it in the shape of :production"
     def provision ssh_url
-      server = config[:production]
-      server.provision ssh_url
-      Provision.call(server, config.data)
+      Provision.call(config, ssh_url.dup) # dup unfreezes the string for later mutation
     end
 
     desc "setup", "installs app in nginx"
@@ -195,7 +193,10 @@ module Bard
       path = "/etc/nginx/sites-available/#{project_name}"
       dest_path = path.sub("sites-available", "sites-enabled")
       server_name = case ENV["RAILS_ENV"]
-      when "production" then "_"
+      when "production"
+        (config[:production].ping.map do |str|
+          "*.#{URI.parse(str).host}"
+        end + ["_"]).join(" ")
       when "staging" then "#{project_name}.botandrose.com"
       else "#{project_name}.localhost"
       end

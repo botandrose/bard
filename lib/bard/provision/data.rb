@@ -13,7 +13,7 @@ class Bard::Provision::Data < Bard::Provision
     # print " Loading file into database,"
     # provision_server.run! "bin/rake db:load"
 
-    data.each do |path|
+    config.data.each do |path|
       print " Synchronizing files in #{path},"
       server.copy_dir path, to: provision_server, verbose: false
     end
