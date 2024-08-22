@@ -16,6 +16,7 @@ class Bard::Provision::User < Bard::Provision
         "sudo mkdir -p ~#{new_user}/.ssh",
         "sudo cp ~/.ssh/authorized_keys ~#{new_user}/.ssh/authorized_keys",
         "sudo chown -R #{new_user}:#{new_user} ~#{new_user}/.ssh",
+        "sudo chmod +rx ~#{new_user}", # so nginx and passenger can read it
       ].join("; "), home: true
     end
 

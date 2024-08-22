@@ -37,9 +37,9 @@ class Bard::Provision::Repo < Bard::Provision
     github_url = "git@github.com:botandrosedesign/#{project_name}"
     provision_server.run [
       "needle=$(ssh-keyscan -t ed25519 github.com 2>/dev/null | cut -d \" \" -f 2-3)",
-      "grep -q \"$needle\" ~/.ssh/known_hosts || ssh-keyscan -H github.com >> ~/.ssh/known_hosts",
+      "grep -q \"$needle\" ~/.ssh/known_hosts || ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null",
       "git ls-remote #{github_url}",
-    ].join("; "), home: true
+    ].join("; "), home: true, quiet: true
   end
 
   def project_name

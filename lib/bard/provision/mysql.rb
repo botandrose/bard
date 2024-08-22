@@ -19,5 +19,3 @@ class Bard::Provision::MySQL < Bard::Provision
   end
 end
 
-
-

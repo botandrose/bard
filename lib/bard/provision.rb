@@ -5,6 +5,7 @@ module Bard
     def call
       SSH.call(*values)
       User.call(*values)
+      Apt.call(*values)
       MySQL.call(*values)
       Repo.call(*values)
       MasterKey.call(*values)
@@ -29,12 +30,13 @@ end
 
 require "bard/provision/ssh"
 require "bard/provision/user"
+require "bard/provision/apt"
 require "bard/provision/mysql"
-require "bard/provision/passenger"
 require "bard/provision/repo"
 require "bard/provision/master_key"
 require "bard/provision/rvm"
 require "bard/provision/app"
+require "bard/provision/passenger"
 require "bard/provision/data"
 require "bard/provision/http"
 
