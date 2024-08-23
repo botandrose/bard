@@ -8,18 +8,10 @@ module Bard
       @local = !!local
     end
 
-    attr_reader :project_name, :branch, :runner
-
-    def sha
-      @sha ||= `git rev-parse #{branch}`.chomp
-    end
-
-    def runner
-      @runner ||= choose_runner_class.new(project_name, branch, sha)
-    end
-
     extend Forwardable
     delegate [:run, :exists?, :console, :status] => :runner
+
+    private
 
     def local?
       @local
@@ -33,7 +25,13 @@ module Bard
       !local? && !github_actions?
     end
 
-    private
+    def runner
+      @runner ||= choose_runner_class.new(@project_name, @branch, sha)
+    end
+
+    def sha
+      @sha ||= `git rev-parse #{@branch}`.chomp
+    end
 
     def choose_runner_class
       if local?
