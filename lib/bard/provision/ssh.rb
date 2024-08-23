@@ -27,7 +27,7 @@ class Bard::Provision::SSH < Bard::Provision
     ssh_url << ":#{target_port}"
     puts " ✓"
   end
-  
+ 
   private
 
   def target_port

@@ -69,7 +69,7 @@ describe Bard::Config do
 
     describe "#data" do
       it "returns the data setting" do
-        expect(subject.data).to eq ["public/system", "public/ckeditor"] 
+        expect(subject.data).to eq ["public/system", "public/ckeditor"]
       end
     end
 

@@ -18,7 +18,7 @@ if File.exist?("/dev/shm")
   FileUtils.rm_rf tmp_dir
   FileUtils.mkdir tmp_dir
   `ln -s #{tmp_dir} tmp`
-else 
+else
   FileUtils.rm_rf "tmp"
   FileUtils.mkdir "tmp"
 end

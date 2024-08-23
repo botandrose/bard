@@ -3,11 +3,11 @@ Given /^a shared rails project$/ do
   Dir.foreach "#{ROOT}/tmp" do |file|
     FileUtils.rm_rf("#{ROOT}/tmp/#{file}") unless %w(fixtures . ..).include? file
   end
-  
+
   # SETUP
   Dir.chdir ROOT
   `cp -r tmp/fixtures/* tmp/`
-  
+
   Dir.chdir 'tmp'
   @repos = {}
   %w(development_a development_b staging production).each do |env|
@@ -44,11 +44,11 @@ Then /^I should see the fatal error "([^\"]*)"$/ do |error_message|
 end
 
 Then /^I should see the warning "([^\"]*)"$/ do |warning_message|
-  @stderr.should include(warning_message) 
+  @stderr.should include(warning_message)
 end
 
 Then /^I should see "([^\"]*)"$/ do |message|
-  @stdout.should include(message) 
+  @stdout.should include(message)
 end
 
 Then /^debug$/ do

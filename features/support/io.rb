@@ -18,7 +18,7 @@ end
 
 def file_inject(file_name, sentinel, string, before_after=:after)
   gsub_file file_name, /(#{Regexp.escape(sentinel)})/mi do |match|
-    if before_after == :after 
+    if before_after == :after
       "#{match}\n#{string}"
     else
       "#{string}\n#{match}"

@@ -17,7 +17,7 @@ Feature: Bard can check its environment for missing dependencies and potential p
     And the database is missing
     When I type "bard check"
     Then I should see the fatal error "missing database"
-  
+ 
   Scenario: Bard check detects pending migrations
     Given a shared rails project
     And a commit with a new migration

@@ -70,7 +70,7 @@ module Bard
         uri.path += "/#{file_path}" if file_path
       end
     end
-    
+
     def rsync_uri file_path=nil
       ssh_uri.dup.tap do |uri|
         uri.scheme = nil

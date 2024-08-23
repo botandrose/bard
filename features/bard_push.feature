@@ -42,7 +42,7 @@ Feature: bard push
     Then on staging, there should be one new submodule
     And the submodule branch should match the submodule origin branch
     And on staging, the submodule working directory should be clean
-  
+ 
   Scenario: Pushing a change that includes a submodule update
     Given a submodule
     And a commit with a submodule update
