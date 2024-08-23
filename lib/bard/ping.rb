@@ -9,7 +9,6 @@ module Bard
 
     def call
       server.ping.reject do |url|
-        next true if url == false
         response = get_response_with_redirect(url) rescue nil
         response.is_a?(Net::HTTPSuccess)
       end

@@ -51,9 +51,7 @@ module Bard
 
     def server key, &block
       key = key.to_sym
-      @servers[key] ||= Server.new(project_name, key)
-      @servers[key].instance_eval &block if block_given?
-      @servers[key]
+      @servers[key] ||= Server.define(project_name, key, &block)
     end
 
     def [] key

@@ -3,7 +3,13 @@ require "bard/command"
 require "bard/copy"
 
 module Bard
-  class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env, :provision)
+  class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env)
+    def self.define project_name, key, &block
+      new(project_name, key).tap do |server|
+        server.instance_eval &block
+      end
+    end
+
     def self.setting *fields
       fields.each do |field|
         define_method field do |*args|
@@ -18,18 +24,18 @@ module Bard
       end
     end
 
-    setting :ssh, :path, :ping, :gateway, :ssh_key, :env, :provision
+    setting :ssh, :path, :ping, :gateway, :ssh_key, :env
 
     def ping(*args)
       if args.length == 0
-        (super() || [nil]).map(&method(:normalize_ping))
+        (super() || [nil]).map(&method(:normalize_ping)).flatten
       else
         self.ping = args
       end
     end
 
     private def normalize_ping value
-      return value if value == false
+      return [] if value == false
       uri = URI.parse("ssh://#{ssh}")
       normalized = "https://#{uri.host}" # default if none specified
       if value =~ %r{^/}
@@ -55,7 +61,9 @@ module Bard
 
     def ssh_uri which=:ssh
       value = send(which)
-      URI.parse("ssh://#{value}")
+      uri = URI.parse("ssh://#{value}")
+      uri.port ||= 22
+      uri
     end
 
     def with(attrs)
