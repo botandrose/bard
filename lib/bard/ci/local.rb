@@ -28,8 +28,6 @@ module Bard
         @console
       end
 
-      attr_accessor :last_response
-
       private
 
       def start

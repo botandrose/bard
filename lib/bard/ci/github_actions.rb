@@ -27,17 +27,14 @@ module Bard
         @run.console
       end
 
-      def last_response
-      end
-
       def status
         last_run = api.last_run
         if last_run.building?
-          puts "Building..."
+          "Building..."
         elsif last_run.success?
-          puts "Succeeded!"
+          "Succeeded!"
         elsif last_run.failure?
-          puts "Failed!\n\n#{last_run.console}"
+          "Failed!\n\n#{last_run.console}"
         else
           raise "Unknown job status: #{last_run.inspect}"
         end

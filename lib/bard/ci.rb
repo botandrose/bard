@@ -19,7 +19,7 @@ module Bard
     end
 
     extend Forwardable
-    delegate [:run, :exists?, :console, :last_response, :status] => :runner
+    delegate [:run, :exists?, :console, :status] => :runner
 
     def local?
       @local
