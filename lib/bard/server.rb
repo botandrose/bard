@@ -36,8 +36,7 @@ module Bard
 
     private def normalize_ping value
       return [] if value == false
-      uri = URI.parse("ssh://#{ssh}")
-      normalized = "https://#{uri.host}" # default if none specified
+      normalized = "https://#{ssh_uri.host}" # default if none specified
       if value =~ %r{^/}
         normalized += value
       elsif value.to_s.length > 0
@@ -61,9 +60,24 @@ module Bard
 
     def ssh_uri which=:ssh
       value = send(which)
-      uri = URI.parse("ssh://#{value}")
-      uri.port ||= 22
-      uri
+      URI("ssh://#{value}")
+    end
+
+    def scp_uri file_path=nil
+      ssh_uri.dup.tap do |uri|
+        uri.scheme = "scp"
+        uri.path = "/#{path}"
+        uri.path += "/#{file_path}" if file_path
+      end
+    end
+    
+    def rsync_uri file_path=nil
+      ssh_uri.dup.tap do |uri|
+        uri.scheme = nil
+        uri.port = nil
+        uri.path = ":#{path}"
+        uri.path += "/#{file_path}" if file_path
+      end.to_s[2..]
     end
 
     def with(attrs)

@@ -31,13 +31,44 @@ describe Bard::Server do
       expect(subject.ssh_uri.port).to eq 22022
     end
 
-    it "defaults the port to 22" do
-      subject.ssh "www@tracker.botandrose.com"
-      expect(subject.ssh_uri.port).to eq 22
+    it "has no path" do
+      expect(subject.ssh_uri.path).to be_empty
     end
 
     it "can specify another field to read from" do
       expect(subject.ssh_uri(:gateway).host).to eq "staging.botandrose.com"
+    end
+
+    it "has no path" do
+      expect(subject.ssh_uri.path).to be_empty
+    end
+  end
+
+  describe "#scp_uri" do
+    it "exposes the host" do
+      expect(subject.scp_uri.host).to eq "tracker.botandrose.com"
+    end
+
+    it "exposes the user" do
+      expect(subject.scp_uri.user).to eq "www"
+    end
+
+    it "exposes the port" do
+      expect(subject.scp_uri.port).to eq 22022
+    end
+
+    it "includes the path to the project" do
+      expect(subject.scp_uri.path).to eq "/work/tracker"
+    end
+
+    it "compiles to an scp:// string" do
+      expect(subject.scp_uri.to_s).to eq "scp://www@tracker.botandrose.com:22022/work/tracker"
+    end
+  end
+
+  describe "#rsync_uri" do
+    it "works" do
+      expect(subject.rsync_uri("public/assets")).to eq "www@tracker.botandrose.com:work/tracker/public/assets"
     end
   end
 

@@ -51,7 +51,6 @@ module Bard
     end
 
     def remote_command quiet: false
-      uri = on.ssh_uri
       ssh_key = on.ssh_key ? "-i #{on.ssh_key} " : ""
       cmd = command
       if on.env
@@ -60,10 +59,11 @@ module Bard
       unless home
         cmd = "cd #{on.path} && #{cmd}"
       end
-      cmd = "ssh -tt #{ssh_key}#{"-p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} '#{cmd}'"
+      uri = on.ssh_uri
+      cmd = "ssh -tt #{ssh_key} -p#{uri.port} #{uri.user}@#{uri.host} '#{cmd}'"
       if on.gateway
         uri = on.ssh_uri(:gateway)
-        cmd = "ssh -tt #{" -p#{uri.port} " if uri.port}#{uri.user}@#{uri.host} \"#{cmd}\""
+        cmd = "ssh -tt -p#{uri.port} #{uri.user}@#{uri.host} \"#{cmd}\""
       end
       cmd += " 2>&1" if quiet
       cmd
