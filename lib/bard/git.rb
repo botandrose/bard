@@ -8,10 +8,6 @@ module Bard
       ref.sub(/refs\/heads\//, '') # refs/heads/master ... we want "master"
     end
 
-    def current_sha
-      sha_of("HEAD")
-    end
-
     def fast_forward_merge?(root, branch)
       root_head = sha_of(root)
       branch_head = sha_of(branch)
@@ -22,6 +18,8 @@ module Bard
     def up_to_date_with_remote? branch
       sha_of(branch) == sha_of("origin/#{branch}")
     end
+
+    private
 
     def sha_of ref
       `git rev-parse #{ref}`.chomp
