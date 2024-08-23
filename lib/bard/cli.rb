@@ -49,6 +49,9 @@ module Bard
         puts "Synchronizing files in #{path}..."
         from.copy_dir path, to: to, verbose: true
       end
+    rescue Bard::Command::Error => e
+      puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
+      exit 1
     end
 
     desc "master_key --from=production --to=local", "copy master key from from to to"
@@ -71,6 +74,9 @@ module Bard
       puts green("Stage Succeeded")
 
       ping :staging
+    rescue Bard::Command::Error => e
+      puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
+      exit 1
     end
 
     option :"skip-ci", type: :boolean
@@ -121,6 +127,9 @@ module Bard
       end
 
       ping to
+    rescue Bard::Command::Error => e
+      puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
+      exit 1
     end
 
     option :"local-ci", type: :boolean
@@ -240,6 +249,9 @@ EOF"
     def run *args
       server = config[:production]
       server.run! *args, verbose: true
+    rescue Bard::Command::Error => e
+      puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
+      exit 1
     end
 
     desc "hurt <command>", "reruns a command until it fails"
@@ -273,6 +285,9 @@ EOF"
 
     def run!(...)
       Bard::Command.run!(...)
+    rescue Bard::Command::Error => e
+      puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
+      exit 1
     end
   end
 end

@@ -1,5 +1,7 @@
 module Bard
   class Command < Struct.new(:command, :on, :home)
+    class Error < RuntimeError; end
+
     def self.run! command, on: :local, home: false, verbose: false, quiet: false
       new(command, on, home).run! verbose:, quiet:
     end
@@ -14,9 +16,7 @@ module Bard
 
     def run! verbose: false, quiet: false
       if !run(verbose:, quiet:)
-        raise "Running command failed: #{full_command}"
-        # puts red("!!! ") + "Running command failed: #{yellow(command)}"
-        # exit 1
+        raise Error.new(full_command)
       end
     end
 
