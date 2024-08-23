@@ -10,7 +10,6 @@ require "bard/config"
 require "bard/command"
 require "bard/provision"
 require "term/ansicolor"
-require "open3"
 require "uri"
 
 module Bard

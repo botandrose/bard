@@ -1,3 +1,5 @@
+require "open3"
+
 module Bard
   class Command < Struct.new(:command, :on, :home)
     class Error < RuntimeError; end
