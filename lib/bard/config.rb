@@ -12,13 +12,6 @@ module Bard
           "./",
           false,
         ),
-        theia: Server.new(
-          project_name,
-          :theia,
-          "gubito@gubs.pagekite.me",
-          "Sites/#{project_name}",
-          false,
-        ),
         gubs: Server.new(
           project_name,
           :gubs,
