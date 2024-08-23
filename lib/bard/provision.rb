@@ -3,17 +3,10 @@ module Bard
     def self.call(...) = new(...).call
 
     def call
-      SSH.call(*values)
-      User.call(*values)
-      Apt.call(*values)
-      MySQL.call(*values)
-      Repo.call(*values)
-      MasterKey.call(*values)
-      RVM.call(*values)
-      App.call(*values)
-      Passenger.call(*values)
-      Data.call(*values)
-      HTTP.call(*values)
+      %w[SSH User Apt MySQL Repo MasterKey RVM App Passenger Data HTTP].each do |step|
+        require "bard/provision/#{step.downcase}"
+        self.class.const_get(step).call(*values)
+      end
     end
 
     private
@@ -27,16 +20,4 @@ module Bard
     end
   end
 end
-
-require "bard/provision/ssh"
-require "bard/provision/user"
-require "bard/provision/apt"
-require "bard/provision/mysql"
-require "bard/provision/repo"
-require "bard/provision/master_key"
-require "bard/provision/rvm"
-require "bard/provision/app"
-require "bard/provision/passenger"
-require "bard/provision/data"
-require "bard/provision/http"
 
