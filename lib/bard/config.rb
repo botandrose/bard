@@ -33,7 +33,7 @@ module Bard
         ),
       }
       if path && File.exist?(path)
-        source = File.read(File.expand_path(path))
+        source = File.read(path)
       end
       if source
         instance_eval source
@@ -44,7 +44,7 @@ module Bard
 
     def server key, &block
       key = key.to_sym
-      @servers[key] ||= Server.define(project_name, key, &block)
+      @servers[key] = Server.define(project_name, key, &block)
     end
 
     def [] key
