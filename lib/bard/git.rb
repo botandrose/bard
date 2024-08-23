@@ -19,8 +19,6 @@ module Bard
       sha_of(branch) == sha_of("origin/#{branch}")
     end
 
-    private
-
     def sha_of ref
       `git rev-parse #{ref}`.chomp
     end
