@@ -12,7 +12,7 @@ module Bard::CLI::Run
       desc "run <command>", "run the given command on production"
       def run *args
         server = config[:production]
-        server.run! *args, verbose: true
+        server.run! *args.join(" "), verbose: true
       rescue Bard::Command::Error => e
         puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
         exit 1
