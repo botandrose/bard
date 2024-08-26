@@ -1,3 +1,5 @@
+require "uri"
+
 # test for existence
 
 class Bard::Provision::HTTP < Bard::Provision

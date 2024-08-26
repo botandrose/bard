@@ -1,3 +1,5 @@
+require "bard/copy"
+
 # copy master key if missing
 
 class Bard::Provision::MasterKey < Bard::Provision
