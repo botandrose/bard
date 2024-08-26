@@ -37,7 +37,7 @@ EOF"
         system "sudo service nginx restart"
       end
 
-      private 
+      private
 
       def nginx_server_name
         case ENV["RAILS_ENV"]
