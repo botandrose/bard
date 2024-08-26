@@ -10,7 +10,7 @@ module Bard
           :local,
           false,
           "./",
-          false,
+          "#{project_name}.local",
         ),
         gubs: Server.new(
           project_name,
@@ -22,14 +22,16 @@ module Bard
         ci: Server.new(
           project_name,
           :ci,
-          "jenkins@ci.botandrose.com:22022",
+          "jenkins@staging.botandrose.com:22022",
           "jobs/#{project_name}/workspace",
           false,
         ),
         staging: Server.new(
           project_name,
           :staging,
-          "www@#{project_name}.botandrose.com:22022",
+          "www@staging.botandrose.com:22022",
+          project_name,
+          "#{project_name}.botandrose.com",
         ),
       }
       if path && File.exist?(path)
