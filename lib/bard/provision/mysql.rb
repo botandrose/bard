@@ -15,7 +15,7 @@ class Bard::Provision::MySQL < Bard::Provision
   end
 
   def mysql_responding?
-    provision_server.run "sudo service mysql status | cat", home: true, quiet: true
+    provision_server.run "sudo systemctl is-active --quiet mysql", home: true, quiet: true
   end
 end
 
