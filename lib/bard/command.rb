@@ -23,6 +23,9 @@ module Bard
     end
 
     def run verbose: false, quiet: false
+      # no-op if server doesn't really exist
+      return true if on.respond_to?(:ssh) && on.ssh == false
+
       if verbose
         system full_command(quiet: quiet)
       else
