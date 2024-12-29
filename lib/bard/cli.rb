@@ -31,7 +31,23 @@ module Bard
       include const_get(klass)
     end
 
+    {
+      new: "New",
+    }.each do |command, klass|
+      require "bard/cli/#{command}"
+      const_get(klass).setup(self)
+    end
+
     def self.exit_on_failure? = true
+
+    no_commands do
+      def run!(...)
+        Bard::Command.run!(...)
+      rescue Bard::Command::Error => e
+        puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
+        exit 1
+      end
+    end
 
     private
 
@@ -41,13 +57,6 @@ module Bard
 
     def project_name
       @project_name ||= File.expand_path(".").split("/").last
-    end
-
-    def run!(...)
-      Bard::Command.run!(...)
-    rescue Bard::Command::Error => e
-      puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
-      exit 1
     end
   end
 end
