@@ -7,6 +7,7 @@ module Bard::CLI::Deploy
 
       option :"skip-ci", type: :boolean
       option :"local-ci", type: :boolean
+      option :clone, type: :boolean
       desc "deploy [TO=production]", "checks that current branch is a ff with master, checks with ci, merges into master, deploys to target, and then deletes branch."
       def deploy to=:production
         branch = Bard::Git.current_branch
@@ -37,7 +38,13 @@ module Bard::CLI::Deploy
           run! "git push github"
         end
 
-        config[to].run! "git pull origin master && bin/setup"
+        if options[:clone]
+          config[to].run! "git clone git@github.com:botandrosedesign/#{project_name}", home: true
+          invoke :master_key, nil, from: "local", to: to
+          config[to].run! "bin/setup && bard setup"
+        else
+          config[to].run! "git pull origin master && bin/setup"
+        end
 
         puts green("Deploy Succeeded")
 

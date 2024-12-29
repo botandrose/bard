@@ -1,4 +1,5 @@
 require "bard/cli/command"
+require "bard/github"
 
 class Bard::CLI::New < Bard::CLI::Command
   desc "new <project-name>", "creates new bard app named <project-name>"
@@ -6,6 +7,8 @@ class Bard::CLI::New < Bard::CLI::Command
     @project_name = project_name
     validate
     create_project
+    push_to_github
+    stage
     puts green("Project #{project_name} created!")
     puts "Please cd ../#{project_name}"
   end
@@ -33,6 +36,24 @@ class Bard::CLI::New < Bard::CLI::Command
         gem list rails -i && gem install rails --no-document
         rails new #{project_name} --skip-kamal -m #{template_path}
       '
+    BASH
+  end
+
+  def push_to_github
+    Bard::Github.new(project_name).create_repo
+    run! <<~BASH
+      cd ../#{project_name}
+      git add -A
+      git commit -m"initial commit."
+      git remote add origin git@github.com:botandrosedesign/#{project_name}
+      git push -u origin master
+    BASH
+  end
+
+  def stage
+    run! <<~BASH
+      cd ../#{project_name}
+      bard deploy --provision
     BASH
   end
 

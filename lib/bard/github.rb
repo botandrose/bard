@@ -19,6 +19,14 @@ module Bard
       end
     end
 
+    def delete path, params={}
+      request(path) do |uri|
+        Net::HTTP::Delete.new(uri).tap do |r|
+          r.body = JSON.dump(params)
+        end
+      end
+    end
+
     def read_file path, branch: "master"
       metadata = get("contents/#{path}", ref: branch)
       Base64.decode64(metadata["content"])
@@ -26,6 +34,17 @@ module Bard
 
     def add_deploy_key title:, key:
       post("keys", title:, key:)
+    end
+
+    def create_repo
+      post("https://api.github.com/orgs/botandrosedesign/repos", {
+        name: project_name,
+        private: true,
+      })
+    end
+
+    def delete_repo
+      delete("https://api.github.com/repos/botandrosedesign/#{project_name}")
     end
 
     private
@@ -63,7 +82,7 @@ module Bard
           response.body
         end
       else
-        raise [req.method, req.uri, req.to_hash, response].inspect
+        raise [req.method, req.uri, req.to_hash, response, response.body].inspect
       end
     end
   end
