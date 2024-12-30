@@ -33,7 +33,7 @@ class Bard::CLI::New < Bard::CLI::Command
         source ~/.rvm/scripts/rvm
         rvm use --create #{ruby_version}@#{project_name}
 
-        gem list rails -i && gem install rails --no-document
+        gem list rails -i || gem install rails --no-document
         rails new #{project_name} --skip-kamal -m #{template_path}
       '
     BASH
