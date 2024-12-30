@@ -23,8 +23,9 @@ module Bard
     def build_site
       FileUtils.rm_rf "tmp/github-build-".sub(@sha, "*")
       run! <<~BASH
-        bundle exec rake assets:clean assets:precompile
+        set -e
         RAILS_ENV=production bundle exec rails s -p 3000 -d --pid tmp/pids/server.pid
+        bundle exec rake assets:clean assets:precompile
 
         # Create the output directory and enter it
         BUILD=#{@build_dir}
@@ -34,17 +35,17 @@ module Bard
         cd $BUILD
 
         # wait until server responds
-        curl --retry 5 --retry-delay 2 -s -o /dev/null "http://0.0.0.0:3000"
+        echo waiting...
+        curl --retry 5 --retry-delay 2 http://localhost:3000
 
+        echo copying...
         # Mirror the site to the build folder, ignoring links with query params
-        wget --reject-regex "(.*)\\?(.*)" -FEmnH http://0.0.0.0:3000/
+        wget --reject-regex "(.*)\\?(.*)" -FEmnH http://localhost:3000/
         echo #{@domain} > CNAME
-
-        # Kill the server
-        cd -
+      BASH
+    ensure # cleanup
+      run! <<~BASH
         cat tmp/pids/server.pid | xargs -I {} kill {}
-
-        # Clean up the assets
         rm -rf public/assets
       BASH
     end
