@@ -1,5 +1,6 @@
 require "bard/git"
 require "bard/command"
+require "bard/github_pages"
 
 module Bard::CLI::Deploy
   def self.included mod
@@ -43,7 +44,11 @@ module Bard::CLI::Deploy
           invoke :master_key, nil, from: "local", to: to
           config[to].run! "bin/setup && bard setup"
         else
-          config[to].run! "git pull origin master && bin/setup"
+          if config[to].github_pages
+            Bard::GithubPages.new(self).deploy(config[to])
+          else
+            config[to].run! "git pull origin master && bin/setup"
+          end
         end
 
         puts green("Deploy Succeeded")

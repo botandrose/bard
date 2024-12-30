@@ -3,7 +3,7 @@ require "bard/command"
 require "bard/copy"
 
 module Bard
-  class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env)
+  class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env, :github_pages)
     def self.define project_name, key, &block
       new(project_name, key).tap do |server|
         server.instance_eval &block
@@ -24,7 +24,7 @@ module Bard
       end
     end
 
-    setting :ssh, :path, :ping, :gateway, :ssh_key, :env
+    setting :ssh, :path, :ping, :gateway, :ssh_key, :env, :github_pages
 
     def ping(*args)
       if args.length == 0

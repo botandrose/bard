@@ -75,5 +75,17 @@ module Bard
         raise ArgumentError
       end
     end
+
+    # short-hand for michael
+
+    def github_pages url=nil
+      server :production do
+        github_pages true
+        ssh false
+        ping url
+      end
+
+      backup false
+    end
   end
 end

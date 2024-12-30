@@ -49,6 +49,7 @@ file "Gemfile", <<~RUBY
 
   group :production do
     gem "foreman-export-systemd_user"
+    gem "puma"
   end
 RUBY
 
