@@ -79,10 +79,17 @@ module Bard
     # short-hand for michael
 
     def github_pages url=nil
+      urls = []
+      if url.present?
+        uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
+        hostname = uri.hostname.sub(/^www\./, '')
+        urls = [hostname, "www.#{hostname}"]
+      end
+
       server :production do
         github_pages true
         ssh false
-        ping url
+        ping *urls
       end
 
       backup false

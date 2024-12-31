@@ -9,6 +9,7 @@ module Bard
       @build_dir = "tmp/github-build-#{@sha}"
       @branch = "gh-pages"
       @domain = server.ping.first
+      @domain = URI.parse(@domain).hostname if @domain
 
       puts "Starting deployment to GitHub Pages..."
 
@@ -21,7 +22,7 @@ module Bard
     private
 
     def build_site
-      FileUtils.rm_rf "tmp/github-build-".sub(@sha, "*")
+      system "rm -rf #{@build_dir.sub(@sha, "*")}"
       run! <<~BASH
         set -e
         RAILS_ENV=production bundle exec rails s -p 3000 -d --pid tmp/pids/server.pid
