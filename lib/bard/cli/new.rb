@@ -54,7 +54,7 @@ class Bard::CLI::New < Bard::CLI::Command
   def stage
     run! <<~BASH
       cd ../#{project_name}
-      bard deploy --provision
+      bard deploy --clone
     BASH
   end
 
