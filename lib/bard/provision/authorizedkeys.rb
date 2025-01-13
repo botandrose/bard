@@ -5,10 +5,10 @@ class Bard::Provision::AuthorizedKeys < Bard::Provision
     print "Authorized Keys:"
 
     KEYS.each do |search_text, full_key|
-      provision_server.run! <<~BASH #, quiet: true
-        file=~/.ssh/authorized_keys
-        if ! grep -F -q "#{search_text}" $file; then
-          echo "#{full_key}" >> $file
+      file = "~/.ssh/authorized_keys"
+      provision_server.run! <<~BASH, home: true
+        if ! grep -F -q "#{search_text}" #{file}; then
+          echo "#{full_key}" >> #{file}
         fi
       BASH
     end
