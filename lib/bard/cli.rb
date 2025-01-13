@@ -22,7 +22,6 @@ module Bard
       open: "Open",
       ssh: "SSH",
       install: "Install",
-      provision: "Provision",
       ping: "Ping",
       hurt: "Hurt",
       vim: "Vim",
@@ -32,6 +31,7 @@ module Bard
     end
 
     {
+      provision: "Provision",
       new: "New",
     }.each do |command, klass|
       require "bard/cli/#{command}"
@@ -47,16 +47,14 @@ module Bard
         puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
         exit 1
       end
-    end
 
-    private
+      def config
+        @config ||= Bard::Config.new(project_name, path: "bard.rb")
+      end
 
-    def config
-      @config ||= Bard::Config.new(project_name, path: "bard.rb")
-    end
-
-    def project_name
-      @project_name ||= File.expand_path(".").split("/").last
+      def project_name
+        @project_name ||= File.expand_path(".").split("/").last
+      end
     end
   end
 end

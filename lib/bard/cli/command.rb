@@ -9,10 +9,11 @@ class Bard::CLI::Command < SimpleDelegator
 
   def self.setup cli
     cli.desc @command, @description
-
-    method = @method # put in local variable so next block can capture it
+    # put in local variables so next block can capture it
+    command_class = self
+    method = @method
     cli.define_method method do |*args|
-      command = Bard::CLI::New.new(self)
+      command = command_class.new(self)
       command.send method, *args
     end
   end
