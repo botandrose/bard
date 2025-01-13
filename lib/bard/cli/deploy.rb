@@ -40,8 +40,8 @@ module Bard::CLI::Deploy
         end
 
         if options[:clone]
-          config[to].run! "git clone git@github.com:botandrosedesign/#{project_name}", home: true
-          invoke :master_key, nil, from: "local", to: to
+          config[to].run! "git clone git@github.com:botandrosedesign/#{project_name} #{config[to].path}", home: true
+          invoke :master_key, [], from: "local", to: to
           config[to].run! "bin/setup && bard setup"
         else
           if config[to].github_pages
