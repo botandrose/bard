@@ -21,7 +21,6 @@ file ".gitignore", <<~GITIGNORE
   # Ignore master key for decrypting credentials and more.
   /config/master.key
 
-  /config/database.yml
   /db/*.sqlite3
   /db/data.*
 
