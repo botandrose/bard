@@ -21,8 +21,11 @@ file ".gitignore", <<~GITIGNORE
   # Ignore master key for decrypting credentials and more.
   /config/master.key
 
-  /db/*.sqlite3
+  # Ignore database dumps
   /db/data.*
+
+  # Ignore storage (uploaded files in development and any SQLite databases).
+  /storage/*
 
   # Ignore Syncthing
   .stfolder/
