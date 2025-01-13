@@ -52,6 +52,7 @@ file "Gemfile", <<~RUBY
   gem "solid_cable"
 
   gem "image_processing"
+  gem "puma"
 
   group :development do
     gem "web-console"
@@ -68,7 +69,6 @@ file "Gemfile", <<~RUBY
     gem "cuprite-downloads"
     gem "capybara-screenshot"
     gem "database_cleaner"
-    gem "puma"
     gem "chop"
     gem "email_spec"
     gem "timecop"
@@ -77,7 +77,6 @@ file "Gemfile", <<~RUBY
 
   group :production do
     gem "foreman-export-systemd_user"
-    gem "puma"
   end
 RUBY
 
