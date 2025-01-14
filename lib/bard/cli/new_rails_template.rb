@@ -110,6 +110,8 @@ insert_into_file "config/database.yml", <<~YAML, after: "database: storage/test.
     database: storage/staging.sqlite3
 YAML
 
+gsub_file "config/environments/production.rb", /  (config\.logger.+STDOUT.*)$/, '  # \1'
+
 after_bundle do
   run "bard install"
   run "bin/setup"
