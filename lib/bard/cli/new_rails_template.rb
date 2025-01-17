@@ -21,6 +21,9 @@ file ".gitignore", <<~GITIGNORE
   # Ignore master key for decrypting credentials and more.
   /config/master.key
 
+  # ignore coverage reports
+  /coverage
+
   # Ignore database dumps
   /db/data.*
 
