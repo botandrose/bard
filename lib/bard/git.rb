@@ -20,7 +20,9 @@ module Bard
     end
 
     def sha_of ref
-      `git rev-parse #{ref}`.chomp
+      sha = `git rev-parse #{ref} 2>/dev/null`.chomp
+      return sha if $?.success?
+      nil # Branch doesn't exist
     end
   end
 end

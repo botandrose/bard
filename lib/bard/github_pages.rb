@@ -92,9 +92,7 @@ module Bard
     end
 
     def get_parent_commit
-      sha = Git.sha_of("#{@branch}^{commit}")
-      return sha if $?.success?
-      nil # Branch doesn't exist yet
+      Git.sha_of("#{@branch}^{commit}")
     end
 
     def commit_and_push commit_sha
