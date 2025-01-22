@@ -40,7 +40,8 @@ class Bard::CLI::New < Bard::CLI::Command
   end
 
   def push_to_github
-    Bard::Github.new(project_name).create_repo
+    api = Bard::Github.new(project_name)
+    api.create_repo
     run! <<~BASH
       cd ../#{project_name}
       git init -b master
@@ -49,6 +50,7 @@ class Bard::CLI::New < Bard::CLI::Command
       git remote add origin git@github.com:botandrosedesign/#{project_name}
       git push -u origin master
     BASH
+    api.add_master_key File.read("../#{project_name}/config/master.key")
   end
 
   def stage

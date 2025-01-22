@@ -1,6 +1,7 @@
 require "net/http"
 require "json"
 require "base64"
+require "rbnacl"
 
 module Bard
   class Github < Struct.new(:project_name)
@@ -14,6 +15,14 @@ module Bard
     def post path, params={}
       request(path) do |uri|
         Net::HTTP::Post.new(uri).tap do |r|
+          r.body = JSON.dump(params)
+        end
+      end
+    end
+
+    def put path, params={}
+      request(path) do |uri|
+        Net::HTTP::Put.new(uri).tap do |r|
           r.body = JSON.dump(params)
         end
       end
@@ -35,6 +44,27 @@ module Bard
     def add_deploy_key title:, key:
       post("keys", title:, key:)
     end
+
+    def add_master_key master_key
+      response = get("actions/secrets/public-key")
+      public_key, public_key_id = response.values_at("key", "key_id")
+
+      def encrypt_secret(encoded_public_key, secret)
+        decoded_key = Base64.decode64(encoded_public_key)
+        public_key = RbNaCl::PublicKey.new(decoded_key)
+        box = RbNaCl::Boxes::Sealed.from_public_key(public_key)
+        encrypted_secret = box.encrypt(secret)
+        Base64.strict_encode64(encrypted_secret)
+      end
+
+      encrypted_master_key = encrypt_secret(public_key, master_key)
+
+      put("actions/secrets/RAILS_MASTER_KEY", {
+        encrypted_value: encrypted_master_key,
+        key_id: public_key_id,
+      })
+    end
+
 
     def create_repo
       post("https://api.github.com/orgs/botandrosedesign/repos", {

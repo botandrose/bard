@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thor", ">= 0.19.0"
   spec.add_dependency "rvm"
   spec.add_dependency "term-ansicolor", ">= 1.0.3"
+  spec.add_dependency "rbnacl"
 
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "rspec"
