@@ -172,6 +172,18 @@ insert_into_file "config/database.yml", <<~YAML, after: "database: storage/test.
     database: storage/staging.sqlite3
 YAML
 
+insert_into_file "config/database.yml", <<-YAML, after: "# database: path/to/persistent/storage/production.sqlite3"
+
+  cable:
+    <<: *default
+    # database: path/to/persistent/storage/production_cable.sqlite3
+    migrations_paths: db/cable_migrate
+  queue:
+    <<: *default
+    # database: path/to/persistent/storage/production_queue.sqlite3
+    migrations_paths: db/queue_migrate
+YAML
+
 gsub_file "config/environments/production.rb", /  (config\.logger.+STDOUT.*)$/, '  # \1'
 
 after_bundle do
