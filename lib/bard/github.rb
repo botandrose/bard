@@ -65,6 +65,17 @@ module Bard
       })
     end
 
+    def add_master_branch_protection
+      put("branches/master/protection", {
+        required_status_checks: {
+          strict: false,
+          contexts: [],
+        },
+        enforce_admins: nil,
+        required_pull_request_reviews: nil,
+        restrictions: nil,
+      })
+    end
 
     def create_repo
       post("https://api.github.com/orgs/botandrosedesign/repos", {

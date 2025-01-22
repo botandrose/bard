@@ -51,6 +51,7 @@ class Bard::CLI::New < Bard::CLI::Command
       git push -u origin master
     BASH
     api.add_master_key File.read("../#{project_name}/config/master.key")
+    api.add_master_branch_protection
   end
 
   def stage
