@@ -42,23 +42,24 @@ file "Gemfile", <<~RUBY
 
   gem "bootsnap", require: false
   gem "rails", "~>8.0.0"
+  gem "solid_cache"
+  gem "solid_queue"
+  gem "solid_cable"
   gem "bard-rails"
   gem "sqlite3"
+  gem "image_processing"
+  gem "puma"
+  gem "exception_notification"
 
+  # css
   gem "sprockets-rails"
   gem "dartsass-sprockets"
   gem "bard-sass"
 
+  # js
   gem "importmap-rails"
   gem "turbo-rails"
   gem "stimulus-rails"
-
-  gem "solid_cache"
-  gem "solid_queue"
-  gem "solid_cable"
-
-  gem "image_processing"
-  gem "puma"
 
   group :development do
     gem "web-console"
@@ -84,6 +85,64 @@ file "Gemfile", <<~RUBY
   group :production do
     gem "foreman-export-systemd_user"
   end
+RUBY
+
+file "config/initializers/exception_notification.rb", <<~RUBY
+  require "exception_notification/rails"
+
+  ExceptionNotification.configure do |config|
+    config.ignored_exceptions = []
+
+    # Adds a condition to decide when an exception must be ignored or not.
+    # The ignore_if method can be invoked multiple times to add extra conditions.
+    config.ignore_if do |exception, options|
+      not Rails.env.production?
+    end
+
+    config.ignore_if do |exception, options|
+      %w[
+        ActiveRecord::RecordNotFound
+        AbstractController::ActionNotFound
+        ActionController::RoutingError
+        ActionController::InvalidAuthenticityToken
+        ActionView::MissingTemplate
+        ActionController::BadRequest
+        ActionDispatch::Http::Parameters::ParseError
+        ActionDispatch::Http::MimeNegotiation::InvalidType
+      ].include?(exception.class.to_s)
+    end
+
+    config.add_notifier :email, {
+      email_prefix: "[\#{File.basename(Dir.pwd)}] ",
+      exception_recipients: "micah@botandrose.com",
+      smtp_settings: Rails.application.credentials.exception_notification_smtp_settings,
+    }
+  end
+
+  if defined?(Rake::Application)
+    Rake::Application.prepend Module.new {
+      def display_error_message error
+        ExceptionNotifier.notify_exception(error)
+        super
+      end
+
+      def invoke_task task_name
+        super
+      rescue RuntimeError => exception
+        if exception.message.starts_with?("Don't know how to build task")
+          ExceptionNotifier.notify_exception(exception)
+        end
+        raise exception
+      end
+    }
+  end
+
+  ActionController::Live.prepend Module.new {
+    def log_error exception
+      ExceptionNotifier.notify_exception exception, env: request.env
+      super
+    end
+  }
 RUBY
 
 file "app/assets/config/manifest.js", <<~RUBY
