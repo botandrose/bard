@@ -67,6 +67,7 @@ file "Gemfile", <<~RUBY
 
   group :development, :test do
     gem "debug", require: "debug/prelude"
+    gem "parallel_tests", "~>3.9.0" # 3.10 pegs CPU
     gem "brakeman", require: false
     gem "rubocop-rails-omakase", require: false
   end
