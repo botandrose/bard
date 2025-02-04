@@ -28,6 +28,14 @@ module Bard
       end
     end
 
+    def patch path, params={}
+      request(path) do |uri|
+        Net::HTTP::Patch.new(uri).tap do |r|
+          r.body = JSON.dump(params)
+        end
+      end
+    end
+
     def delete path, params={}
       request(path) do |uri|
         Net::HTTP::Delete.new(uri).tap do |r|
@@ -85,7 +93,7 @@ module Bard
     end
 
     def delete_repo
-      delete("https://api.github.com/repos/botandrosedesign/#{project_name}")
+      delete(nil)
     end
 
     private
@@ -101,7 +109,12 @@ module Bard
       uri = if path =~ /^http/
         URI(path)
       else
-        URI("https://api.github.com/repos/botandrosedesign/#{project_name}/#{path}")
+        base = "https://api.github.com/repos/botandrosedesign/#{project_name}"
+        if path
+          URI.join(base, path)
+        else
+          URI(base)
+        end
       end
 
       req = nil

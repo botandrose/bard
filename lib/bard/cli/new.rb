@@ -52,6 +52,7 @@ class Bard::CLI::New < Bard::CLI::Command
     BASH
     api.add_master_key File.read("../#{project_name}/config/master.key")
     api.add_master_branch_protection
+    api.patch(nil, allow_auto_merge: true)
   end
 
   def stage
