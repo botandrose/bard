@@ -111,7 +111,7 @@ module Bard
       else
         base = "https://api.github.com/repos/botandrosedesign/#{project_name}"
         if path
-          URI.join(base, path)
+          URI(File.join(base, path))
         else
           URI(base)
         end
