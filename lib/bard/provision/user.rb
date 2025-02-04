@@ -36,7 +36,7 @@ class Bard::Provision::User < Bard::Provision
   end
 
   def ssh_with_user? ssh_uri, user: ssh_uri.user
-    system "ssh -o ConnectTimeout=2 -p#{ssh_uri.port || 22} #{user}@#{ssh_uri.host} exit >/dev/null 2>&1"
+    system "ssh -o ConnectTimeout=2 -p#{ssh_uri.port || 22} #{user}@#{ssh_uri.host} : >/dev/null 2>&1"
   end
 end
 
