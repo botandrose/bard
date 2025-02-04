@@ -3,6 +3,7 @@ module AptDependencies
 
   def self.ensure!
     return "true" if deps_to_install.none?
+    return "true" if ENV["APT_PACKAGES"] # already installed via github actions
     if sudo_password_required? && ENV["RAILS_ENV"] != "development"
       $stderr.puts "sudo requires password! cannot install #{deps_to_install.join(' ')}"
       exit 1

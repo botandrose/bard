@@ -30,6 +30,14 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+      - name: Set up apt packages
+        run: |
+          sudo rm -f /var/lib/man-db/auto-update
+          echo "APT_PACKAGES=$(paste -sd " " Aptfile)" >> $GITHUB_ENV
+      - name: Apt packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ${{ env.APT_PACKAGES }}
       - name: Setup
         run: bin/setup
       - name: Run tests
