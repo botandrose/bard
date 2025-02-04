@@ -31,10 +31,12 @@ jobs:
         with:
           bundler-cache: true
       - name: Set up apt packages
+        if: ${{ hashFiles('Aptfile') != '' }}
         run: |
           sudo rm -f /var/lib/man-db/auto-update
           echo "APT_PACKAGES=$(paste -sd " " Aptfile)" >> $GITHUB_ENV
       - name: Apt packages
+        if: ${{ hashFiles('Aptfile') != '' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: ${{ env.APT_PACKAGES }}
