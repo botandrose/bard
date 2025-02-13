@@ -63,7 +63,7 @@ class Bard::CLI::New < Bard::CLI::Command
   end
 
   def ruby_version
-    File.read(".ruby-version").chomp
+    "ruby-3.3.3"
   end
 
   def template_path
