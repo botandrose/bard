@@ -14,9 +14,9 @@ class Bard::CLI::Provision < Bard::CLI::Command
     RVM
     App
     Passenger
-    Data
     HTTP
     LogRotation
+    Data
     Deploy
   ]
 
