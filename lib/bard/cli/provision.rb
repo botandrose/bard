@@ -6,6 +6,7 @@ class Bard::CLI::Provision < Bard::CLI::Command
     SSH
     User
     AuthorizedKeys
+    Swapfile
     Apt
     MySQL
     Repo
@@ -16,7 +17,6 @@ class Bard::CLI::Provision < Bard::CLI::Command
     Data
     HTTP
     LogRotation
-    Swapfile
     Deploy
   ]
 
