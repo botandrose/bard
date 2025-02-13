@@ -8,7 +8,7 @@ class Bard::Provision::MySQL < Bard::Provision
       provision_server.run! [
         "sudo apt-get install -y mysql-server",
         %(sudo mysql -uroot -e "ALTER USER \\"'\\"root\\"'\\"@\\"'\\"localhost\\"'\\" IDENTIFIED WITH mysql_native_password BY \\"'\\"\\"'\\", \\"'\\"root\\"'\\"@\\"'\\"localhost\\"'\\" PASSWORD EXPIRE NEVER; FLUSH PRIVILEGES;"),
-        %(mysql -uroot -e "UPDATE mysql.user SET password_lifetime = NULL WHERE user = 'root' AND host = 'localhost';"),
+        %(mysql -uroot -e "UPDATE mysql.user SET password_lifetime = NULL WHERE user = \\"'\\"root\\"'\\" AND host = \\"'\\"localhost\\"'\\";"),
       ].join("; "), home: true
     end
 
