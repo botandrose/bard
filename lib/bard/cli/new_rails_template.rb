@@ -185,6 +185,8 @@ insert_into_file "config/database.yml", <<-YAML, after: "# database: path/to/per
     migrations_paths: db/queue_migrate
 YAML
 
+gsub_file "config/database.yml", "path/to/persistent/", ""
+
 gsub_file "config/environments/production.rb", /  (config\.logger.+STDOUT.*)$/, '  # \1'
 
 after_bundle do
