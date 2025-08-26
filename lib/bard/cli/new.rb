@@ -26,7 +26,7 @@ class Bard::CLI::New < Bard::CLI::Command
   end
 
   def create_project
-    run! <<~BASH
+    run! <<~SH
       env -i bash -lc '
         export HOME=~
         cd ..
@@ -36,30 +36,30 @@ class Bard::CLI::New < Bard::CLI::Command
         gem list rails -i || gem install rails --no-document
         rails new #{project_name} --skip-git --skip-kamal --skip-test -m #{template_path}
       '
-    BASH
+    SH
   end
 
   def push_to_github
     api = Bard::Github.new(project_name)
     api.create_repo
-    run! <<~BASH
+    run! <<~SH
       cd ../#{project_name}
       git init -b master
       git add -A
       git commit -m"initial commit."
       git remote add origin git@github.com:botandrosedesign/#{project_name}
       git push -u origin master
-    BASH
+    SH
     api.add_master_key File.read("../#{project_name}/config/master.key")
     api.add_master_branch_protection
     api.patch(nil, allow_auto_merge: true)
   end
 
   def stage
-    run! <<~BASH
+    run! <<~SH
       cd ../#{project_name}
       bard deploy --clone
-    BASH
+    SH
   end
 
   def ruby_version

@@ -23,10 +23,10 @@ module Bard
 
     def build_site
       system "rm -rf #{@build_dir.sub(@sha, "*")}"
-      run! <<~BASH
+      run! <<~SH
         set -e
         RAILS_ENV=production bundle exec rails s -p 3000 -d --pid tmp/pids/server.pid
-        bundle exec rake assets:clean assets:precompile
+        OUTPUT=$(bundle exec rake assets:clean assets:precompile 2>&1) || echo "$OUTPUT"
 
         # Create the output directory and enter it
         BUILD=#{@build_dir}
@@ -37,18 +37,19 @@ module Bard
 
         # wait until server responds
         echo waiting...
-        curl --retry 5 --retry-delay 2 http://localhost:3000
+        curl -s --retry 5 --retry-delay 2 http://localhost:3000 >/dev/null 2>&1
 
         echo copying...
         # Mirror the site to the build folder, ignoring links with query params
-        wget --reject-regex "(.*)\\?(.*)" -FEmnH http://localhost:3000/
+        bash -c 'set -o pipefail; wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:3000/ 2>&1 | grep -v -E "URL:|FINISHED|Total wall clock time:|Downloaded:"'
+
         echo #{@domain} > CNAME
-      BASH
+      SH
     ensure # cleanup
-      run! <<~BASH
+      run! <<~SH
         cat tmp/pids/server.pid | xargs -I {} kill {}
         rm -rf public/assets
-      BASH
+      SH
     end
 
     def create_tree_from_build

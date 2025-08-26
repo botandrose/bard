@@ -6,11 +6,11 @@ class Bard::Provision::AuthorizedKeys < Bard::Provision
 
     KEYS.each do |search_text, full_key|
       file = "~/.ssh/authorized_keys"
-      provision_server.run! <<~BASH, home: true
+      provision_server.run! <<~SH, home: true
         if ! grep -F -q "#{search_text}" #{file}; then
           echo "#{full_key}" >> #{file}
         fi
-      BASH
+      SH
     end
 
     puts " ✓"

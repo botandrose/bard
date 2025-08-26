@@ -4,7 +4,7 @@ class Bard::Provision::LogRotation < Bard::Provision
   def call
     print "Log Rotation:"
 
-    provision_server.run! <<~BASH, quiet: true
+    provision_server.run! <<~SH, quiet: true
       file=/etc/logrotate.d/#{server.project_name}
       if [ ! -f $file ]; then
         sudo tee $file > /dev/null <<EOF
@@ -20,7 +20,7 @@ class Bard::Provision::LogRotation < Bard::Provision
       }
       EOF
       fi
-    BASH
+    SH
 
     puts " ✓"
   end
