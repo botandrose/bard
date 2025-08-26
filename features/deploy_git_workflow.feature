@@ -60,3 +60,29 @@ Feature: bard deploy git workflow
     And I should be on branch "master"
     And branch "cleanup-test" should not exist locally
     And branch "cleanup-test" should not exist on origin
+
+  Scenario: deploy a branch without checking it out
+    Given I create and switch to branch "feature-branch"
+    And I create a file "feature.txt" with content "feature content"
+    And I commit the changes with message "Add feature"
+    And I switch to branch "master"
+    When I run: bard deploy feature-branch --skip-ci
+    Then the output should contain "Deploy Succeeded"
+    And I should be on branch "master"
+    And branch "feature-branch" should not exist locally
+    When I run: bard run "cat feature.txt"
+    Then the output should contain "feature content"
+
+  Scenario: deploy a branch that requires rebase without checking it out
+    Given I create and switch to branch "feature-branch"
+    And I create a file "feature.txt" with content "feature content"
+    And I commit the changes with message "Add feature"
+    And I switch to branch "master"
+    And master has an additional commit from another source
+    When I run: bard deploy feature-branch --skip-ci
+    Then the output should contain "The master branch has advanced"
+    And the output should contain "Attempting rebase"
+    And the output should contain "Deploy Succeeded"
+    And I should be on branch "master"
+    When I run: bard run "cat feature.txt"
+    Then the output should contain "feature content"

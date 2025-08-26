@@ -123,6 +123,12 @@ esac
   end
 end
 
+Given /^I switch to branch "([^"]+)"$/ do |branch_name|
+  Dir.chdir(@test_dir) do
+    system("git checkout #{branch_name}", out: File::NULL, err: File::NULL)
+  end
+end
+
 # Output negation
 Then /^the output should not contain "([^"]+)"$/ do |unexpected|
   expect(@stdout).not_to include(unexpected)

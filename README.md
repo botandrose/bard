@@ -12,7 +12,7 @@ end
 ```
 
 ```bash
-bard deploy production
+bard deploy
 ```
 
 ## Features
@@ -115,17 +115,21 @@ end
 ### Deployment
 
 ```bash
-# Deploy to production
-bard deploy production
+# Deploy current branch to production (default)
+bard deploy
 
-# Deploy to staging
-bard deploy staging
+# Deploy a specific branch to production
+bard deploy feature-branch
+
+# Deploy to a different target
+bard deploy --target=staging
+bard deploy feature-branch --target=staging
 
 # Deploy feature branch to staging (no merge)
 bard stage feature-branch
 
 # Skip CI checks
-bard deploy production --skip-ci
+bard deploy --skip-ci
 ```
 
 ### Data Management
