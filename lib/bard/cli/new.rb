@@ -63,7 +63,7 @@ class Bard::CLI::New < Bard::CLI::Command
   end
 
   def ruby_version
-    "ruby-3.3.3"
+    "ruby-3.4.2"
   end
 
   def template_path
