@@ -41,7 +41,7 @@ module Bard
 
         echo copying...
         # Mirror the site to the build folder, ignoring links with query params
-        bash -c 'set -o pipefail; wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:3000/ 2>&1 | grep -v -E "URL:|FINISHED|Total wall clock time:|Downloaded:"'
+        wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:3000/ 2>&1
 
         echo #{@domain} > CNAME
       SH
