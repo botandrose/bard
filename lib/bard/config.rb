@@ -83,7 +83,10 @@ module Bard
       if url.present?
         uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
         hostname = uri.hostname.sub(/^www\./, '')
-        urls = [hostname, "www.#{hostname}"]
+        urls = [hostname]
+        if hostname.count(".") < 2
+          urls << "www.#{hostname}"
+        end
       end
 
       server :production do
