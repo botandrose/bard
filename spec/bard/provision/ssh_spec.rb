@@ -22,6 +22,7 @@ describe Bard::Provision::SSH do
   describe "#call" do
     context "when SSH is already available on target port" do
       it "skips port reconfiguration but checks known hosts" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(true)
         allow(ssh_provisioner).to receive(:ssh_known_host?).with(provision_ssh_uri).and_return(true)
 
@@ -31,6 +32,7 @@ describe Bard::Provision::SSH do
       end
 
       it "adds to known hosts if not present" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(true)
         allow(ssh_provisioner).to receive(:ssh_known_host?).with(provision_ssh_uri).and_return(false)
 
@@ -42,6 +44,7 @@ describe Bard::Provision::SSH do
 
     context "when SSH is not available on target port but available on default port" do
       it "reconfigures SSH port and adds to known hosts" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri).and_return(true)
         allow(ssh_provisioner).to receive(:ssh_known_host?).with(provision_ssh_uri).and_return(false)
@@ -56,6 +59,7 @@ describe Bard::Provision::SSH do
       end
 
       it "prints status messages during reconfiguration" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri).and_return(true)
         allow(ssh_provisioner).to receive(:ssh_known_host?).and_return(false)
@@ -74,6 +78,7 @@ describe Bard::Provision::SSH do
 
     context "when SSH is not available on either port" do
       it "raises an error" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri).and_return(false)
 
@@ -81,7 +86,45 @@ describe Bard::Provision::SSH do
       end
     end
 
+    context "when password authentication is enabled" do
+      it "disables password authentication" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(true)
+        allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(true)
+        allow(ssh_provisioner).to receive(:ssh_known_host?).and_return(true)
+
+        expect(ssh_provisioner).to receive(:disable_password_auth!)
+
+        ssh_provisioner.call
+      end
+
+      it "prints status message when disabling password authentication" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(true)
+        allow(ssh_provisioner).to receive(:disable_password_auth!)
+        allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(true)
+        allow(ssh_provisioner).to receive(:ssh_known_host?).and_return(true)
+
+        expect(ssh_provisioner).to receive(:print).with("SSH:")
+        expect(ssh_provisioner).to receive(:print).with(" Disabling password authentication,")
+        expect(ssh_provisioner).to receive(:puts).with(" ✓")
+
+        ssh_provisioner.call
+      end
+    end
+
+    context "when password authentication is already disabled" do
+      it "skips disabling password authentication" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
+        allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(true)
+        allow(ssh_provisioner).to receive(:ssh_known_host?).and_return(true)
+
+        expect(ssh_provisioner).not_to receive(:disable_password_auth!)
+
+        ssh_provisioner.call
+      end
+    end
+
     it "updates the SSH URL with the target port" do
+      allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
       allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(true)
       allow(ssh_provisioner).to receive(:ssh_known_host?).and_return(true)
 
@@ -137,6 +180,49 @@ describe Bard::Provision::SSH do
         expect(ssh_provisioner).to receive(:system).with(expected_command)
 
         ssh_provisioner.send(:add_ssh_known_host!, provision_ssh_uri)
+      end
+    end
+
+    describe "#password_auth_enabled?" do
+      it "returns true when password authentication is enabled" do
+        expect(provision_server).to receive(:run!).with(
+          %q{grep -E '^\s*PasswordAuthentication\s+yes' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true},
+          home: true,
+          capture: true
+        ).and_return("PasswordAuthentication yes\n")
+
+        expect(ssh_provisioner.send(:password_auth_enabled?)).to be true
+      end
+
+      it "returns false when password authentication is disabled" do
+        expect(provision_server).to receive(:run!).with(
+          %q{grep -E '^\s*PasswordAuthentication\s+yes' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true},
+          home: true,
+          capture: true
+        ).and_return("")
+
+        expect(ssh_provisioner.send(:password_auth_enabled?)).to be false
+      end
+
+      it "returns false when grep returns nil" do
+        expect(provision_server).to receive(:run!).with(
+          %q{grep -E '^\s*PasswordAuthentication\s+yes' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true},
+          home: true,
+          capture: true
+        ).and_return(nil)
+
+        expect(ssh_provisioner.send(:password_auth_enabled?)).to be false
+      end
+    end
+
+    describe "#disable_password_auth!" do
+      it "creates sshd config file to disable password authentication and restarts ssh" do
+        expect(provision_server).to receive(:run!).with(
+          %q{echo "PasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/disable_password_auth.conf; sudo service ssh restart},
+          home: true
+        )
+
+        ssh_provisioner.send(:disable_password_auth!)
       end
     end
   end
