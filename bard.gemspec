@@ -21,8 +21,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rvm"
   spec.add_dependency "term-ansicolor", ">= 1.0.3"
   spec.add_dependency "rbnacl"
+  spec.add_dependency "base64"
 
-  spec.add_development_dependency "byebug"
+  spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
-  spec.add_development_dependency "cucumber"
+  spec.add_development_dependency "debug"
 end

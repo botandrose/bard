@@ -4,7 +4,7 @@ SimpleCov.start
 require "webmock/rspec"
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require "byebug"
+require "debug/prelude"
 
 RSpec.configure do |config|
   config.filter_run focus: true
