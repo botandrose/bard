@@ -21,13 +21,51 @@ describe Bard::Provision::Repo do
 
   describe "#call" do
     context "when repository is already cloned" do
-      it "skips all setup steps" do
-        allow(repo_provisioner).to receive(:already_cloned?).and_return(true)
+      context "when not on latest master" do
+        it "updates to latest master" do
+          allow(repo_provisioner).to receive(:already_cloned?).and_return(true)
+          allow(repo_provisioner).to receive(:on_latest_master?).and_return(false)
 
-        expect(provision_server).not_to receive(:run!)
-        expect(github_api).not_to receive(:add_deploy_key)
+          expect(repo_provisioner).to receive(:update_to_latest_master!)
+          expect(github_api).not_to receive(:add_deploy_key)
 
-        repo_provisioner.call
+          repo_provisioner.call
+        end
+
+        it "prints status message when updating to latest master" do
+          allow(repo_provisioner).to receive(:already_cloned?).and_return(true)
+          allow(repo_provisioner).to receive(:on_latest_master?).and_return(false)
+          allow(repo_provisioner).to receive(:update_to_latest_master!)
+
+          expect(repo_provisioner).to receive(:print).with("Repo:")
+          expect(repo_provisioner).to receive(:print).with(" Updating to latest master,")
+          expect(repo_provisioner).to receive(:puts).with(" ✓")
+
+          repo_provisioner.call
+        end
+      end
+
+      context "when already on latest master" do
+        it "skips update" do
+          allow(repo_provisioner).to receive(:already_cloned?).and_return(true)
+          allow(repo_provisioner).to receive(:on_latest_master?).and_return(true)
+
+          expect(repo_provisioner).not_to receive(:update_to_latest_master!)
+          expect(github_api).not_to receive(:add_deploy_key)
+
+          repo_provisioner.call
+        end
+
+        it "only prints repo header and checkbox" do
+          allow(repo_provisioner).to receive(:already_cloned?).and_return(true)
+          allow(repo_provisioner).to receive(:on_latest_master?).and_return(true)
+
+          expect(repo_provisioner).to receive(:print).with("Repo:")
+          expect(repo_provisioner).not_to receive(:print).with(" Updating to latest master,")
+          expect(repo_provisioner).to receive(:puts).with(" ✓")
+
+          repo_provisioner.call
+        end
       end
     end
 
@@ -91,6 +129,7 @@ describe Bard::Provision::Repo do
 
     it "always prints success message" do
       allow(repo_provisioner).to receive(:already_cloned?).and_return(true)
+      allow(repo_provisioner).to receive(:on_latest_master?).and_return(true)
 
       expect(repo_provisioner).to receive(:print).with("Repo:")
       expect(repo_provisioner).to receive(:puts).with(" ✓")
@@ -133,6 +172,36 @@ describe Bard::Provision::Repo do
     describe "#project_name" do
       it "returns the server's project name" do
         expect(repo_provisioner.send(:project_name)).to eq("test_project")
+      end
+    end
+
+    describe "#on_latest_master?" do
+      it "checks if current HEAD matches origin/master after fetching" do
+        expected_command = "cd ~/test_project && git fetch origin && [ $(git rev-parse HEAD) = $(git rev-parse origin/master) ]"
+        expect(provision_server).to receive(:run).with(expected_command, home: true, quiet: true)
+
+        repo_provisioner.send(:on_latest_master?)
+      end
+
+      it "returns true when on latest master" do
+        allow(provision_server).to receive(:run).and_return(true)
+
+        expect(repo_provisioner.send(:on_latest_master?)).to be true
+      end
+
+      it "returns false when not on latest master" do
+        allow(provision_server).to receive(:run).and_return(false)
+
+        expect(repo_provisioner.send(:on_latest_master?)).to be false
+      end
+    end
+
+    describe "#update_to_latest_master!" do
+      it "checks out master and resets to origin/master" do
+        expected_command = "cd ~/test_project && git checkout master && git reset --hard origin/master"
+        expect(provision_server).to receive(:run!).with(expected_command, home: true)
+
+        repo_provisioner.send(:update_to_latest_master!)
       end
     end
   end

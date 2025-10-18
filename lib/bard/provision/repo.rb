@@ -20,6 +20,11 @@ class Bard::Provision::Repo < Bard::Provision
       end
       print " Cloning repo,"
       provision_server.run! "git clone git@github.com:botandrosedesign/#{project_name}", home: true
+    else
+      if !on_latest_master?
+        print " Updating to latest master,"
+        update_to_latest_master!
+      end
     end
 
     puts " ✓"
@@ -46,6 +51,22 @@ class Bard::Provision::Repo < Bard::Provision
 
   def project_name
     server.project_name
+  end
+
+  def on_latest_master?
+    provision_server.run [
+      "cd ~/#{project_name}",
+      "git fetch origin",
+      "[ $(git rev-parse HEAD) = $(git rev-parse origin/master) ]"
+    ].join(" && "), home: true, quiet: true
+  end
+
+  def update_to_latest_master!
+    provision_server.run! [
+      "cd ~/#{project_name}",
+      "git checkout master",
+      "git reset --hard origin/master"
+    ].join(" && "), home: true
   end
 end
 
