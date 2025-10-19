@@ -73,8 +73,8 @@ module Bard
 
     def rsync_uri file_path=nil
       str = ssh_uri.dup.tap do |uri|
-        uri.scheme = nil
-        uri.port = nil
+        uri.send :set_scheme, nil
+        uri.send :set_port, nil
       end.to_s[2..]
       str += ":#{path}"
       str += "/#{file_path}" if file_path
