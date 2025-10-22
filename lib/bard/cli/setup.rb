@@ -13,7 +13,7 @@ passenger_enabled on;
 
 location ~* \\.(ico|css|js|gif|jp?g|png|webp) {
     access_log off;
-    if (\\$request_filename ~ \"-[0-9a-f]{32}\\.\") {
+    if (\\$request_filename ~ \"-[0-9a-f]{32,}\\.\") {
         expires max;
         add_header Cache-Control public;
     }
