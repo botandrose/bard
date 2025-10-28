@@ -135,5 +135,31 @@ describe Bard::CLI::CI do
         cli.ci
       end
     end
+
+    context "with resume option" do
+      it "calls resume instead of run" do
+        allow(cli).to receive(:options).and_return({ "resume" => true })
+        allow(ci_runner).to receive(:exists?).and_return(true)
+        allow(ci_runner).to receive(:resume).and_yield(30, 60).and_return(true)
+
+        expect(cli).to receive(:puts).with("Continuous integration: resuming build...")
+        expect(cli).to receive(:puts).with("Continuous integration: success!")
+        expect(cli).to receive(:puts).with("Deploying...")
+        expect(ci_runner).not_to receive(:run)
+
+        cli.ci
+      end
+
+      it "displays progress when resuming" do
+        allow(cli).to receive(:options).and_return({ "resume" => true })
+        allow(ci_runner).to receive(:exists?).and_return(true)
+        allow(ci_runner).to receive(:resume).and_yield(30, 60).and_return(true)
+
+        expect(cli).to receive(:print).with("\x08" * "  Estimated completion: 50%".length)
+        expect(cli).to receive(:print).with("  Estimated completion: 50%")
+
+        cli.ci
+      end
+    end
   end
 end

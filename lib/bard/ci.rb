@@ -9,7 +9,7 @@ module Bard
     end
 
     extend Forwardable
-    delegate [:run, :exists?, :console, :status] => :runner
+    delegate [:run, :resume, :exists?, :console, :status] => :runner
 
     private
 

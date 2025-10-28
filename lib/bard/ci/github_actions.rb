@@ -1,21 +1,28 @@
 require "time"
 require "bard/github"
+require "bard/ci/state"
+require "bard/ci/retryable"
 
 module Bard
   class CI
     class GithubActions < Struct.new(:project_name, :branch, :sha)
-      def run
-        last_time_elapsed = api.last_successful_run&.time_elapsed
-        @run = api.create_run!(branch)
+      include Retryable
 
-        start_time = Time.new.to_i
+      def run
+        @last_time_elapsed = api.last_successful_run&.time_elapsed
+        @run = api.create_run!(branch)
+        @start_time = Time.new.to_i
+        save_state
+
         while @run.building?
-          elapsed_time = Time.new.to_i - start_time
-          yield elapsed_time, last_time_elapsed
+          elapsed_time = Time.new.to_i - @start_time
+          yield elapsed_time, @last_time_elapsed
+          save_state
           sleep(2)
           @run = api.find_run(@run.id)
         end
 
+        state.delete
         @run.success?
       end
 
@@ -38,6 +45,40 @@ module Bard
         else
           raise "Unknown job status: #{last_run.inspect}"
         end
+      end
+
+      def resume
+        saved_state = state.load
+        raise "No saved CI state found for #{project_name}. Start a new build with 'bard ci'." if saved_state.nil?
+
+        @run = api.find_run(saved_state["run_id"])
+        @start_time = saved_state["start_time"]
+        @last_time_elapsed = saved_state["last_time_elapsed"]
+
+        while @run.building?
+          elapsed_time = Time.new.to_i - @start_time
+          yield elapsed_time, @last_time_elapsed
+          save_state
+          sleep(2)
+          @run = api.find_run(@run.id)
+        end
+
+        state.delete
+        @run.success?
+      end
+
+      def save_state
+        state.save({
+          "project_name" => project_name,
+          "branch" => branch,
+          "run_id" => @run.id,
+          "start_time" => @start_time,
+          "last_time_elapsed" => @last_time_elapsed
+        })
+      end
+
+      def state
+        @state ||= State.new(project_name)
       end
 
       private

@@ -1,15 +1,18 @@
 require "open3"
+require "bard/ci/state"
 
 module Bard
   class CI
     class Local < Struct.new(:project_name, :branch, :sha)
       def run
         start
+        @start_time = Time.new.to_i
+        save_state
 
-        start_time = Time.new.to_i
         while building?
-          elapsed_time = Time.new.to_i - start_time
+          elapsed_time = Time.new.to_i - @start_time
           yield elapsed_time, nil
+          save_state
           sleep(2)
         end
 
@@ -17,6 +20,7 @@ module Bard
         @console = @stdout_and_stderr.read
         @stdout_and_stderr.close
 
+        state.delete
         success?
       end
 
@@ -26,6 +30,25 @@ module Bard
 
       def console
         @console
+      end
+
+      def resume
+        saved_state = state.load
+        raise "No saved CI state found for #{project_name}. Start a new build with 'bard ci'." if saved_state.nil?
+
+        raise "Cannot resume local CI: process is no longer running. Start a new build with 'bard ci'."
+      end
+
+      def save_state
+        state.save({
+          "project_name" => project_name,
+          "branch" => branch,
+          "start_time" => @start_time
+        })
+      end
+
+      def state
+        @state ||= State.new(project_name)
       end
 
       private

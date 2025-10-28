@@ -7,24 +7,40 @@ module Bard::CLI::CI
 
       option :"local-ci", type: :boolean
       option :status, type: :boolean
+      option :resume, type: :boolean
       desc "ci [branch=HEAD]", "runs ci against BRANCH"
       def ci branch=Bard::Git.current_branch
         ci = Bard::CI.new(project_name, branch, local: options["local-ci"])
         if ci.exists?
           return puts ci.status if options["status"]
 
-          puts "Continuous integration: starting build on #{branch}..."
-
-          success = ci.run do |elapsed_time, last_time|
-            if last_time
-              percentage = (elapsed_time.to_f / last_time.to_f * 100).to_i
-              output = "  Estimated completion: #{percentage}%"
-            else
-              output = "  No estimated completion time. Elapsed time: #{elapsed_time} sec"
+          if options["resume"]
+            puts "Continuous integration: resuming build..."
+            success = ci.resume do |elapsed_time, last_time|
+              if last_time
+                percentage = (elapsed_time.to_f / last_time.to_f * 100).to_i
+                output = "  Estimated completion: #{percentage}%"
+              else
+                output = "  No estimated completion time. Elapsed time: #{elapsed_time} sec"
+              end
+              print "\x08" * output.length
+              print output
+              $stdout.flush
             end
-            print "\x08" * output.length
-            print output
-            $stdout.flush
+          else
+            puts "Continuous integration: starting build on #{branch}..."
+
+            success = ci.run do |elapsed_time, last_time|
+              if last_time
+                percentage = (elapsed_time.to_f / last_time.to_f * 100).to_i
+                output = "  Estimated completion: #{percentage}%"
+              else
+                output = "  No estimated completion time. Elapsed time: #{elapsed_time} sec"
+              end
+              print "\x08" * output.length
+              print output
+              $stdout.flush
+            end
           end
 
           if success

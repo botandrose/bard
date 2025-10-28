@@ -2,9 +2,11 @@ require "net/http"
 require "json"
 require "base64"
 require "rbnacl"
+require "bard/ci/retryable"
 
 module Bard
   class Github < Struct.new(:project_name)
+    include CI::Retryable
     def get path, params={}
       request(path) do |uri|
         uri.query = URI.encode_www_form(params)
@@ -117,26 +119,28 @@ module Bard
         end
       end
 
-      req = nil
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-        req = block.call(uri)
-        req["Accept"] = "application/vnd.github+json"
-        req["Authorization"] = "Bearer #{github_apikey}"
-        req["X-GitHub-Api-Version"] = "2022-11-28"
-        http.request(req)
-      end
-
-      case response
-      when Net::HTTPRedirection then
-        Net::HTTP.get(URI(response["Location"]))
-      when Net::HTTPSuccess then
-        if response["Content-Type"].to_s.include?("/json")
-          JSON.load(response.body)
-        else
-          response.body
+      retry_with_backoff do
+        req = nil
+        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+          req = block.call(uri)
+          req["Accept"] = "application/vnd.github+json"
+          req["Authorization"] = "Bearer #{github_apikey}"
+          req["X-GitHub-Api-Version"] = "2022-11-28"
+          http.request(req)
         end
-      else
-        raise [req.method, req.uri, req.to_hash, response, response.body].inspect
+
+        case response
+        when Net::HTTPRedirection then
+          Net::HTTP.get(URI(response["Location"]))
+        when Net::HTTPSuccess then
+          if response["Content-Type"].to_s.include?("/json")
+            JSON.load(response.body)
+          else
+            response.body
+          end
+        else
+          raise [req.method, req.uri, req.to_hash, response, response.body].inspect
+        end
       end
     end
   end
