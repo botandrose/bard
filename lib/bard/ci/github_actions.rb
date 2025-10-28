@@ -1,30 +1,10 @@
 require "time"
 require "bard/github"
-require "bard/ci/state"
-require "bard/ci/retryable"
+require "bard/ci/runner"
 
 module Bard
   class CI
-    class GithubActions < Struct.new(:project_name, :branch, :sha)
-      include Retryable
-
-      def run
-        @last_time_elapsed = api.last_successful_run&.time_elapsed
-        @run = api.create_run!(branch)
-        @start_time = Time.new.to_i
-        save_state
-
-        while @run.building?
-          elapsed_time = Time.new.to_i - @start_time
-          yield elapsed_time, @last_time_elapsed
-          save_state
-          sleep(2)
-          @run = api.find_run(@run.id)
-        end
-
-        state.delete
-        @run.success?
-      end
+    class GithubActions < Runner
 
       def exists?
         true
@@ -47,14 +27,41 @@ module Bard
         end
       end
 
-      def resume
-        saved_state = state.load
-        raise "No saved CI state found for #{project_name}. Start a new build with 'bard ci'." if saved_state.nil?
+      protected
 
-        @run = api.find_run(saved_state["run_id"])
-        @start_time = saved_state["start_time"]
-        @last_time_elapsed = saved_state["last_time_elapsed"]
+      def start
+        @run = api.create_run!(branch)
+      end
 
+      def get_last_time_elapsed
+        api.last_successful_run&.time_elapsed
+      end
+
+      def building?
+        @run.building?
+      end
+
+      def success?
+        @run.success?
+      end
+
+      def get_state_data
+        {
+          "project_name" => project_name,
+          "branch" => branch,
+          "run_id" => @run.id,
+          "start_time" => @start_time,
+          "last_time_elapsed" => @last_time_elapsed
+        }
+      end
+
+      def restore_state(data)
+        @run = api.find_run(data["run_id"])
+        @start_time = data["start_time"]
+        @last_time_elapsed = data["last_time_elapsed"]
+      end
+
+      def poll_until_complete
         while @run.building?
           elapsed_time = Time.new.to_i - @start_time
           yield elapsed_time, @last_time_elapsed
@@ -62,23 +69,6 @@ module Bard
           sleep(2)
           @run = api.find_run(@run.id)
         end
-
-        state.delete
-        @run.success?
-      end
-
-      def save_state
-        state.save({
-          "project_name" => project_name,
-          "branch" => branch,
-          "run_id" => @run.id,
-          "start_time" => @start_time,
-          "last_time_elapsed" => @last_time_elapsed
-        })
-      end
-
-      def state
-        @state ||= State.new(project_name)
       end
 
       private

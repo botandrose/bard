@@ -1,29 +1,9 @@
 require "json"
-require "bard/ci/state"
-require "bard/ci/retryable"
+require "bard/ci/runner"
 
 module Bard
   class CI
-    class Jenkins < Struct.new(:project_name, :branch, :sha)
-      include Retryable
-
-      def run
-        @last_time_elapsed = get_last_time_elapsed
-        start
-        @start_time = Time.new.to_i
-        save_state
-        sleep(2) until started?
-
-        while building?
-          elapsed_time = Time.new.to_i - @start_time
-          yield elapsed_time, @last_time_elapsed
-          save_state
-          sleep(2)
-        end
-
-        state.delete
-        success?
-      end
+    class Jenkins < Runner
 
       def exists?
         `curl -s -I #{ci_host}/` =~ /\b200 OK\b/
@@ -34,28 +14,49 @@ module Bard
         raw[%r{<pre.*?>(.+)</pre>}m, 1]
       end
 
-      def resume
-        saved_state = state.load
-        raise "No saved CI state found for #{project_name}. Start a new build with 'bard ci'." if saved_state.nil?
+      attr_accessor :last_response
 
-        @queueId = saved_state["queue_id"]
-        @job_id = saved_state["job_id"]
+      protected
 
-        start_time = saved_state["start_time"]
-        last_time_elapsed = saved_state["last_time_elapsed"]
-
-        while building?
-          elapsed_time = Time.new.to_i - start_time
-          yield elapsed_time, last_time_elapsed
-          save_state
-          sleep(2)
-        end
-
-        state.delete
-        success?
+      def wait_until_started
+        sleep(2) until started?
       end
 
-      attr_accessor :last_response
+      def start
+        command = "curl -s -I -X POST -L '#{ci_host}/buildWithParameters?GIT_REF=#{sha}'"
+        output = `#{command}`
+        @queueId = output[%r{Location: .+/queue/item/(\d+)/}, 1].to_i
+      end
+
+      def building?
+        retry_with_backoff do
+          self.last_response = `curl -s #{ci_host}/#{job_id}/api/json?tree=building,result`
+          raise "Blank response from CI" if last_response.blank?
+        end
+        last_response.include? '"building":true'
+      end
+
+      def success?
+        last_response.include? '"result":"SUCCESS"'
+      end
+
+      def get_state_data
+        {
+          "project_name" => project_name,
+          "branch" => branch,
+          "queue_id" => @queueId,
+          "job_id" => @job_id,
+          "start_time" => @start_time,
+          "last_time_elapsed" => @last_time_elapsed
+        }
+      end
+
+      def restore_state(data)
+        @queueId = data["queue_id"]
+        @job_id = data["job_id"]
+        @start_time = data["start_time"]
+        @last_time_elapsed = data["last_time_elapsed"]
+      end
 
       private
 
@@ -80,12 +81,6 @@ module Bard
         "http://#{auth}@ci.botandrose.com/job/#{project_name}"
       end
 
-      def start
-        command = "curl -s -I -X POST -L '#{ci_host}/buildWithParameters?GIT_REF=#{sha}'"
-        output = `#{command}`
-        @queueId = output[%r{Location: .+/queue/item/(\d+)/}, 1].to_i
-      end
-
       def started?
         retry_with_backoff do
           command = "curl -s -g '#{ci_host}/api/json?depth=1&tree=builds[queueId,number]'"
@@ -103,33 +98,6 @@ module Bard
             output[/"number":(\d+),"queueId":#{@queueId}\b/, 1].to_i
           end
         end
-      end
-
-      def building?
-        retry_with_backoff do
-          self.last_response = `curl -s #{ci_host}/#{job_id}/api/json?tree=building,result`
-          raise "Blank response from CI" if last_response.blank?
-        end
-        last_response.include? '"building":true'
-      end
-
-      def success?
-        last_response.include? '"result":"SUCCESS"'
-      end
-
-      def save_state
-        state.save({
-          "project_name" => project_name,
-          "branch" => branch,
-          "queue_id" => @queueId,
-          "job_id" => @job_id,
-          "start_time" => @start_time,
-          "last_time_elapsed" => @last_time_elapsed
-        })
-      end
-
-      def state
-        @state ||= State.new(project_name)
       end
     end
   end
