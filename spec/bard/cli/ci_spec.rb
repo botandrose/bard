@@ -61,7 +61,6 @@ describe Bard::CLI::CI do
 
         expect(cli).to receive(:puts).with("Continuous integration: starting build on feature-branch...")
         expect(cli).to receive(:puts).with("Continuous integration: success!")
-        expect(cli).to receive(:puts).with("Deploying...")
 
         cli.ci
       end
@@ -144,7 +143,6 @@ describe Bard::CLI::CI do
 
         expect(cli).to receive(:puts).with("Continuous integration: resuming build...")
         expect(cli).to receive(:puts).with("Continuous integration: success!")
-        expect(cli).to receive(:puts).with("Deploying...")
         expect(ci_runner).not_to receive(:run)
 
         cli.ci

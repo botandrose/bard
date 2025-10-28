@@ -46,7 +46,6 @@ module Bard::CLI::CI
           if success
             puts
             puts "Continuous integration: success!"
-            puts "Deploying..."
           else
             puts
             puts ci.console
