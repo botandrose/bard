@@ -1,4 +1,5 @@
 ruby_version, project_name = (`rvm current name`.chomp).split("@")
+rails_version = Gem.loaded_specs["rails"].version
 
 file ".ruby-version", ruby_version
 file ".ruby-gemset", project_name
@@ -41,7 +42,7 @@ file "Gemfile", <<~RUBY
   source "https://rubygems.org"
 
   gem "bootsnap", require: false
-  gem "rails", "~>8.0.0"
+  gem "rails", "~> #{rails_version}"
   gem "solid_cache"
   gem "solid_queue"
   gem "solid_cable"
@@ -194,4 +195,3 @@ after_bundle do
   run "bin/setup"
   run "bard setup"
 end
-

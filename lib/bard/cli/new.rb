@@ -2,6 +2,7 @@ require "bard/cli/command"
 require "bard/github"
 
 class Bard::CLI::New < Bard::CLI::Command
+  RAILS_REQUIREMENT = "~> 8.0.0"
   desc "new <project-name>", "creates new bard app named <project-name>"
   def new project_name
     @project_name = project_name
@@ -33,8 +34,9 @@ class Bard::CLI::New < Bard::CLI::Command
         source ~/.rvm/scripts/rvm
         rvm use --create #{ruby_version}@#{project_name}
 
-        gem list rails -i || gem install rails --no-document
-        rails new #{project_name} --skip-git --skip-kamal --skip-test -m #{template_path}
+        gem install rails -v "#{RAILS_REQUIREMENT}" --no-document
+        RAILS_VERSION=$(ruby -e "puts Gem::Specification.find_by_name('rails', '#{RAILS_REQUIREMENT}').version")
+        rails _${RAILS_VERSION}_ new #{project_name} --skip-git --skip-kamal --skip-test -m #{template_path}
       '
     SH
   end
@@ -70,4 +72,3 @@ class Bard::CLI::New < Bard::CLI::Command
     File.expand_path("new_rails_template.rb", __dir__)
   end
 end
-
