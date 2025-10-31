@@ -1,5 +1,5 @@
 ruby_version, project_name = (`rvm current name`.chomp).split("@")
-rails_version = Gem.loaded_specs["rails"].version
+rails_version = Gem.loaded_specs["railties"].version
 
 file ".ruby-version", ruby_version
 file ".ruby-gemset", project_name
