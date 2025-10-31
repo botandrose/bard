@@ -57,4 +57,17 @@ describe Bard::CLI::New do
       expect(new_cli.send(:template_path)).to match(/new_rails_template\.rb$/)
     end
   end
+
+  describe "#install_and_extract_version" do
+    it "correctly installs a gem and extracts its version" do
+      cmd = new_cli.send :build_bash_env do
+        <<~SH
+          #{new_cli.send(:build_gem_install, "bundler", "~> 2.0")}
+          echo ${GEM_VERSION}
+        SH
+      end
+      result = `#{cmd}`.strip
+      expect(result).to match(/^2\.\d+\.\d+/)
+    end
+  end
 end

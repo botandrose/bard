@@ -27,17 +27,44 @@ class Bard::CLI::New < Bard::CLI::Command
   end
 
   def create_project
-    run! <<~SH
+    run! build_create_project_script
+  end
+
+  def build_create_project_script
+    build_bash_env do
+      build_rvm_setup +
+      build_gem_install("rails", RAILS_REQUIREMENT) +
+      build_rails_new
+    end
+  end
+
+  def build_bash_env
+    script = yield
+    <<~SH
       env -i bash -lc '
         export HOME=~
-        cd ..
         source ~/.rvm/scripts/rvm
-        rvm use --create #{ruby_version}@#{project_name}
-
-        gem install rails -v "#{RAILS_REQUIREMENT}" --no-document
-        RAILS_VERSION=$(ruby -e "spec = Gem::Specification.find_by_name 'rails', '#{RAILS_REQUIREMENT}'; puts spec.version")
-        rails _${RAILS_VERSION}_ new #{project_name} --skip-git --skip-kamal --skip-test -m #{template_path}
+        #{script}
       '
+    SH
+  end
+
+  def build_rvm_setup
+    <<~SH
+      cd ..
+      rvm use --create #{ruby_version}@#{project_name}
+    SH
+  end
+
+  def build_gem_install(gem_name, version_requirement)
+    <<~SH
+      GEM_VERSION=$(gem install #{gem_name} -v \"#{version_requirement}\" --no-document 2>&1 | grep -oP \"Successfully installed #{gem_name}-\\K[0-9.]+\")
+    SH
+  end
+
+  def build_rails_new
+    <<~SH
+      rails _${GEM_VERSION}_ new #{project_name} --skip-git --skip-kamal --skip-test -m #{template_path}
     SH
   end
 
