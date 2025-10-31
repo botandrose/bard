@@ -35,7 +35,7 @@ class Bard::CLI::New < Bard::CLI::Command
         rvm use --create #{ruby_version}@#{project_name}
 
         gem install rails -v "#{RAILS_REQUIREMENT}" --no-document
-        RAILS_VERSION=$(ruby -e "puts Gem::Specification.find_by_name('rails', '#{RAILS_REQUIREMENT}').version")
+        RAILS_VERSION=$(ruby -e "spec = Gem::Specification.find_by_name 'rails', '#{RAILS_REQUIREMENT}'; puts spec.version")
         rails _${RAILS_VERSION}_ new #{project_name} --skip-git --skip-kamal --skip-test -m #{template_path}
       '
     SH
