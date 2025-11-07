@@ -44,10 +44,15 @@ module Bard::CLI::Deploy
           invoke :master_key, [], from: "local", to: to
           config[to].run! "bin/setup && bard setup"
         else
-          if config[to].github_pages
-            Bard::GithubPages.new(self).deploy(config[to])
+          # Use deployment strategy
+          target = config[to]
+          if target.deploy_strategy
+            require "bard/deploy_strategy/#{target.deploy_strategy}"
+            strategy = target.deploy_strategy_instance
+            strategy.deploy
           else
-            config[to].run! "git pull origin master && bin/setup"
+            # Fallback to default SSH deployment if no strategy configured
+            target.run! "git pull origin master && bin/setup"
           end
         end
 

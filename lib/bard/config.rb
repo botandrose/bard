@@ -1,86 +1,119 @@
-require "bard/server"
+require "bard/target"
+require "bard/default_config"
 
 module Bard
   class Config
-    def initialize project_name, path: nil, source: nil
+    attr_reader :project_name, :targets
+
+    def initialize(project_name: nil, path: nil, source: nil)
       @project_name = project_name
-      @servers = {
-        local: Server.new(
-          project_name,
-          :local,
-          false,
-          "./",
-          ["#{project_name}.local"],
-        ),
-        gubs: Server.new(
-          project_name,
-          :gubs,
-          "botandrose@cloud.hackett.world:22022",
-          "Sites/#{project_name}",
-          false,
-        ),
-        ci: Server.new(
-          project_name,
-          :ci,
-          "jenkins@staging.botandrose.com:22022",
-          "jobs/#{project_name}/workspace",
-          false,
-        ),
-        staging: Server.new(
-          project_name,
-          :staging,
-          "www@staging.botandrose.com:22022",
-          project_name,
-          ["#{project_name}.botandrose.com"],
-        ),
-      }
+      @targets = {}
+      @data_paths = []
+      @backup = nil
+      @ci_system = nil
+
+      # Load default configuration first
+      DEFAULT_CONFIG.call(self, project_name) if project_name
+
+      # Load user configuration
       if path && File.exist?(path)
         source = File.read(path)
       end
       if source
-        instance_eval source
+        instance_eval(source)
       end
     end
 
-    attr_reader :project_name, :servers
-
-    def server key, &block
+    # DSL method for defining targets
+    def target(key, &block)
       key = key.to_sym
-      @servers[key] = Server.define(project_name, key, &block)
+      @targets[key] ||= Target.new(key, self)
+      @targets[key].instance_eval(&block) if block
+      @targets[key]
     end
 
-    def [] key
+    # Alias for backward compatibility (will be deprecated in v1.9.x)
+    alias_method :server, :target
+
+    # Also expose @targets as @servers for compatibility
+    def servers
+      @targets
+    end
+
+    # Get a target by key
+    def [](key)
       key = key.to_sym
-      if @servers[key].nil? && key == :production
+      # Fallback to staging if production not defined
+      if @targets[key].nil? && key == :production
         key = :staging
       end
-      @servers[key]
+      @targets[key]
     end
 
-    def data *paths
-      if paths.length == 0
-        Array(@data)
+    # Data paths configuration
+    def data(*paths)
+      if paths.empty?
+        @data_paths
       else
-        @data = paths
+        @data_paths = paths
       end
     end
 
-    def backup *args
-      if args.length == 1
-        @backup = args.first
-      elsif args.length == 0
-        return @backup if defined?(@backup)
-        @backup = true
+    def data_paths
+      @data_paths
+    end
+
+    # Backup configuration
+    def backup(value = nil)
+      if value.nil?
+        return @backup if @backup != nil
+        @backup = true  # Default to true
       else
-        raise ArgumentError
+        @backup = value
       end
     end
 
-    # short-hand for michael
+    def backup_enabled?
+      backup == true
+    end
 
-    def github_pages url=nil
+    # CI configuration
+    def ci(system = nil)
+      if system.nil?
+        @ci_system
+      else
+        @ci_system = system
+      end
+    end
+
+    def ci_system
+      @ci_system
+    end
+
+    def ci_instance(branch)
+      return nil if @ci_system == false
+
+      require "bard/ci"
+
+      case @ci_system
+      when :github_actions
+        CI::GithubActions.new(project_name, branch)
+      when :jenkins
+        CI::Jenkins.new(project_name, branch)
+      when :local
+        CI::Local.new(project_name, branch)
+      when false
+        nil
+      else
+        # Auto-detect
+        CI.auto_detect(self, branch)
+      end
+    end
+
+    # Shorthand for GitHub Pages (compatibility method)
+    def github_pages(url = nil)
       urls = []
-      if url.present?
+      if url && url.length > 0
         uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
         hostname = uri.hostname.sub(/^www\./, '')
         urls = [hostname]
@@ -89,10 +122,10 @@ module Bard
         end
       end
 
-      server :production do
-        github_pages true
+      target :production do
+        github_pages url
         ssh false
-        ping *urls
+        ping(*urls) if urls.any?
       end
 
       backup false
