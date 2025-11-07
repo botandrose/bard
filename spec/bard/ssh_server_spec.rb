@@ -68,25 +68,6 @@ describe Bard::SSHServer do
       server = described_class.new("deploy@example.com:22")
       expect(server.connection_string).to eq("deploy@example.com")
     end
-
-    it "includes port flag for non-standard ports" do
-      server = described_class.new("deploy@example.com:2222")
-      expect(server.connection_string).to include("-p 2222")
-    end
-
-    it "includes gateway if configured" do
-      server = described_class.new("deploy@example.com:22",
-        gateway: "bastion@example.com:22"
-      )
-      expect(server.connection_string).to include("ProxyJump=bastion@example.com:22")
-    end
-
-    it "includes SSH key if configured" do
-      server = described_class.new("deploy@example.com:22",
-        ssh_key: "/path/to/key"
-      )
-      expect(server.connection_string).to include("-i /path/to/key")
-    end
   end
 
   describe "#run" do

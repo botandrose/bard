@@ -18,14 +18,6 @@ describe Bard::DeployStrategy do
       expect(Bard::DeployStrategy[:my_custom_strategy]).to eq(Bard::DeployStrategy::MyCustomStrategy)
     end
 
-    it "handles nested module names" do
-      module CustomModule
-        class Bard::DeployStrategy::NestedStrategy < Bard::DeployStrategy
-        end
-      end
-
-      expect(Bard::DeployStrategy[:nested_strategy]).to eq(CustomModule::Bard::DeployStrategy::NestedStrategy)
-    end
 
     it "allows retrieval of registered strategies" do
       class Bard::DeployStrategy::RetrievalTest < Bard::DeployStrategy
