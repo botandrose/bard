@@ -11,7 +11,8 @@ module Bard
 
     attr_reader :project_name, :targets
 
-    def initialize(project_name: nil, path: nil, source: nil)
+    def initialize(project_name = nil, path: nil, source: nil)
+      # Support both positional and keyword argument for project_name
       @project_name = project_name
       @targets = {}
       @data_paths = []
@@ -121,18 +122,17 @@ module Bard
 
       require "bard/ci"
 
+      # Use the existing CI class which handles auto-detection
       case @ci_system
-      when :github_actions
-        CI::GithubActions.new(project_name, branch)
-      when :jenkins
-        CI::Jenkins.new(project_name, branch)
       when :local
-        CI::Local.new(project_name, branch)
+        CI.new(project_name, branch, local: true)
+      when :github_actions, :jenkins, nil
+        # CI class auto-detects between github_actions and jenkins
+        CI.new(project_name, branch)
       when false
         nil
       else
-        # Auto-detect
-        CI.auto_detect(self, branch)
+        CI.new(project_name, branch)
       end
     end
   end
