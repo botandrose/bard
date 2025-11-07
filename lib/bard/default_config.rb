@@ -10,6 +10,13 @@ module Bard
         ping "#{project_name}.local"
       end
 
+      # Bot and Rose cloud server
+      target :gubs do
+        ssh "botandrose@cloud.hackett.world:22022",
+          path: "Sites/#{project_name}"
+        ping false
+      end
+
       # CI target (Jenkins)
       target :ci do
         ssh "jenkins@staging.botandrose.com:22022",
@@ -22,13 +29,6 @@ module Bard
         ssh "www@staging.botandrose.com:22022",
           path: project_name
         ping "#{project_name}.botandrose.com"
-      end
-
-      # Bot and Rose cloud server
-      target :gubs do
-        ssh "botandrose@cloud.hackett.world:22022",
-          path: "Sites/#{project_name}"
-        ping false
       end
     end
   end

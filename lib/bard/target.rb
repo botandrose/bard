@@ -106,7 +106,10 @@ module Bard
     def ping!
       require_capability!(:ping)
       require "bard/ping"
-      Bard::Ping.ping!(self)
+      failed_urls = Bard::Ping.call(self)
+      if failed_urls.any?
+        raise "Ping failed for: #{failed_urls.join(', ')}"
+      end
     end
 
     def open
