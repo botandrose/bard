@@ -31,26 +31,7 @@ module Bard
     end
 
     def connection_string
-      str = "#{user}@#{host}"
-
-      # Add port if non-standard
-      if port != "22"
-        str = "ssh -p #{port} #{str}"
-      else
-        str = "ssh #{str}"
-      end
-
-      # Add gateway/bastion
-      if gateway
-        str += " -o ProxyJump=#{gateway}"
-      end
-
-      # Add SSH key
-      if ssh_key
-        str += " -i #{ssh_key}"
-      end
-
-      str
+      "#{user}@#{host}"
     end
 
     def run(command)
@@ -60,7 +41,7 @@ module Bard
 
     def run!(command)
       output, error, status = run(command)
-      unless status.success?
+      if status.to_i.nonzero?
         raise Command::Error, "Command failed: #{command}\n#{error}"
       end
       output

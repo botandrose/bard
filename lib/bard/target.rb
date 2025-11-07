@@ -1,6 +1,7 @@
 require "uri"
 require "bard/command"
 require "bard/copy"
+require "bard/deploy_strategy"
 
 module Bard
   class Target

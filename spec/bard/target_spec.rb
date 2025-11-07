@@ -137,7 +137,7 @@ describe Bard::Target do
 
       it "executes command on remote server" do
         expect(Bard::Command).to receive(:run!)
-          .with("ls", on: target.server)
+          .with("ls", on: target.server, home: false, verbose: false, quiet: false)
         target.run!("ls")
       end
     end
@@ -151,7 +151,7 @@ describe Bard::Target do
 
       it "executes command on remote server without raising" do
         expect(Bard::Command).to receive(:run)
-          .with("ls", on: target.server)
+          .with("ls", on: target.server, home: false, verbose: false, quiet: false)
         target.run("ls")
       end
     end
@@ -165,7 +165,7 @@ describe Bard::Target do
 
       it "replaces process with remote command" do
         expect(Bard::Command).to receive(:exec!)
-          .with("ls", on: target.server)
+          .with("ls", on: target.server, home: false)
         target.exec!("ls")
       end
     end
@@ -199,7 +199,7 @@ describe Bard::Target do
 
       it "copies file via SCP" do
         expect(Bard::Copy).to receive(:file)
-          .with("test.txt", from: source_target, to: dest_target)
+          .with("test.txt", from: source_target, to: dest_target, verbose: false)
         source_target.copy_file("test.txt", to: dest_target)
       end
     end
@@ -219,7 +219,7 @@ describe Bard::Target do
 
       it "syncs directory via rsync" do
         expect(Bard::Copy).to receive(:dir)
-          .with("test/", from: source_target, to: dest_target)
+          .with("test/", from: source_target, to: dest_target, verbose: false)
         source_target.copy_dir("test/", to: dest_target)
       end
     end
