@@ -24,8 +24,14 @@ module Bard
 
     def run verbose: false, quiet: false
       # no-op if server doesn't really exist
-      if on.to_sym != :local && on.respond_to?(:ssh) && on.ssh == false
-        return true
+      if on.to_sym != :local
+        # Check for new Target architecture
+        if on.respond_to?(:server) && on.server.nil?
+          return true
+        # Check for old Server architecture
+        elsif on.respond_to?(:ssh) && on.ssh == false
+          return true
+        end
       end
       if verbose
         system full_command(quiet: quiet)
@@ -55,18 +61,28 @@ module Bard
     end
 
     def remote_command quiet: false
+      # Support both new Target (with server attribute) and old Server architecture
+      ssh_server = on.respond_to?(:server) ? on.server : on
+
       cmd = command
-      if on.env
-        cmd = "#{on.env} #{command}"
+      if ssh_server.env
+        cmd = "#{ssh_server.env} #{command}"
       end
       unless home
-        cmd = "cd #{on.path} && #{cmd}"
+        path = on.respond_to?(:path) ? on.path : ssh_server.path
+        cmd = "cd #{path} && #{cmd}" if path
       end
-      ssh_key = on.ssh_key ? "-i #{on.ssh_key} " : ""
-      cmd = "ssh -tt #{ssh_key} #{on.ssh_uri} '#{cmd}'"
-      if on.gateway
-        cmd = "ssh -tt #{on.ssh_uri(:gateway)} \"#{cmd}\""
+
+      ssh_key = ssh_server.ssh_key ? "-i #{ssh_server.ssh_key} " : ""
+      ssh_uri = ssh_server.respond_to?(:ssh_uri) ? ssh_server.ssh_uri : ssh_server.ssh_uri(:ssh)
+
+      cmd = "ssh -tt #{ssh_key} #{ssh_uri} '#{cmd}'"
+
+      if ssh_server.gateway
+        gateway_uri = ssh_server.respond_to?(:ssh_uri) ? ssh_server.gateway : ssh_server.ssh_uri(:gateway)
+        cmd = "ssh -tt #{gateway_uri} \"#{cmd}\""
       end
+
       cmd += " 2>&1" if quiet
       cmd
     end

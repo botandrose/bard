@@ -21,12 +21,15 @@ module Bard
       end
     end
 
-    def scp_using_local direction, server
-      gateway = server.gateway ? "-oProxyCommand='ssh #{server.ssh_uri(:gateway)} -W %h:%p'" : ""
+    def scp_using_local direction, target_or_server
+      # Support both new Target (with server attribute) and old Server
+      ssh_server = target_or_server.respond_to?(:server) ? target_or_server.server : target_or_server
 
-      ssh_key = server.ssh_key ? "-i #{server.ssh_key}" : ""
+      gateway = ssh_server.gateway ? "-oProxyCommand='ssh #{ssh_server.gateway} -W %h:%p'" : ""
 
-      from_and_to = [path, server.scp_uri(path)]
+      ssh_key = ssh_server.ssh_key ? "-i #{ssh_server.ssh_key}" : ""
+
+      from_and_to = [path, target_or_server.scp_uri(path)]
       from_and_to.reverse! if direction == :from
 
       command = ["scp", gateway, ssh_key, *from_and_to].join(" ")
@@ -34,7 +37,10 @@ module Bard
     end
 
     def scp_as_mediator
-      raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
+      from_server = from.respond_to?(:server) ? from.server : from
+      to_server = to.respond_to?(:server) ? to.server : to
+
+      raise NotImplementedError if from_server.gateway || to_server.gateway || from_server.ssh_key || to_server.ssh_key
       command = "scp -o ForwardAgent=yes #{from.scp_uri(path)} #{to.scp_uri(path)}"
       Bard::Command.run! command, verbose: verbose
     end
@@ -49,13 +55,17 @@ module Bard
       end
     end
 
-    def rsync_using_local direction, server
-      gateway = server.gateway ? "-oProxyCommand=\"ssh #{server.ssh_uri(:gateway)} -W %h:%p\"" : ""
+    def rsync_using_local direction, target_or_server
+      # Support both new Target (with server attribute) and old Server
+      ssh_server = target_or_server.respond_to?(:server) ? target_or_server.server : target_or_server
+      ssh_uri = ssh_server.respond_to?(:ssh_uri) ? URI("ssh://#{ssh_server.ssh_uri}") : ssh_server.ssh_uri
 
-      ssh_key = server.ssh_key ? "-i #{server.ssh_key}" : ""
-      ssh = "-e'ssh #{gateway} -p#{server.ssh_uri.port || 22}'"
+      gateway = ssh_server.gateway ? "-oProxyCommand=\"ssh #{ssh_server.gateway} -W %h:%p\"" : ""
 
-      from_and_to = ["./#{path}", server.rsync_uri(path)]
+      ssh_key = ssh_server.ssh_key ? "-i #{ssh_server.ssh_key}" : ""
+      ssh = "-e'ssh #{gateway} -p#{ssh_uri.port || 22}'"
+
+      from_and_to = ["./#{path}", target_or_server.rsync_uri(path)]
       from_and_to.reverse! if direction == :from
       from_and_to[-1].sub! %r(/[^/]+$), '/'
 
@@ -64,12 +74,18 @@ module Bard
     end
 
     def rsync_as_mediator
-      raise NotImplementedError if from.gateway || to.gateway || from.ssh_key || to.ssh_key
+      from_server = from.respond_to?(:server) ? from.server : from
+      to_server = to.respond_to?(:server) ? to.server : to
 
-      from_str = "-p#{from.ssh_uri.port || 22} #{from.ssh_uri.user}@#{from.ssh_uri.host}"
+      raise NotImplementedError if from_server.gateway || to_server.gateway || from_server.ssh_key || to_server.ssh_key
+
+      from_uri = from_server.respond_to?(:ssh_uri) ? URI("ssh://#{from_server.ssh_uri}") : from_server.ssh_uri
+      to_uri = to_server.respond_to?(:ssh_uri) ? URI("ssh://#{to_server.ssh_uri}") : to_server.ssh_uri
+
+      from_str = "-p#{from_uri.port || 22} #{from_uri.user}@#{from_uri.host}"
       to_str = to.rsync_uri(path).sub(%r(/[^/]+$), '/')
 
-      command = %(ssh -A #{from_str} 'rsync -e \"ssh -A -p#{to.ssh_uri.port || 22} -o StrictHostKeyChecking=no\" --delete --info=progress2 -az #{from.path}/#{path} #{to_str}')
+      command = %(ssh -A #{from_str} 'rsync -e \"ssh -A -p#{to_uri.port || 22} -o StrictHostKeyChecking=no\" --delete --info=progress2 -az #{from.path}/#{path} #{to_str}')
       Bard::Command.run! command, verbose: verbose
     end
   end
