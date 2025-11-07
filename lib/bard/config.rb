@@ -1,20 +1,20 @@
+require "bard/server"
 require "bard/target"
-require "bard/default_config"
 
 module Bard
   class Config
-    attr_reader :project_name, :targets
+    attr_reader :project_name
 
     def initialize(project_name = nil, path: nil, source: nil)
       # Support both positional and keyword argument for project_name
       @project_name = project_name
-      @targets = {}
+      @servers = {}  # Unified hash for both Server and Target instances
       @data_paths = []
       @backup = nil
       @ci_system = nil
 
-      # Load default configuration first
-      DEFAULT_CONFIG.call(self, project_name) if project_name
+      # Load default configuration (creates Server instances for backward compat)
+      load_defaults if project_name
 
       # Load user configuration
       if path && File.exist?(path)
@@ -25,30 +25,38 @@ module Bard
       end
     end
 
-    # DSL method for defining targets
+    # Backward compatible accessor
+    def servers
+      @servers
+    end
+
+    # New v2.0 accessor (same as servers)
+    def targets
+      @servers
+    end
+
+    # Old v1.x API - creates Server instances
+    def server(key, &block)
+      key = key.to_sym
+      @servers[key] = Server.define(project_name, key, &block)
+    end
+
+    # New v2.0 API - creates Target instances
     def target(key, &block)
       key = key.to_sym
-      @targets[key] ||= Target.new(key, self)
-      @targets[key].instance_eval(&block) if block
-      @targets[key]
+      @servers[key] ||= Target.new(key, self)
+      @servers[key].instance_eval(&block) if block
+      @servers[key]
     end
 
-    # Alias for backward compatibility (will be deprecated in v1.9.x)
-    alias_method :server, :target
-
-    # Also expose @targets as @servers for compatibility
-    def servers
-      @targets
-    end
-
-    # Get a target by key
+    # Get a server/target by key
     def [](key)
       key = key.to_sym
       # Fallback to staging if production not defined
-      if @targets[key].nil? && key == :production
+      if @servers[key].nil? && key == :production
         key = :staging
       end
-      @targets[key]
+      @servers[key]
     end
 
     # Data paths configuration
@@ -122,13 +130,47 @@ module Bard
         end
       end
 
-      target :production do
-        github_pages url
+      server :production do
+        github_pages true
         ssh false
         ping(*urls) if urls.any?
       end
 
       backup false
+    end
+
+    private
+
+    # Load default server configurations (v1.x compatible)
+    def load_defaults
+      @servers[:local] = Server.new(
+        project_name,
+        :local,
+        false,
+        "./",
+        ["#{project_name}.local"],
+      )
+      @servers[:gubs] = Server.new(
+        project_name,
+        :gubs,
+        "botandrose@cloud.hackett.world:22022",
+        "Sites/#{project_name}",
+        false,
+      )
+      @servers[:ci] = Server.new(
+        project_name,
+        :ci,
+        "jenkins@staging.botandrose.com:22022",
+        "jobs/#{project_name}/workspace",
+        false,
+      )
+      @servers[:staging] = Server.new(
+        project_name,
+        :staging,
+        "www@staging.botandrose.com:22022",
+        project_name,
+        ["#{project_name}.botandrose.com"],
+      )
     end
   end
 end
