@@ -29,14 +29,7 @@ RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :accep
   before(:all) do
     # Set up podman socket for TestContainers
     # Use existing DOCKER_HOST if set (e.g., in CI), otherwise use default location
-    if ENV['DOCKER_HOST']
-      podman_socket = ENV['DOCKER_HOST'].sub('unix://', '')
-      puts "Using existing DOCKER_HOST: #{ENV['DOCKER_HOST']} (socket: #{podman_socket})"
-      # Verify the socket exists
-      unless File.socket?(podman_socket)
-        puts "WARNING: Socket at #{podman_socket} does not exist or is not a socket!"
-      end
-    else
+    unless ENV['DOCKER_HOST']
       podman_socket = "/run/user/#{Process.uid}/podman/podman.sock"
 
       # Start podman socket if not running
