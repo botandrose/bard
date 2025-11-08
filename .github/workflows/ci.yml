@@ -18,5 +18,21 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
+      - name: Install Podman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y podman
+          # Start podman service as root using TCP for better compatibility in CI
+          sudo nohup podman system service --time=0 tcp://127.0.0.1:8080 > /tmp/podman-service.log 2>&1 &
+          # Wait for service to be ready
+          for i in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:8080/v1.40/version >/dev/null 2>&1; then
+              echo "Podman REST API ready at tcp://127.0.0.1:8080"
+              break
+            fi
+            sleep 1
+          done
+          echo "DOCKER_HOST=tcp://127.0.0.1:8080" >> $GITHUB_ENV
+
       - name: Run tests
         run: bundle exec rake

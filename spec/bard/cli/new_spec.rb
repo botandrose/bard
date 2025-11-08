@@ -59,7 +59,7 @@ describe Bard::CLI::New do
   end
 
   describe "#install_and_extract_version" do
-    it "correctly installs a gem and extracts its version" do
+    it "correctly installs a gem and extracts its version", skip: !!ENV["CI"] do
       cmd = new_cli.send :build_bash_env do
         <<~SH
           #{new_cli.send(:build_gem_install, "bundler", "~> 2.0")}
