@@ -58,6 +58,37 @@ podman rm -f bard-test-podman
 - Less common than Docker (may need installation)
 - Some minor behavioral differences from Docker
 
+### 2.5. Podman + TestContainers (`podman_testcontainers_spec.rb`)
+**BEST OF BOTH WORLDS - Recommended!**
+
+```bash
+# One-time setup
+systemctl --user enable --now podman.socket
+export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
+gem install testcontainers
+
+# Build image
+podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
+
+# Run tests (automatic lifecycle!)
+rspec spec/acceptance/podman_testcontainers_spec.rb
+```
+
+**Pros:**
+- **Rootless - no sudo required!**
+- **Automatic lifecycle management** (start/stop/cleanup)
+- **Automatic cleanup on test failures**
+- Isolated containers per test
+- Random ports avoid conflicts
+- Can run tests in parallel
+- Daemonless (podman)
+
+**Cons:**
+- Requires testcontainers gem
+- Requires podman socket setup (one-time)
+
+See `SETUP_PODMAN_TESTCONTAINERS.md` for detailed setup instructions.
+
 ### 3. TestContainers (`testcontainers_spec.rb`)
 **Recommended for programmatic container management**
 
@@ -141,24 +172,34 @@ chmod 644 spec/acceptance/docker/test_key.pub
 
 ## Comparison Matrix
 
-| Feature | Docker | Podman | TestContainers | LXD | systemd-nspawn |
-|---------|--------|--------|----------------|-----|----------------|
-| Rootless | ❌ | ✅ | ❌ | ❌ | ❌ |
-| Startup Speed | Fast (2-5s) | Fast (2-5s) | Fast (2-5s) | Very Fast (5-10s) | Very Fast (1-2s) |
-| Full systemd | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Portable | ✅ | ✅ | ✅ | ❌ (Linux) | ❌ (Linux) |
-| Easy Setup | ✅ | ✅ | ✅ | ⚠️ Medium | ❌ Hard |
-| CI Friendly | ✅ | ✅ | ✅✅ | ⚠️ | ❌ |
-| Ecosystem | ✅✅✅ | ✅✅ | ✅✅ | ✅ | ⚠️ |
+| Feature | Docker | Podman | Podman+TC | TestContainers | LXD | systemd-nspawn |
+|---------|--------|--------|-----------|----------------|-----|----------------|
+| Rootless | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Auto Lifecycle | ❌ | ❌ | ✅✅ | ✅✅ | ❌ | ❌ |
+| Auto Cleanup | ❌ | ❌ | ✅✅ | ✅✅ | ❌ | ❌ |
+| Startup Speed | Fast (2-5s) | Fast (2-5s) | Fast (2-5s) | Fast (2-5s) | Very Fast (5-10s) | Very Fast (1-2s) |
+| Full systemd | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Portable | ✅ | ✅ | ✅ | ✅ | ❌ (Linux) | ❌ (Linux) |
+| Easy Setup | ✅ | ✅ | ⚠️ Medium | ✅ | ⚠️ Medium | ❌ Hard |
+| CI Friendly | ✅ | ✅ | ✅✅✅ | ✅✅ | ⚠️ | ❌ |
+| Ecosystem | ✅✅✅ | ✅✅ | ✅✅ | ✅✅ | ✅ | ⚠️ |
 
 ## Recommendations
 
-**For most projects:** Start with **Podman** (rootless, no daemon)
-- Fallback to Docker if Podman unavailable
+**🏆 BEST OVERALL:** **Podman + TestContainers** (rootless + automatic lifecycle)
+- See `SETUP_PODMAN_TESTCONTAINERS.md` for setup guide
+- One-time setup, then it just works!
 
-**For CI/CD:** Use **TestContainers** (automatic lifecycle)
+**For simplicity:** Start with **Podman** alone (rootless, no daemon)
+- Fallback to Docker if Podman unavailable
+- Manual lifecycle but very simple
+
+**For CI/CD:** Use **TestContainers** (with Docker or Podman)
+- Automatic lifecycle management
+- Perfect for GitHub Actions/Jenkins
 
 **For testing provisioning/systemd:** Use **LXD** (full init system)
+- Can test real apt packages, systemd services, etc.
 
 **Multi-server testing:** Use **docker-compose** or **podman-compose**
 

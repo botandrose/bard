@@ -2,34 +2,44 @@
 
 ## What I Created
 
-I've built proof-of-concept acceptance tests for 5 different approaches to test Bard end-to-end:
+I've built proof-of-concept acceptance tests for 6 different approaches to test Bard end-to-end:
 
 ### Files Created
 
 ```
 spec/acceptance/
-├── README.md                    # Comprehensive guide
-├── SUMMARY.md                   # This file
+├── README.md                      # Comprehensive guide
+├── SUMMARY.md                     # This file
+├── SETUP_PODMAN_TESTCONTAINERS.md # Setup guide for Podman+TC combo
 ├── docker/
-│   ├── Dockerfile              # Base SSH server image
-│   ├── docker-compose.yml      # Multi-server setup
-│   ├── test_key                # SSH private key (placeholder)
-│   └── test_key.pub            # SSH public key (placeholder)
-├── docker_ssh_spec.rb          # Option 1: Docker
-├── podman_ssh_spec.rb          # Option 2: Podman (rootless!)
-├── testcontainers_spec.rb      # Option 3: TestContainers
-├── lxd_spec.rb                 # Option 4: LXD/LXC
-├── systemd_nspawn_spec.rb      # Option 5: systemd-nspawn
-└── multi_server_spec.rb        # Bonus: Multi-server testing
+│   ├── Dockerfile                # Base SSH server image
+│   ├── docker-compose.yml        # Multi-server setup
+│   ├── test_key                  # SSH private key (placeholder)
+│   └── test_key.pub              # SSH public key (placeholder)
+├── docker_ssh_spec.rb             # Option 1: Docker
+├── podman_ssh_spec.rb             # Option 2: Podman (rootless!)
+├── podman_testcontainers_spec.rb  # Option 2.5: Podman+TC (BEST!) 🏆
+├── testcontainers_spec.rb         # Option 3: TestContainers
+├── lxd_spec.rb                    # Option 4: LXD/LXC
+├── systemd_nspawn_spec.rb         # Option 5: systemd-nspawn
+└── multi_server_spec.rb           # Bonus: Multi-server testing
 ```
 
 ## Quick Decision Guide
+
+### "I want the best solution overall"
+→ **Use Podman + TestContainers** (`podman_testcontainers_spec.rb`) 🏆
+- Rootless (no sudo!)
+- Automatic lifecycle management
+- Automatic cleanup on failures
+- Best for development AND CI
 
 ### "I want the simplest, no-sudo solution"
 → **Use Podman** (`podman_ssh_spec.rb`)
 - Rootless (no sudo needed!)
 - Docker-compatible
 - Just works
+- Manual lifecycle (you start/stop containers)
 
 ### "I want the most portable solution"
 → **Use Docker** (`docker_ssh_spec.rb`)
@@ -57,14 +67,41 @@ spec/acceptance/
 
 ## My Recommendation
 
-**Start with Podman:**
+**🏆 Start with Podman + TestContainers (Best Overall):**
 
 ```bash
-# Install podman (if not already installed)
-# Ubuntu: sudo apt install podman
-# Fedora: sudo dnf install podman
-# macOS: brew install podman
+# One-time setup
+sudo apt install podman  # or dnf install podman
+systemctl --user enable --now podman.socket
+gem install testcontainers
 
+# Configure (add to ~/.bashrc or ~/.zshrc)
+export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
+
+# Build test image
+podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
+
+# Run the test (automatic lifecycle!)
+rspec spec/acceptance/podman_testcontainers_spec.rb
+```
+
+**Why Podman + TestContainers?**
+1. ✅ Rootless - no sudo required
+2. ✅ Automatic lifecycle - containers start/stop automatically
+3. ✅ Automatic cleanup - even on test failures
+4. ✅ Isolated tests - each test gets its own container
+5. ✅ Parallel-friendly - random ports avoid conflicts
+6. ✅ CI/CD ready - works great in GitHub Actions
+7. ✅ No daemon needed (podman)
+8. ✅ Better security model
+
+See `SETUP_PODMAN_TESTCONTAINERS.md` for detailed setup instructions.
+
+**Or start simple with Podman alone:**
+
+If the testcontainers setup seems like overkill, just use plain Podman:
+
+```bash
 # Build test image
 podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
 
@@ -72,12 +109,7 @@ podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/accep
 rspec spec/acceptance/podman_ssh_spec.rb
 ```
 
-**Why Podman?**
-1. ✅ Rootless - no sudo required
-2. ✅ Docker-compatible (same Dockerfiles)
-3. ✅ No daemon needed
-4. ✅ Works great on Linux (which Bard requires anyway)
-5. ✅ Better security model
+Then upgrade to TestContainers later when you want automatic lifecycle management.
 
 ## Testing Multi-Server Workflows
 
