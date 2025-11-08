@@ -17,6 +17,14 @@ require 'testcontainers'
 require 'open3'
 
 RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :acceptance do
+  # Disable WebMock for acceptance tests - we need real HTTP connections to Podman
+  before(:all) do
+    WebMock.allow_net_connect!
+  end
+
+  after(:all) do
+    WebMock.disable_net_connect!
+  end
   # Configure TestContainers to use Podman
   before(:all) do
     # Set up podman socket for TestContainers
@@ -31,6 +39,9 @@ RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :accep
     # Configure TestContainers to use podman
     ENV['DOCKER_HOST'] = "unix://#{podman_socket}"
 
+    # Ensure SSH key has correct permissions
+    system("chmod 600 spec/acceptance/docker/test_key")
+
     # Check if we can pull images
     unless system("podman pull ubuntu:22.04 >/dev/null 2>&1")
       skip "Cannot pull images in this environment. Run in a network-enabled environment."
@@ -44,7 +55,7 @@ RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :accep
 
   # TestContainers will automatically manage this container
   let(:container) do
-    Testcontainers::DockerContainer.new("bard-test-server")
+    Testcontainers::DockerContainer.new("localhost/bard-test-server:latest")
       .with_exposed_port(22)
       .with_name("bard-test-#{SecureRandom.hex(4)}")
       .start
@@ -68,11 +79,12 @@ RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :accep
     # Create bard config for this container
     @bard_config_path = "tmp/test_bard_#{SecureRandom.hex(4)}.rb"
     FileUtils.mkdir_p("tmp")
+    ssh_key_path = File.expand_path("spec/acceptance/docker/test_key")
     File.write(@bard_config_path, <<~RUBY)
       server :production do
         ssh "deploy@localhost:#{ssh_port}"
         path "testproject"
-        ssh_key "spec/acceptance/docker/test_key"
+        ssh_key "#{ssh_key_path}"
         ping false
       end
     RUBY
@@ -103,8 +115,8 @@ RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :accep
       FileUtils.rm_f("bard.rb")
 
       # Verify the command succeeded
-      expect(status.success?).to be true, "bard run failed: #{output}"
-      expect(output).to include("test-file.txt"), "Expected output to contain test-file.txt, got: #{output}"
+      expect(status).to be_success, "bard run failed with output: #{output}"
+      expect(output).to include("test-file.txt")
     end
   end
 
@@ -115,10 +127,10 @@ RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :accep
 
     Dir.chdir("tmp") do
       FileUtils.cp("../#{@bard_config_path}", "bard.rb")
-      output, status = Open3.capture2e("bard run 'cat testproject/another-file.txt'")
+      output, status = Open3.capture2e("bard run 'cat another-file.txt'")
       FileUtils.rm_f("bard.rb")
 
-      expect(status.success?).to be true
+      expect(status).to be_success, "bard run failed with output: #{output}"
       expect(output).to include("content")
     end
   end
