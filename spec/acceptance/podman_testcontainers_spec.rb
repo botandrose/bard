@@ -28,16 +28,21 @@ RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :accep
   # Configure TestContainers to use Podman
   before(:all) do
     # Set up podman socket for TestContainers
-    podman_socket = "/run/user/#{Process.uid}/podman/podman.sock"
+    # Use existing DOCKER_HOST if set (e.g., in CI), otherwise use default location
+    if ENV['DOCKER_HOST']
+      podman_socket = ENV['DOCKER_HOST'].sub('unix://', '')
+    else
+      podman_socket = "/run/user/#{Process.uid}/podman/podman.sock"
 
-    # Start podman socket if not running
-    unless File.exist?(podman_socket)
-      system("systemctl --user start podman.socket 2>/dev/null || podman system service --time=0 unix://#{podman_socket} &")
-      sleep 2
+      # Start podman socket if not running
+      unless File.exist?(podman_socket)
+        system("systemctl --user start podman.socket 2>/dev/null || podman system service --time=0 unix://#{podman_socket} &")
+        sleep 2
+      end
+
+      # Configure TestContainers to use podman
+      ENV['DOCKER_HOST'] = "unix://#{podman_socket}"
     end
-
-    # Configure TestContainers to use podman
-    ENV['DOCKER_HOST'] = "unix://#{podman_socket}"
 
     # Ensure SSH key has correct permissions
     system("chmod 600 spec/acceptance/docker/test_key")
