@@ -1,99 +1,76 @@
-# Proof of Concept: Podman + TestContainers (Best of Both Worlds!)
+# Acceptance test for Bard using Podman + TestContainers
 #
-# Pros: Rootless + Automatic lifecycle management + No daemon
-# Cons: Requires testcontainers gem + podman
+# This test validates end-to-end functionality of `bard run ls` by:
+# 1. Starting an SSH server container using TestContainers
+# 2. Configuring Bard to connect to it
+# 3. Running bard commands against the container
+# 4. Automatically cleaning up when done
 #
-# Setup:
-#   gem install testcontainers
-#
-#   # Configure TestContainers to use Podman
-#   export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
-#   # OR create ~/.testcontainers.properties:
-#   # docker.client.strategy=org.testcontainers.dockerclient.UnixSocketClientProviderStrategy
-#   # docker.host=unix:///run/user/1000/podman/podman.sock
-#
-# This combines:
-#   - Podman's rootless, daemonless architecture
-#   - TestContainers' automatic lifecycle and wait strategies
+# Prerequisites:
+# - gem install testcontainers
+# - podman installed
+# - podman socket running (systemctl --user start podman.socket)
+# - Set DOCKER_HOST to podman socket
 
 require 'spec_helper'
+require 'testcontainers'
 require 'open3'
 
-# Uncomment when testcontainers gem is installed
-# require 'testcontainers'
-
-RSpec.describe "Bard run with Podman + TestContainers", type: :acceptance do
-
-  # Configuration for using Podman with TestContainers
+RSpec.describe "Bard acceptance test with Podman + TestContainers", type: :acceptance do
+  # Configure TestContainers to use Podman
   before(:all) do
-    # Check if podman can pull images (skip if in restricted network)
-    unless system("podman pull ubuntu:22.04 >/dev/null 2>&1")
-      skip "Cannot pull images in this environment. Run in a network-enabled environment."
-    end
-
-    # Ensure podman socket is available
+    # Set up podman socket for TestContainers
     podman_socket = "/run/user/#{Process.uid}/podman/podman.sock"
 
+    # Start podman socket if not running
     unless File.exist?(podman_socket)
-      # Start podman socket if not running
       system("systemctl --user start podman.socket 2>/dev/null || podman system service --time=0 unix://#{podman_socket} &")
       sleep 2
     end
 
-    # Set DOCKER_HOST to point to podman socket
+    # Configure TestContainers to use podman
     ENV['DOCKER_HOST'] = "unix://#{podman_socket}"
 
-    # Build test image once
+    # Check if we can pull images
+    unless system("podman pull ubuntu:22.04 >/dev/null 2>&1")
+      skip "Cannot pull images in this environment. Run in a network-enabled environment."
+    end
+
+    # Build the test image
     unless system("podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker 2>&1")
       skip "Failed to build test image"
     end
   end
 
-  # With real testcontainers gem, this would be:
-  #
-  # let(:container) do
-  #   Testcontainers::DockerContainer
-  #     .new("bard-test-server")
-  #     .with_exposed_port(22)
-  #     .with_wait_strategy(
-  #       Testcontainers::WaitStrategies::LogMessageWaitStrategy.new(
-  #         "Server listening on"
-  #       ).with_startup_timeout(30)
-  #     )
-  # end
-  #
-  # before(:each) do
-  #   container.start
-  #   @port = container.mapped_port(22)
-  #   setup_ssh_config
-  # end
-  #
-  # after(:each) do
-  #   container.stop  # Automatic cleanup!
-  # end
+  # TestContainers will automatically manage this container
+  let(:container) do
+    Testcontainers::DockerContainer.new("bard-test-server")
+      .with_exposed_port(22)
+      .with_name("bard-test-#{SecureRandom.hex(4)}")
+      .start
+  end
 
-  # Manual implementation (until testcontainers gem is added):
-
-  let(:container_name) { "bard-test-#{SecureRandom.hex(4)}" }
-  let(:port) { 10000 + rand(5000) } # Random high port
+  let(:ssh_port) { container.mapped_port(22) }
 
   before(:each) do
-    # Start container with podman
-    system("podman run -d --name #{container_name} -p #{port}:22 bard-test-server")
+    # Ensure container is started
+    container
 
     # Wait for SSH to be ready
     30.times do
-      break if system("ssh -o StrictHostKeyChecking=no -p #{port} deploy@localhost -i spec/acceptance/docker/test_key 'echo ready' 2>/dev/null")
+      break if system("ssh -o StrictHostKeyChecking=no -o ConnectTimeout=1 -p #{ssh_port} deploy@localhost -i spec/acceptance/docker/test_key 'echo ready' 2>/dev/null")
       sleep 0.5
     end
 
-    # Setup test project directory
-    system("ssh -o StrictHostKeyChecking=no -p #{port} deploy@localhost -i spec/acceptance/docker/test_key 'mkdir -p testproject'")
+    # Create test project directory
+    system("ssh -o StrictHostKeyChecking=no -p #{ssh_port} deploy@localhost -i spec/acceptance/docker/test_key 'mkdir -p testproject'")
 
-    # Create test bard config
-    @bard_config = <<~RUBY
+    # Create bard config for this container
+    @bard_config_path = "tmp/test_bard_#{SecureRandom.hex(4)}.rb"
+    FileUtils.mkdir_p("tmp")
+    File.write(@bard_config_path, <<~RUBY)
       server :production do
-        ssh "deploy@localhost:#{port}"
+        ssh "deploy@localhost:#{ssh_port}"
         path "testproject"
         ssh_key "spec/acceptance/docker/test_key"
         ping false
@@ -102,96 +79,47 @@ RSpec.describe "Bard run with Podman + TestContainers", type: :acceptance do
   end
 
   after(:each) do
-    # Automatic cleanup (like testcontainers does)
-    system("podman rm -f #{container_name} 2>/dev/null")
+    # Clean up bard config
+    FileUtils.rm_f(@bard_config_path) if @bard_config_path
+
+    # TestContainers will automatically stop and remove the container
+    container.stop if container
+    container.remove if container
   end
 
-  it "runs ls command on rootless container with automatic lifecycle" do
-    # Create test file
-    system("ssh -o StrictHostKeyChecking=no -p #{port} deploy@localhost -i spec/acceptance/docker/test_key 'touch testproject/combo-test.txt'")
+  it "runs ls command via bard run" do
+    # Create a test file in the container
+    result = system("ssh -o StrictHostKeyChecking=no -p #{ssh_port} deploy@localhost -i spec/acceptance/docker/test_key 'touch testproject/test-file.txt'")
+    expect(result).to be true
 
     # Run bard command
     Dir.chdir("tmp") do
-      File.write("bard.rb", @bard_config)
-      output, status = Open3.capture2e("bard run ls")
-      File.delete("bard.rb")
+      # Copy config to bard.rb
+      FileUtils.cp("../#{@bard_config_path}", "bard.rb")
 
-      expect(status.success?).to be true
-      expect(output).to include("combo-test.txt")
+      output, status = Open3.capture2e("bard run ls")
+
+      # Clean up
+      FileUtils.rm_f("bard.rb")
+
+      # Verify the command succeeded
+      expect(status.success?).to be true, "bard run failed: #{output}"
+      expect(output).to include("test-file.txt"), "Expected output to contain test-file.txt, got: #{output}"
     end
   end
 
-  it "runs multiple tests with isolated containers" do
+  it "runs multiple commands in isolated containers" do
     # Each test gets its own container automatically!
-    system("ssh -o StrictHostKeyChecking=no -p #{port} deploy@localhost -i spec/acceptance/docker/test_key 'echo test1 > testproject/test1.txt'")
+    result = system("ssh -o StrictHostKeyChecking=no -p #{ssh_port} deploy@localhost -i spec/acceptance/docker/test_key 'echo content > testproject/another-file.txt'")
+    expect(result).to be true
 
     Dir.chdir("tmp") do
-      File.write("bard.rb", @bard_config)
-      output, status = Open3.capture2e("bard run 'cat testproject/test1.txt'")
-      File.delete("bard.rb")
+      FileUtils.cp("../#{@bard_config_path}", "bard.rb")
+      output, status = Open3.capture2e("bard run 'cat testproject/another-file.txt'")
+      FileUtils.rm_f("bard.rb")
 
       expect(status.success?).to be true
-      expect(output).to include("test1")
+      expect(output).to include("content")
     end
   end
-
-  it "automatically cleans up containers even on test failure" do
-    initial_containers = `podman ps -a --format '{{.Names}}'`.lines.count
-
-    begin
-      # Create test file
-      system("ssh -o StrictHostKeyChecking=no -p #{port} deploy@localhost -i spec/acceptance/docker/test_key 'touch testproject/failure-test.txt'")
-
-      # Verify container exists during test
-      expect(`podman ps --format '{{.Names}}'`).to include(container_name)
-
-      # Intentionally fail to test cleanup
-      # expect(false).to be true
-    rescue => e
-      # Even on failure, after block will clean up
-    end
-
-    # In a real scenario with multiple tests, this would verify cleanup happened
-    # For this single test, we just verify the mechanism works
-  end
-
-  # Benefits of this approach:
-  # ✅ Rootless (no sudo)
-  # ✅ Automatic lifecycle management
-  # ✅ Isolated containers per test
-  # ✅ Automatic cleanup on failure
-  # ✅ No daemon required (podman)
-  # ✅ Random ports avoid conflicts
-  # ✅ Can run tests in parallel
 end
-
-# Full TestContainers integration example:
-#
-# RSpec.describe "With real testcontainers gem" do
-#   let(:container) do
-#     Testcontainers::DockerContainer
-#       .new("bard-test-server")
-#       .with_exposed_port(22)
-#       .with_wait_strategy(
-#         Testcontainers::WaitStrategies::LogMessageWaitStrategy
-#           .new("Server listening")
-#           .with_startup_timeout(30)
-#       )
-#   end
-#
-#   before do
-#     container.start
-#   end
-#
-#   after do
-#     container.stop
-#   end
-#
-#   it "works with full testcontainers integration" do
-#     port = container.mapped_port(22)
-#     host = container.host
-#
-#     # Use port and host for SSH commands
-#     # TestContainers handles all lifecycle automatically
-#   end
-# end

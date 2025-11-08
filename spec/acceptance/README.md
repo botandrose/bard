@@ -1,251 +1,187 @@
-# Bard Acceptance Testing - Proof of Concepts
+# Acceptance Tests for Bard
 
-This directory contains proof-of-concept acceptance tests for Bard using different containerization/virtualization approaches.
+This directory contains end-to-end acceptance tests for Bard using Podman and TestContainers.
 
 ## Overview
 
-Bard orchestrates SSH connections, file transfers, database operations, and server provisioning. Traditional unit tests mock these interactions, but acceptance tests run against real SSH servers to catch integration issues.
+The acceptance tests validate Bard's functionality by:
+- Starting real SSH server containers
+- Running `bard` commands against them
+- Verifying the output
+- Automatically cleaning up containers
 
-## Test Approaches
+## Prerequisites
 
-### 1. Docker with SSH (`docker_ssh_spec.rb`)
-**Recommended for most users**
+### 1. Install Podman
 
 ```bash
-# Setup
-docker build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
+# Ubuntu/Debian
+sudo apt install podman
 
-# Run tests
-rspec spec/acceptance/docker_ssh_spec.rb
+# Fedora
+sudo dnf install podman
 
-# Cleanup
-docker rm -f bard-test-ssh
+# macOS (requires podman machine)
+brew install podman
 ```
 
-**Pros:**
-- Most portable (works everywhere Docker runs)
-- Fast container startup (~2-5 seconds)
-- Easy to version control infrastructure
-- Large ecosystem and documentation
-- Can use docker-compose for multi-server tests
-
-**Cons:**
-- Requires Docker daemon (with root/sudo)
-- Slight overhead compared to native containers
-
-### 2. Podman with SSH (`podman_ssh_spec.rb`)
-**Recommended if you want rootless containers**
+### 2. Install TestContainers Gem
 
 ```bash
-# Setup
-podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
-
-# Run tests
-rspec spec/acceptance/podman_ssh_spec.rb
-
-# Cleanup
-podman rm -f bard-test-podman
+gem install testcontainers
 ```
 
-**Pros:**
-- **Rootless - no sudo required!**
-- Daemonless architecture
-- Docker-compatible (same Dockerfiles/commands)
-- Better security model
-- Native systemd integration
+### 3. Start Podman Socket
 
-**Cons:**
-- Less common than Docker (may need installation)
-- Some minor behavioral differences from Docker
-
-### 2.5. Podman + TestContainers (`podman_testcontainers_spec.rb`)
-**BEST OF BOTH WORLDS - Recommended!**
+TestContainers communicates with Podman via a Unix socket:
 
 ```bash
-# One-time setup
-systemctl --user enable --now podman.socket
+# Create the socket directory if it doesn't exist
+mkdir -p /run/user/$(id -u)/podman
+
+# Start the podman socket
+systemctl --user start podman.socket
+
+# Or manually:
+podman system service --time=0 unix:///run/user/$(id -u)/podman/podman.sock &
+```
+
+### 4. Configure Environment
+
+```bash
+# Set DOCKER_HOST to point to podman socket
 export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
-gem install testcontainers
 
-# Build image
-podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
+# Add to ~/.bashrc or ~/.zshrc to persist
+echo 'export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"' >> ~/.bashrc
+```
 
-# Run tests (automatic lifecycle!)
+## Running the Tests
+
+```bash
+# Run all acceptance tests
+rspec spec/acceptance/
+
+# Run specific test
 rspec spec/acceptance/podman_testcontainers_spec.rb
+
+# With detailed output
+rspec spec/acceptance/podman_testcontainers_spec.rb --format documentation
 ```
 
-**Pros:**
-- **Rootless - no sudo required!**
-- **Automatic lifecycle management** (start/stop/cleanup)
-- **Automatic cleanup on test failures**
-- Isolated containers per test
-- Random ports avoid conflicts
-- Can run tests in parallel
-- Daemonless (podman)
+## How It Works
 
-**Cons:**
-- Requires testcontainers gem
-- Requires podman socket setup (one-time)
+1. **Test Setup**: TestContainers pulls the `ubuntu:22.04` image and builds the `bard-test-server` container
+2. **Container Start**: Each test gets its own isolated SSH server container
+3. **SSH Setup**: Test creates a user, sets up SSH keys, and waits for SSH to be ready
+4. **Bard Execution**: Test runs `bard run ls` (or other commands) against the container
+5. **Verification**: Test checks that the output is correct
+6. **Cleanup**: TestContainers automatically stops and removes the container
 
-See `SETUP_PODMAN_TESTCONTAINERS.md` for detailed setup instructions.
+## Benefits
 
-### 3. TestContainers (`testcontainers_spec.rb`)
-**Recommended for programmatic container management**
+- **Rootless**: No sudo required (Podman runs rootless)
+- **Automatic Lifecycle**: Containers start/stop automatically
+- **Automatic Cleanup**: Even on test failures
+- **Isolated**: Each test gets its own container
+- **Parallel-safe**: Random ports prevent conflicts
 
+## Troubleshooting
+
+### "Cannot pull images"
+
+This is expected in restricted network environments. The test will skip gracefully.
+
+To run successfully, ensure:
+- Network access to docker.io registry
+- Podman can pull images: `podman pull ubuntu:22.04`
+
+### "Connection refused" on SSH
+
+The test waits up to 15 seconds for SSH to be ready. If it still fails:
+- Check container logs: `podman logs <container-name>`
+- Verify SSH is running: `podman exec <container-name> systemctl status ssh`
+
+### "Command not found: bard"
+
+Ensure the `bard` gem is installed and in your PATH:
 ```bash
-# Install gem
-gem install testcontainers
-
-# Run tests (containers managed automatically)
-rspec spec/acceptance/testcontainers_spec.rb
+gem install bard
+# Or use bundle
+bundle exec rspec spec/acceptance/
 ```
 
-**Pros:**
-- Automatic container lifecycle management
-- Built-in wait strategies for readiness
-- Automatic cleanup even on failures
-- Great for CI/CD pipelines
-- Supports docker-compose
+## File Structure
 
-**Cons:**
-- Requires Docker daemon
-- Additional dependency (testcontainers gem)
-
-### 4. LXD/LXC (`lxd_spec.rb`)
-**Recommended for testing provisioning scripts**
-
-```bash
-# One-time LXD setup
-sudo snap install lxd
-sudo lxd init --auto
-
-# Run tests
-rspec spec/acceptance/lxd_spec.rb
-
-# Cleanup
-lxc delete --force bard-test-lxd
+```
+spec/acceptance/
+├── README.md                       # This file
+├── podman_testcontainers_spec.rb   # Main acceptance test
+└── docker/
+    ├── Dockerfile                  # SSH server container image
+    ├── test_key                    # SSH private key for tests
+    └── test_key.pub                # SSH public key
 ```
 
-**Pros:**
-- Full systemd init system (real services)
-- Very fast startup (~5-10 seconds for full OS)
-- More realistic for testing apt/systemd provisioning
-- Can snapshot/restore states
-- Linux-native, extremely efficient
+## CI/CD Integration
 
-**Cons:**
-- Linux-only
-- Requires LXD setup
-- Different paradigm from Docker
-
-### 5. systemd-nspawn (`systemd_nspawn_spec.rb`)
-**Only for advanced use cases**
-
-```bash
-# One-time setup (requires root)
-sudo debootstrap --variant=minbase jammy /var/lib/machines/bard-test
-
-# Run tests
-rspec spec/acceptance/systemd_nspawn_spec.rb
-```
-
-**Pros:**
-- Minimal overhead
-- Built into systemd (no extra software)
-- Very fast
-
-**Cons:**
-- Requires root for most operations
-- Manual setup required
-- Less isolation
-- Not portable
-
-## Generating Real SSH Keys
-
-The included test keys are placeholders. Generate real keys:
-
-```bash
-ssh-keygen -t rsa -b 2048 -f spec/acceptance/docker/test_key -N '' -C 'bard-test-key'
-chmod 600 spec/acceptance/docker/test_key
-chmod 644 spec/acceptance/docker/test_key.pub
-```
-
-## Comparison Matrix
-
-| Feature | Docker | Podman | Podman+TC | TestContainers | LXD | systemd-nspawn |
-|---------|--------|--------|-----------|----------------|-----|----------------|
-| Rootless | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Auto Lifecycle | ❌ | ❌ | ✅✅ | ✅✅ | ❌ | ❌ |
-| Auto Cleanup | ❌ | ❌ | ✅✅ | ✅✅ | ❌ | ❌ |
-| Startup Speed | Fast (2-5s) | Fast (2-5s) | Fast (2-5s) | Fast (2-5s) | Very Fast (5-10s) | Very Fast (1-2s) |
-| Full systemd | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Portable | ✅ | ✅ | ✅ | ✅ | ❌ (Linux) | ❌ (Linux) |
-| Easy Setup | ✅ | ✅ | ⚠️ Medium | ✅ | ⚠️ Medium | ❌ Hard |
-| CI Friendly | ✅ | ✅ | ✅✅✅ | ✅✅ | ⚠️ | ❌ |
-| Ecosystem | ✅✅✅ | ✅✅ | ✅✅ | ✅✅ | ✅ | ⚠️ |
-
-## Recommendations
-
-**🏆 BEST OVERALL:** **Podman + TestContainers** (rootless + automatic lifecycle)
-- See `SETUP_PODMAN_TESTCONTAINERS.md` for setup guide
-- One-time setup, then it just works!
-
-**For simplicity:** Start with **Podman** alone (rootless, no daemon)
-- Fallback to Docker if Podman unavailable
-- Manual lifecycle but very simple
-
-**For CI/CD:** Use **TestContainers** (with Docker or Podman)
-- Automatic lifecycle management
-- Perfect for GitHub Actions/Jenkins
-
-**For testing provisioning/systemd:** Use **LXD** (full init system)
-- Can test real apt packages, systemd services, etc.
-
-**Multi-server testing:** Use **docker-compose** or **podman-compose**
-
-## Multi-Server Example
-
-For testing `bard stage` → `bard deploy` workflows:
+For GitHub Actions:
 
 ```yaml
-# spec/acceptance/docker-compose.yml
-services:
-  staging:
-    build: ./docker
-    ports: ["2222:22"]
-    hostname: staging
-  production:
-    build: ./docker
-    ports: ["2223:22"]
-    hostname: production
+name: Acceptance Tests
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Podman
+        run: sudo apt-get install -y podman
+
+      - name: Setup Podman Socket
+        run: |
+          mkdir -p /run/user/$(id -u)/podman
+          podman system service --time=0 unix:///run/user/$(id -u)/podman/podman.sock &
+          sleep 2
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Install TestContainers
+        run: gem install testcontainers
+
+      - name: Run Acceptance Tests
+        env:
+          DOCKER_HOST: unix:///run/user/${{ github.event.sender.id }}/podman/podman.sock
+        run: rspec spec/acceptance/
 ```
 
-Then test data sync:
+## Writing New Tests
+
+Add new test cases to `podman_testcontainers_spec.rb`:
+
 ```ruby
-it "syncs data from staging to local" do
-  # Setup staging with test data
-  ssh("staging", "psql -c 'CREATE TABLE test...'")
+it "does something new" do
+  # Create test data in container
+  system("ssh -o StrictHostKeyChecking=no -p #{ssh_port} deploy@localhost -i spec/acceptance/docker/test_key 'touch testproject/newfile.txt'")
 
-  # Run bard data staging
-  system("bard data staging")
+  # Run bard command
+  Dir.chdir("tmp") do
+    FileUtils.cp("../#{@bard_config_path}", "bard.rb")
+    output, status = Open3.capture2e("bard run 'your-command-here'")
+    FileUtils.rm_f("bard.rb")
 
-  # Verify local has the data
-  expect(ActiveRecord::Base.connection.tables).to include('test')
+    # Verify results
+    expect(status.success?).to be true
+    expect(output).to include("expected content")
+  end
 end
 ```
 
-## Running All Acceptance Tests
+## Security Note
 
-```bash
-# Tag specs
-# spec/spec_helper.rb:
-RSpec.configure do |config|
-  config.filter_run_excluding acceptance: true unless ENV['ACCEPTANCE']
-end
-
-# Run only acceptance tests
-ACCEPTANCE=1 rspec spec/acceptance/
-
-# Or run specific approach
-rspec spec/acceptance/podman_ssh_spec.rb
-```
+The SSH keys in `docker/` directory are for **testing purposes only**. They are committed to the repository and should never be used in production.
