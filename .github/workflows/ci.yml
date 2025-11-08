@@ -32,6 +32,7 @@ jobs:
             fi
             sleep 1
           done
+          echo "DOCKER_HOST=unix://$SOCKET" >> $GITHUB_ENV
 
       - name: Run tests
         run: bundle exec rake
