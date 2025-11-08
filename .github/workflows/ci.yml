@@ -22,8 +22,8 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y podman
-          # Start podman service using TCP instead of Unix socket for better compatibility
-          nohup podman system service --time=0 tcp://127.0.0.1:8080 > /tmp/podman-service.log 2>&1 &
+          # Start podman service as root using TCP for better compatibility in CI
+          sudo nohup podman system service --time=0 tcp://127.0.0.1:8080 > /tmp/podman-service.log 2>&1 &
           # Wait for service to be ready
           for i in {1..30}; do
             if curl --silent --fail http://127.0.0.1:8080/v1.40/version >/dev/null 2>&1; then
