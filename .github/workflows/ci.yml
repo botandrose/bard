@@ -18,5 +18,21 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
+      - name: Install Podman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y podman
+          SOCKET=/tmp/podman/podman.sock
+          mkdir -p "$(dirname "$SOCKET")"
+          nohup podman system service --time=0 unix://$SOCKET > /tmp/podman-service.log 2>&1 &
+          for i in {1..30}; do
+            if [ -S "$SOCKET" ] && curl --silent --fail --unix-socket "$SOCKET" http://localhost/v1.40/version >/dev/null 2>&1; then
+              echo "Podman REST socket ready at $SOCKET"
+              break
+            fi
+            sleep 1
+          done
+          echo "DOCKER_HOST=unix://$SOCKET" >> $GITHUB_ENV
+
       - name: Run tests
         run: bundle exec rake
