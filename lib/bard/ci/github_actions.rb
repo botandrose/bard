@@ -103,7 +103,7 @@ module Bard
           sha = `git rev-parse #{branch}`.chomp
 
           loop do
-            runs = client.get("actions/runs", head_sha: sha, created: ">#{start_time.iso8601}")
+            runs = client.get("actions/runs", event: "workflow_dispatch", head_sha: sha, created: ">#{start_time.iso8601}")
             if json = runs["workflow_runs"].first
               return Run.new(self, json)
             end
