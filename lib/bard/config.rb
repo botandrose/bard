@@ -65,14 +65,20 @@ module Bard
       end
     end
 
-    def backup *args
-      if args.length == 1
-        @backup = args.first
-      elsif args.length == 0
+    def backup(value = nil, &block)
+      if block_given?
+        @backup = BackupConfig.new(&block)
+      elsif value == false
+        @backup = false
+      elsif value == true
+        # Backward compatibility: backup true
+        @backup = BackupConfig.new { bard }
+      elsif value.nil?
+        # Getter
         return @backup if defined?(@backup)
-        @backup = true
+        @backup = BackupConfig.new { bard }  # Default
       else
-        raise ArgumentError
+        raise ArgumentError, "backup accepts a block, true, or false"
       end
     end
 
@@ -96,6 +102,37 @@ module Bard
       end
 
       backup false
+    end
+  end
+
+  class BackupConfig
+    attr_reader :bard_enabled, :destinations
+
+    def initialize(&block)
+      @bard_enabled = false
+      @destinations = []
+      instance_eval(&block) if block_given?
+    end
+
+    def bard
+      @bard_enabled = true
+    end
+
+    def s3(name, credentials:, path:)
+      @destinations << {
+        name: name,
+        type: :s3,
+        credentials: credentials,
+        path: path
+      }
+    end
+
+    def bard?
+      @bard_enabled
+    end
+
+    def self_managed?
+      @destinations.any?
     end
   end
 end

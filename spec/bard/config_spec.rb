@@ -29,8 +29,11 @@ describe Bard::Config do
     end
 
     describe "#backup" do
-      it "returns true" do
-        expect(subject.backup).to eq true
+      it "returns a BackupConfig with bard enabled by default" do
+        backup = subject.backup
+        expect(backup).to be_a(Bard::BackupConfig)
+        expect(backup.bard?).to eq true
+        expect(backup.destinations).to be_empty
       end
     end
   end
@@ -76,6 +79,83 @@ describe Bard::Config do
     describe "#backup" do
       it "returns the backup setting" do
         expect(subject.backup).to eq false
+      end
+    end
+  end
+
+  context "with new backup block syntax" do
+    describe "#backup with bard directive" do
+      subject { described_class.new("test", source: "backup { bard }") }
+
+      it "returns a BackupConfig with bard enabled" do
+        backup = subject.backup
+        expect(backup).to be_a(Bard::BackupConfig)
+        expect(backup.bard?).to eq true
+        expect(backup.destinations).to be_empty
+        expect(backup.self_managed?).to eq false
+      end
+    end
+
+    describe "#backup with s3 directive" do
+      subject { described_class.new("test", source: "backup { s3 :primary, credentials: :backup, path: 'bucket/path' }") }
+
+      it "returns a BackupConfig with s3 destination" do
+        backup = subject.backup
+        expect(backup).to be_a(Bard::BackupConfig)
+        expect(backup.bard?).to eq false
+        expect(backup.destinations.length).to eq 1
+        expect(backup.self_managed?).to eq true
+
+        dest = backup.destinations.first
+        expect(dest[:name]).to eq :primary
+        expect(dest[:type]).to eq :s3
+        expect(dest[:credentials]).to eq :backup
+        expect(dest[:path]).to eq 'bucket/path'
+      end
+    end
+
+    describe "#backup with both bard and s3 directives" do
+      subject { described_class.new("test", source: "backup { bard; s3 :custom, credentials: :backup, path: 'bucket/path' }") }
+
+      it "returns a BackupConfig with bard and s3 destination" do
+        backup = subject.backup
+        expect(backup).to be_a(Bard::BackupConfig)
+        expect(backup.bard?).to eq true
+        expect(backup.destinations.length).to eq 1
+        expect(backup.self_managed?).to eq true
+      end
+    end
+
+    describe "#backup with multiple s3 destinations" do
+      subject do
+        described_class.new("test", source: <<~SOURCE)
+          backup do
+            s3 :primary, credentials: :backup1, path: 'bucket1/path'
+            s3 :secondary, credentials: :backup2, path: 'bucket2/path'
+          end
+        SOURCE
+      end
+
+      it "returns a BackupConfig with multiple destinations" do
+        backup = subject.backup
+        expect(backup).to be_a(Bard::BackupConfig)
+        expect(backup.bard?).to eq false
+        expect(backup.destinations.length).to eq 2
+        expect(backup.self_managed?).to eq true
+
+        expect(backup.destinations[0][:name]).to eq :primary
+        expect(backup.destinations[1][:name]).to eq :secondary
+      end
+    end
+
+    describe "#backup true (backward compatibility)" do
+      subject { described_class.new("test", source: "backup true") }
+
+      it "returns a BackupConfig with bard enabled" do
+        backup = subject.backup
+        expect(backup).to be_a(Bard::BackupConfig)
+        expect(backup.bard?).to eq true
+        expect(backup.destinations).to be_empty
       end
     end
   end
