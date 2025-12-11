@@ -7,6 +7,12 @@ require "bard/ci/retryable"
 module Bard
   class Github < Struct.new(:project_name)
     include CI::Retryable
+
+    def initialize(project_name, api_key: nil)
+      super(project_name)
+      @api_key = api_key
+    end
+
     def get path, params={}
       request(path) do |uri|
         uri.query = URI.encode_www_form(params)
@@ -100,8 +106,8 @@ module Bard
 
     private
 
-    def github_apikey
-      @github_apikey ||= begin
+    def api_key
+      @api_key ||= begin
         raw = `git ls-remote -t git@github.com:botandrosedesign/secrets`
         raw[/github-apikey\|(.+)$/, 1]
       end
@@ -124,7 +130,7 @@ module Bard
         response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
           req = block.call(uri)
           req["Accept"] = "application/vnd.github+json"
-          req["Authorization"] = "Bearer #{github_apikey}"
+          req["Authorization"] = "Bearer #{api_key}"
           req["X-GitHub-Api-Version"] = "2022-11-28"
           http.request(req)
         end
