@@ -2,6 +2,12 @@ require "bard/server"
 
 module Bard
   class Config
+    def self.current(working_directory: Dir.getwd)
+      project_name = File.basename(working_directory)
+      path = File.join(working_directory, "bard.rb")
+      new(project_name, path: path)
+    end
+
     def initialize project_name, path: nil, source: nil
       @project_name = project_name
       @servers = {
@@ -120,6 +126,10 @@ module Bard
 
     def disabled?
       !!@disabled
+    end
+
+    def enabled?
+      !disabled?
     end
 
     def s3(name, **kwargs)
