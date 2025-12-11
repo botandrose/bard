@@ -69,30 +69,23 @@ module Bard
       if block_given?
         @backup = BackupConfig.new(&block)
       elsif value == false
-        @backup = false
-      elsif value == true
-        # Backward compatibility: backup true
-        @backup = BackupConfig.new { bard }
-      elsif value.nil?
-        # Getter
-        return @backup if defined?(@backup)
-        @backup = BackupConfig.new { bard }  # Default
+        @backup = BackupConfig.new { disabled }
+      elsif value.nil? # Getter
+        @backup ||= BackupConfig.new { bard }
       else
-        raise ArgumentError, "backup accepts a block, true, or false"
+        raise ArgumentError, "backup accepts false or a block"
       end
     end
 
     # short-hand for michael
 
-    def github_pages url=nil
+    def github_pages url
       urls = []
-      if url.present?
-        uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
-        hostname = uri.hostname.sub(/^www\./, '')
-        urls = [hostname]
-        if hostname.count(".") < 2
-          urls << "www.#{hostname}"
-        end
+      uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
+      hostname = uri.hostname.sub(/^www\./, '')
+      urls = [hostname]
+      if hostname.count(".") < 2
+        urls << "www.#{hostname}"
       end
 
       server :production do
@@ -106,29 +99,35 @@ module Bard
   end
 
   class BackupConfig
-    attr_reader :bard_enabled, :destinations
+    attr_reader :destinations
 
     def initialize(&block)
-      @bard_enabled = false
       @destinations = []
       instance_eval(&block) if block_given?
     end
 
     def bard
-      @bard_enabled = true
-    end
-
-    def s3(name, credentials:, path:)
-      @destinations << {
-        name: name,
-        type: :s3,
-        credentials: credentials,
-        path: path
-      }
+      @bard = true
     end
 
     def bard?
-      @bard_enabled
+      !!@bard
+    end
+
+    def disabled
+      @disabled = true
+    end
+
+    def disabled?
+      !!@disabled
+    end
+
+    def s3(name, **kwargs)
+      @destinations << {
+        name: name,
+        type: :s3,
+        **kwargs,
+      }
     end
 
     def self_managed?

@@ -78,7 +78,7 @@ describe Bard::Config do
 
     describe "#backup" do
       it "returns the backup setting" do
-        expect(subject.backup).to eq false
+        expect(subject.backup).to be_disabled
       end
     end
   end
@@ -97,7 +97,7 @@ describe Bard::Config do
     end
 
     describe "#backup with s3 directive" do
-      subject { described_class.new("test", source: "backup { s3 :primary, credentials: :backup, path: 'bucket/path' }") }
+      subject { described_class.new("test", source: "backup { s3 :primary, path: 'bucket/path' }") }
 
       it "returns a BackupConfig with s3 destination" do
         backup = subject.backup
@@ -109,13 +109,12 @@ describe Bard::Config do
         dest = backup.destinations.first
         expect(dest[:name]).to eq :primary
         expect(dest[:type]).to eq :s3
-        expect(dest[:credentials]).to eq :backup
         expect(dest[:path]).to eq 'bucket/path'
       end
     end
 
     describe "#backup with both bard and s3 directives" do
-      subject { described_class.new("test", source: "backup { bard; s3 :custom, credentials: :backup, path: 'bucket/path' }") }
+      subject { described_class.new("test", source: "backup { bard; s3 :custom, path: 'bucket/path' }") }
 
       it "returns a BackupConfig with bard and s3 destination" do
         backup = subject.backup
@@ -130,8 +129,8 @@ describe Bard::Config do
       subject do
         described_class.new("test", source: <<~SOURCE)
           backup do
-            s3 :primary, credentials: :backup1, path: 'bucket1/path'
-            s3 :secondary, credentials: :backup2, path: 'bucket2/path'
+            s3 :primary, path: 'bucket1/path'
+            s3 :secondary, path: 'bucket2/path'
           end
         SOURCE
       end
@@ -147,15 +146,23 @@ describe Bard::Config do
         expect(backup.destinations[1][:name]).to eq :secondary
       end
     end
+  end
 
-    describe "#backup true (backward compatibility)" do
-      subject { described_class.new("test", source: "backup true") }
+  context "with github_pages directive" do
+    subject { described_class.new("test", source: "github_pages 'example.com'") }
 
-      it "returns a BackupConfig with bard enabled" do
-        backup = subject.backup
-        expect(backup).to be_a(Bard::BackupConfig)
-        expect(backup.bard?).to eq true
-        expect(backup.destinations).to be_empty
+    describe "#backup" do
+      it "sets backup to false" do
+        expect(subject.backup).to be_disabled
+      end
+    end
+
+    describe "#server" do
+      it "creates a production server with github_pages enabled" do
+        production = subject[:production]
+        expect(production).not_to be_nil
+        expect(production.github_pages).to eq true
+        expect(production.ssh).to eq false
       end
     end
   end
