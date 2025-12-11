@@ -102,7 +102,7 @@ module Bard
 
     def github_apikey
       @github_apikey ||= begin
-        raw = `git ls-remote -t git@github.com:botandrose/bard`
+        raw = `git ls-remote -t git@github.com:botandrosedesign/secrets`
         raw[/github-apikey\|(.+)$/, 1]
       end
     end
