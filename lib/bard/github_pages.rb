@@ -22,34 +22,55 @@ module Bard
     private
 
     def build_site
-      system "rm -rf #{@build_dir.sub(@sha, "*")}"
-      run! <<~SH
-        set -e
-        RAILS_ENV=production bundle exec rails s -p 3000 -d --pid tmp/pids/server.pid
-        OUTPUT=$(bundle exec rake assets:clean assets:precompile 2>&1) || echo "$OUTPUT"
+      with_locked_port do |port|
+        system "rm -rf #{@build_dir.sub(@sha, "*")}"
+        run! <<~SH
+          set -e
+          RAILS_ENV=production bundle exec rails s -p #{port} -d --pid tmp/pids/server.pid
+          OUTPUT=$(bundle exec rake assets:clean assets:precompile 2>&1) || echo "$OUTPUT"
 
-        # Create the output directory and enter it
-        BUILD=#{@build_dir}
-        rm -rf $BUILD
-        mkdir -p $BUILD
-        cp -R public/assets $BUILD/
-        cd $BUILD
+          # Create the output directory and enter it
+          BUILD=#{@build_dir}
+          rm -rf $BUILD
+          mkdir -p $BUILD
+          cp -R public/assets $BUILD/
+          cd $BUILD
 
-        # wait until server responds
-        echo waiting...
-        curl -s --retry 5 --retry-delay 2 http://localhost:3000 >/dev/null 2>&1
+          # wait until server responds
+          echo waiting...
+          curl -s --retry 5 --retry-delay 2 http://localhost:#{port} >/dev/null 2>&1
 
-        echo copying...
-        # Mirror the site to the build folder, ignoring links with query params
-        wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:3000/ 2>&1
+          echo copying...
+          # Mirror the site to the build folder, ignoring links with query params
+          wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:#{port}/ 2>&1
 
-        echo #{@domain} > CNAME
-      SH
-    ensure # cleanup
-      run! <<~SH
-        cat tmp/pids/server.pid | xargs -I {} kill {}
-        rm -rf public/assets
-      SH
+          echo #{@domain} > CNAME
+        SH
+      ensure # cleanup
+        run! <<~SH
+          cat tmp/pids/server.pid | xargs -I {} kill {}
+          rm -rf public/assets
+        SH
+      end
+    end
+
+    def with_locked_port
+      (3000..3020).each do |port|
+        lock_file = "/tmp/bard_github_pages_#{port}.lock"
+        file = File.open(lock_file, File::RDWR | File::CREAT, 0644)
+        if file.flock(File::LOCK_EX | File::LOCK_NB)
+          begin
+            yield port
+            return
+          ensure
+            file.flock(File::LOCK_UN)
+            file.close
+          end
+        else
+          file.close
+        end
+      end
+      raise "Could not find an available port for GitHub Pages deployment (checked 3000-3020)."
     end
 
     def create_tree_from_build

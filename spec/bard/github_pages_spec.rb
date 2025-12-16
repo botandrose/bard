@@ -38,6 +38,69 @@ describe Bard::GithubPages do
     end
   end
 
+  describe "#build_site" do
+    it "uses the locked port" do
+      github_pages.instance_variable_set(:@sha, "abc123")
+      github_pages.instance_variable_set(:@build_dir, "tmp/github-build-abc123")
+      github_pages.instance_variable_set(:@domain, "example.com")
+
+      allow(github_pages).to receive(:with_locked_port).and_yield(3005)
+
+      expect(github_pages).to receive(:run!).with(satisfy { |cmd|
+        cmd.include?("rails s -p 3005") && cmd.include?("http://localhost:3005")
+      }).ordered
+
+      expect(github_pages).to receive(:run!).with(include("kill")).ordered
+
+      github_pages.send(:build_site)
+    end
+  end
+
+  describe "#with_locked_port" do
+    let(:file_mock) { double("file", close: true) }
+
+    before do
+      allow(File).to receive(:open).and_return(file_mock)
+    end
+
+    it "yields the first available port" do
+      allow(file_mock).to receive(:flock).and_return(true)
+      
+      expect(File).to receive(:open).with("/tmp/bard_github_pages_3000.lock", anything, anything)
+      
+      yielded_port = nil
+      github_pages.send(:with_locked_port) { |p| yielded_port = p }
+      expect(yielded_port).to eq(3000)
+    end
+
+    it "retries if the first port is locked" do
+      # 1. Try port 3000
+      expect(File).to receive(:open).with("/tmp/bard_github_pages_3000.lock", anything, anything).ordered
+      expect(file_mock).to receive(:flock).with(File::LOCK_EX | File::LOCK_NB).and_return(false).ordered
+      expect(file_mock).to receive(:close).ordered
+
+      # 2. Try port 3001
+      expect(File).to receive(:open).with("/tmp/bard_github_pages_3001.lock", anything, anything).ordered
+      expect(file_mock).to receive(:flock).with(File::LOCK_EX | File::LOCK_NB).and_return(true).ordered
+      
+      # 3. Cleanup after yielding
+      expect(file_mock).to receive(:flock).with(File::LOCK_UN).ordered
+      expect(file_mock).to receive(:close).ordered
+
+      yielded_port = nil
+      github_pages.send(:with_locked_port) { |p| yielded_port = p }
+      expect(yielded_port).to eq(3001)
+    end
+
+    it "raises an error if no ports are available" do
+      allow(file_mock).to receive(:flock).and_return(false)
+      
+      expect {
+        github_pages.send(:with_locked_port) {}
+      }.to raise_error(/Could not find an available port/)
+    end
+  end
+
   describe "#get_parent_commit" do
     it "returns the sha of the gh-pages branch" do
       github_pages.instance_variable_set(:@branch, "gh-pages")
