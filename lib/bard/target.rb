@@ -45,11 +45,12 @@ module Bard
     # SSH configuration
     def ssh(uri_or_false = nil, **options)
       if uri_or_false.nil?
-        # Getter
-        return @server
+        # Getter - return false if explicitly disabled, otherwise return server
+        return @ssh_disabled ? false : @server
       elsif uri_or_false == false
         # Disable SSH
         @server = nil
+        @ssh_disabled = true
         @capabilities.delete(:ssh)
       else
         # Enable SSH
@@ -119,6 +120,19 @@ module Bard
 
     # Deploy strategy
     attr_reader :deploy_strategy
+
+    # GitHub Pages deployment configuration
+    def github_pages(url = nil)
+      if url.nil?
+        # Getter
+        @github_pages_url
+      else
+        # Setter
+        @deploy_strategy = :github_pages
+        @github_pages_url = url
+        enable_capability(:github_pages)
+      end
+    end
 
     def strategy_options(strategy_name)
       @strategy_options_hash[strategy_name] || {}

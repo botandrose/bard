@@ -143,6 +143,40 @@ module Bard
         CI.new(project_name, branch)
       end
     end
+
+    private
+
+    # Load default server configurations (v1.x compatible)
+    def load_defaults
+      @servers[:local] = Server.new(
+        project_name,
+        :local,
+        false,
+        "./",
+        ["#{project_name}.local"],
+      )
+      @servers[:gubs] = Server.new(
+        project_name,
+        :gubs,
+        "botandrose@cloud.hackett.world:22022",
+        "Sites/#{project_name}",
+        false,
+      )
+      @servers[:ci] = Server.new(
+        project_name,
+        :ci,
+        "jenkins@staging.botandrose.com:22022",
+        "jobs/#{project_name}/workspace",
+        false,
+      )
+      @servers[:staging] = Server.new(
+        project_name,
+        :staging,
+        "www@staging.botandrose.com:22022",
+        project_name,
+        ["#{project_name}.botandrose.com"],
+      )
+    end
   end
 
   class BackupConfig
@@ -183,40 +217,6 @@ module Bard
 
     def self_managed?
       @destinations.any?
-    end
-
-    private
-
-    # Load default server configurations (v1.x compatible)
-    def load_defaults
-      @servers[:local] = Server.new(
-        project_name,
-        :local,
-        false,
-        "./",
-        ["#{project_name}.local"],
-      )
-      @servers[:gubs] = Server.new(
-        project_name,
-        :gubs,
-        "botandrose@cloud.hackett.world:22022",
-        "Sites/#{project_name}",
-        false,
-      )
-      @servers[:ci] = Server.new(
-        project_name,
-        :ci,
-        "jenkins@staging.botandrose.com:22022",
-        "jobs/#{project_name}/workspace",
-        false,
-      )
-      @servers[:staging] = Server.new(
-        project_name,
-        :staging,
-        "www@staging.botandrose.com:22022",
-        project_name,
-        ["#{project_name}.botandrose.com"],
-      )
     end
   end
 end

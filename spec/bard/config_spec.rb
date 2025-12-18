@@ -161,7 +161,7 @@ describe Bard::Config do
       it "creates a production server with github_pages enabled" do
         production = subject[:production]
         expect(production).not_to be_nil
-        expect(production.github_pages).to eq true
+        expect(production.github_pages).to eq "example.com"
         expect(production.ssh).to eq false
       end
     end
