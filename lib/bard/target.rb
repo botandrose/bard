@@ -219,17 +219,17 @@ module Bard
     # Remote command execution
     def run!(command, home: false, verbose: false, quiet: false)
       require_capability!(:ssh)
-      Command.run!(command, on: server, home: home, verbose: verbose, quiet: quiet)
+      Command.run!(command, on: self, home: home, verbose: verbose, quiet: quiet)
     end
 
     def run(command, home: false, verbose: false, quiet: false)
       require_capability!(:ssh)
-      Command.run(command, on: server, home: home, verbose: verbose, quiet: quiet)
+      Command.run(command, on: self, home: home, verbose: verbose, quiet: quiet)
     end
 
     def exec!(command, home: false)
       require_capability!(:ssh)
-      Command.exec!(command, on: server, home: home)
+      Command.exec!(command, on: self, home: home)
     end
 
     # File transfer

@@ -137,7 +137,7 @@ describe Bard::Target do
 
       it "executes command on remote server" do
         expect(Bard::Command).to receive(:run!)
-          .with("ls", on: target.server, home: false, verbose: false, quiet: false)
+          .with("ls", on: target, home: false, verbose: false, quiet: false)
         target.run!("ls")
       end
     end
@@ -151,7 +151,7 @@ describe Bard::Target do
 
       it "executes command on remote server without raising" do
         expect(Bard::Command).to receive(:run)
-          .with("ls", on: target.server, home: false, verbose: false, quiet: false)
+          .with("ls", on: target, home: false, verbose: false, quiet: false)
         target.run("ls")
       end
     end
@@ -165,7 +165,7 @@ describe Bard::Target do
 
       it "replaces process with remote command" do
         expect(Bard::Command).to receive(:exec!)
-          .with("ls", on: target.server, home: false)
+          .with("ls", on: target, home: false)
         target.exec!("ls")
       end
     end
