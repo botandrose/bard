@@ -3,11 +3,13 @@ Given /^a podman testcontainer is ready for bard$/ do
 end
 
 Given /^a remote file "([^\"]+)" exists in the test container$/ do |filename|
-  run_ssh("touch testproject/#{filename}").should be_true
+  result = run_ssh("touch testproject/#{filename}")
+  expect(result).to be true
 end
 
 Given /^a remote file "([^\"]+)" containing "([^\"]+)" exists in the test container$/ do |filename, content|
-  run_ssh("echo #{Shellwords.escape(content)} > testproject/#{filename}").should be_true
+  result = run_ssh("echo #{Shellwords.escape(content)} > testproject/#{filename}")
+  expect(result).to be true
 end
 
 When /^I run bard "([^\"]+)" against the test container$/ do |command|
@@ -15,9 +17,18 @@ When /^I run bard "([^\"]+)" against the test container$/ do |command|
 end
 
 Then /^the bard command should succeed$/ do
-  @status.success?.should be_true
+  unless @status.success?
+    puts "BARD COMMAND FAILED"
+    puts "Status: #{@status}"
+    puts "Output: #{@stdout}"
+  end
+  expect(@status.success?).to be true
+end
+
+Then /^the bard command should fail$/ do
+  expect(@status.success?).to be false
 end
 
 Then /^the bard output should include "([^\"]+)"$/ do |expected|
-  @stdout.should include(expected)
+  expect(@stdout).to include(expected)
 end

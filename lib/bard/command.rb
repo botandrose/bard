@@ -73,15 +73,25 @@ module Bard
         cmd = "cd #{path} && #{cmd}" if path
       end
 
-      ssh_key = ssh_server.ssh_key ? "-i #{ssh_server.ssh_key} " : ""
-      ssh_uri = ssh_server.respond_to?(:ssh_uri) ? ssh_server.ssh_uri : ssh_server.ssh_uri(:ssh)
+      ssh_opts = ["-tt", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null"]
+      ssh_opts << "-i #{ssh_server.ssh_key}" if ssh_server.ssh_key
 
-      cmd = "ssh -tt #{ssh_key} #{ssh_uri} '#{cmd}'"
-
-      if ssh_server.gateway
-        gateway_uri = ssh_server.respond_to?(:ssh_uri) ? ssh_server.gateway : ssh_server.ssh_uri(:gateway)
-        cmd = "ssh -tt #{gateway_uri} \"#{cmd}\""
+      # Handle new SSHServer vs old Server architecture
+      if ssh_server.respond_to?(:host)
+        # New SSHServer - has separate host/port/user
+        ssh_opts << "-p #{ssh_server.port}" if ssh_server.port && ssh_server.port != "22"
+        ssh_opts << "-o ProxyJump=#{ssh_server.gateway}" if ssh_server.gateway
+        ssh_target = "#{ssh_server.user}@#{ssh_server.host}"
+      else
+        # Old Server - uses URI-based ssh_uri
+        ssh_target = ssh_server.ssh_uri
+        if ssh_server.gateway
+          gateway_uri = ssh_server.ssh_uri(:gateway)
+          ssh_opts << "-o ProxyJump=#{gateway_uri}"
+        end
       end
+
+      cmd = "ssh #{ssh_opts.join(' ')} #{ssh_target} '#{cmd}'"
 
       cmd += " 2>&1" if quiet
       cmd

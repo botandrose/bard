@@ -11,7 +11,7 @@ describe Bard::Command do
     end
 
     it "should run a command on a remote server" do
-      expect(Open3).to receive(:capture3).with("ssh -tt  user@example.com 'cd /path/to && ls -l'").and_return(["output", "", 0])
+      expect(Open3).to receive(:capture3).with("ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null user@example.com 'cd /path/to && ls -l'").and_return(["output", "", 0])
       Bard::Command.run "ls -l", on: remote
     end
   end

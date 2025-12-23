@@ -2,7 +2,7 @@ require "fileutils"
 require "open3"
 require "securerandom"
 require "shellwords"
-require "testcontainers"
+require "docker-api"
 
 module PodmanWorld
   class << self
@@ -25,8 +25,6 @@ module PodmanWorld
   end
 
   def configure_podman_socket
-    return if ENV["DOCKER_HOST"]
-
     podman_socket = "/run/user/#{Process.uid}/podman/podman.sock"
     unless File.exist?(podman_socket)
       system("systemctl --user start podman.socket 2>/dev/null || podman system service --time=0 unix://#{podman_socket} &")
@@ -36,12 +34,15 @@ module PodmanWorld
     raise PrerequisiteError, "Podman socket not available at #{podman_socket}" unless File.exist?(podman_socket)
 
     ENV["DOCKER_HOST"] = "unix://#{podman_socket}"
+    Docker.url = ENV["DOCKER_HOST"]
   end
 
   def ensure_bard_test_image
     return if @podman_image_built || PodmanWorld.podman_image_built
 
-    raise PrerequisiteError, "Unable to pull ubuntu:22.04 image" unless system("podman pull ubuntu:22.04 >/dev/null 2>&1")
+    unless system("podman pull ubuntu:22.04 >/dev/null 2>&1")
+      raise PrerequisiteError, "Unable to pull ubuntu:22.04 image"
+    end
 
     docker_dir = File.join(ROOT, "spec/acceptance/docker")
     dockerfile = File.join(docker_dir, "Dockerfile")
@@ -56,13 +57,20 @@ module PodmanWorld
   def start_podman_container
     ensure_podman_available
 
-    @podman_container = Testcontainers::DockerContainer
-      .new("localhost/bard-test-server:latest")
-      .with_exposed_port(22)
-      .with_name("bard-test-#{SecureRandom.hex(4)}")
-      .start
+    @podman_container = Docker::Container.create(
+      "Image" => "localhost/bard-test-server:latest",
+      "ExposedPorts" => { "22/tcp" => {} },
+      "HostConfig" => {
+        "PortBindings" => { "22/tcp" => [{ "HostPort" => "" }] },
+        "PublishAllPorts" => true
+      }
+    )
+    @podman_container.start
+    @podman_container.refresh!
 
-    @podman_ssh_port = @podman_container.mapped_port(22)
+    ports = @podman_container.info["NetworkSettings"]["Ports"]["22/tcp"]
+    @podman_ssh_port = ports.first["HostPort"].to_i
+
     wait_for_ssh
     run_ssh("mkdir -p testproject")
     write_bard_config
@@ -82,31 +90,33 @@ module PodmanWorld
     @bard_config_path = File.join(ROOT, "tmp", "test_bard_#{SecureRandom.hex(4)}.rb")
 
     File.write(@bard_config_path, <<~RUBY)
-      server :production do
-        ssh "deploy@localhost:#{@podman_ssh_port}"
-        path "testproject"
-        ssh_key "#{podman_ssh_key_path}"
+      target :production do
+        ssh "deploy@localhost:#{@podman_ssh_port}",
+          path: "testproject",
+          ssh_key: "#{podman_ssh_key_path}"
         ping false
       end
     RUBY
   end
 
   def run_ssh(command, quiet: false)
-    escaped = Shellwords.escape(command)
-    ssh_command = [
+    ssh_args = [
       "ssh",
       "-o", "StrictHostKeyChecking=no",
-      "-o", "ConnectTimeout=1",
+      "-o", "UserKnownHostsFile=/dev/null",
+      "-o", "LogLevel=ERROR",
+      "-o", "ConnectTimeout=5",
       "-p", @podman_ssh_port.to_s,
       "-i", podman_ssh_key_path,
       "deploy@localhost",
-      "--",
-      "bash",
-      "-lc",
-      escaped
-    ].join(" ")
+      command
+    ]
 
-    quiet ? system("#{ssh_command} >/dev/null 2>&1") : system(ssh_command)
+    if quiet
+      system(*ssh_args, out: File::NULL, err: File::NULL)
+    else
+      system(*ssh_args)
+    end
   end
 
   def run_bard_against_container(command)
@@ -127,7 +137,7 @@ module PodmanWorld
     return unless @podman_container
 
     @podman_container.stop
-    @podman_container.remove
+    @podman_container.delete(force: true)
   rescue StandardError => e
     warn "Failed to cleanup podman container: #{e.message}"
   ensure
