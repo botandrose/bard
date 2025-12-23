@@ -1,6 +1,7 @@
 require "uri"
 require "bard/command"
 require "bard/copy"
+require "bard/deprecation"
 
 module Bard
   class Server < Struct.new(:project_name, :key, :ssh, :path, :ping, :gateway, :ssh_key, :env, :github_pages)
@@ -24,7 +25,24 @@ module Bard
       end
     end
 
-    setting :ssh, :path, :ping, :gateway, :ssh_key, :env, :github_pages
+    def self.setting_with_deprecation *fields, message:
+      fields.each do |field|
+        define_method field do |*args|
+          if args.length == 1
+            Deprecation.warn message
+            send :"#{field}=", args.first
+          elsif args.length == 0
+            super()
+          else
+            raise ArgumentError
+          end
+        end
+      end
+    end
+
+    setting :ssh, :ping, :github_pages
+    setting_with_deprecation :gateway, :ssh_key, :env,
+      message: "Separate SSH options are deprecated; pass as keyword arguments to `ssh` instead, e.g., `ssh \"user@host\", path: \"/app\"` (will be removed in v2.0)"
 
     def ping(*args)
       if args.length == 0
@@ -50,12 +68,32 @@ module Bard
 
     def path(*args)
       if args.length == 1
+        Deprecation.warn "Separate SSH options are deprecated; pass as keyword arguments to `ssh` instead, e.g., `ssh \"user@host\", path: \"/app\"` (will be removed in v2.0)"
         self.path = args.first
       elsif args.length == 0
         super() || project_name
       else
         raise ArgumentError
       end
+    end
+
+    def strategy(name)
+      Deprecation.warn "`strategy` is deprecated; use the strategy method directly, e.g., `jets \"url\"` instead of `strategy :jets` (will be removed in v2.0)"
+      @strategy = name
+    end
+
+    def option(key, value)
+      Deprecation.warn "`option` is deprecated; pass options as keyword arguments to the strategy method, e.g., `jets \"url\", run_tests: true` (will be removed in v2.0)"
+      @options ||= {}
+      @options[key] = value
+    end
+
+    def strategy_name
+      @strategy
+    end
+
+    def strategy_options
+      @options || {}
     end
 
     def ssh_uri which=:ssh

@@ -2,6 +2,8 @@
 
 This guide will help you migrate your Bard configuration from v1.x to v2.0.
 
+> **Note:** Bard v1.8.0 is a transitional release that supports both v1.x and v2.0 APIs. When using deprecated v1.x patterns, you'll see deprecation warnings indicating what to change. This gives you time to migrate at your own pace while keeping your deployments working.
+
 ## Overview of Changes
 
 Bard v2.0 introduces a cleaner, more modular architecture:
@@ -477,22 +479,35 @@ mv bard.rb.backup bard.rb
 - Check [CUSTOM_STRATEGIES.md](CUSTOM_STRATEGIES.md) for strategy creation
 - Open an issue at https://github.com/botandrose/bard/issues
 
-## Transitional Release (v1.9.x)
+## Transitional Release (v1.8.0)
 
-A transitional release (v1.9.x) will support both v1 and v2 APIs simultaneously with deprecation warnings. This allows gradual migration.
+Bard v1.8.0 is a transitional release that supports both v1.x and v2.0 APIs simultaneously with deprecation warnings. This allows gradual migration.
 
-**Using v1.9.x:**
+**Using v1.8.0:**
 ```bash
 # Gemfile
-gem 'bard', '~> 1.9'
+gem 'bard', '~> 1.8'
 
 bundle update bard
 ```
 
-v1.9.x will:
-- Accept both `server` and `target` (with deprecation warning)
-- Accept both old and new SSH configuration styles
-- Show deprecation warnings for old API usage
-- Support full v2 API
+v1.8.0 will:
+- Accept both `server` and `target` (with deprecation warning for `server`)
+- Accept both old and new SSH configuration styles (with deprecation warnings for separate options)
+- Accept both old `strategy`/`option` calls and new direct strategy methods (with deprecation warnings)
+- Show deprecation warnings for all deprecated v1.x API usage
+- Support full v2.0 API
 
 This gives you time to migrate at your own pace while keeping your deployments working.
+
+### Deprecation Warnings
+
+When using deprecated patterns, you'll see warnings like:
+
+```
+[DEPRECATION] `server` is deprecated; use `target` instead (will be removed in v2.0) (called from bard.rb:3)
+[DEPRECATION] Separate SSH options are deprecated; pass as keyword arguments to `ssh` instead (will be removed in v2.0) (called from bard.rb:5)
+[DEPRECATION] `strategy` is deprecated; use the strategy method directly (will be removed in v2.0) (called from bard.rb:10)
+```
+
+These warnings help you identify what needs to change before upgrading to v2.0.

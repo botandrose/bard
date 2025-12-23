@@ -1,5 +1,6 @@
 require "bard/server"
 require "bard/target"
+require "bard/deprecation"
 
 module Bard
   class Config
@@ -43,6 +44,7 @@ module Bard
 
     # Old v1.x API - creates Server instances
     def server(key, &block)
+      Deprecation.warn "`server` is deprecated; use `target` instead (will be removed in v2.0)"
       key = key.to_sym
       @servers[key] = Server.define(project_name, key, &block)
     end
