@@ -2,11 +2,12 @@ require "uri"
 require "bard/command"
 require "bard/copy"
 require "bard/deploy_strategy"
+require "bard/deprecation"
 
 module Bard
   class Target
-    attr_reader :key, :config, :path
-    attr_accessor :server, :gateway, :ssh_key, :env
+    attr_reader :key, :config
+    attr_accessor :server
 
     def initialize(key, config)
       @key = key
@@ -78,9 +79,38 @@ module Bard
     # Path configuration
     def path(new_path = nil)
       if new_path
+        Deprecation.warn "Separate `path` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", path: \"#{new_path}\"` (will be removed in v2.0)"
         @path = new_path
       else
         @path || config.project_name
+      end
+    end
+
+    # Deprecated separate setter methods - use ssh(..., option: value) instead
+    def gateway(value = nil)
+      if value
+        Deprecation.warn "Separate `gateway` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", gateway: \"#{value}\"` (will be removed in v2.0)"
+        @gateway = value
+      else
+        @gateway
+      end
+    end
+
+    def ssh_key(value = nil)
+      if value
+        Deprecation.warn "Separate `ssh_key` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", ssh_key: \"#{value}\"` (will be removed in v2.0)"
+        @ssh_key = value
+      else
+        @ssh_key
+      end
+    end
+
+    def env(value = nil)
+      if value
+        Deprecation.warn "Separate `env` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", env: \"#{value}\"` (will be removed in v2.0)"
+        @env = value
+      else
+        @env
       end
     end
 
@@ -132,6 +162,18 @@ module Bard
         @github_pages_url = url
         enable_capability(:github_pages)
       end
+    end
+
+    # Deprecated strategy configuration methods
+    def strategy(name)
+      Deprecation.warn "`strategy` is deprecated; use the strategy method directly, e.g., `#{name} \"url\"` instead of `strategy :#{name}` (will be removed in v2.0)"
+      @deploy_strategy = name
+    end
+
+    def option(key, value)
+      Deprecation.warn "`option` is deprecated; pass options as keyword arguments to the strategy method, e.g., `jets \"url\", #{key}: #{value.inspect}` (will be removed in v2.0)"
+      @strategy_options_hash[@deploy_strategy] ||= {}
+      @strategy_options_hash[@deploy_strategy][key] = value
     end
 
     def strategy_options(strategy_name)

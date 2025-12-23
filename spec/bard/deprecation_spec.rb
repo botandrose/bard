@@ -198,5 +198,84 @@ describe "Deprecation warnings" do
       end
       expect(output).not_to include("[DEPRECATION]")
     end
+
+    it "warns when using separate path method" do
+      output = capture_stderr do
+        Bard::Config.new("test", source: <<~SOURCE)
+          target :production do
+            ssh "user@host:22"
+            path "/app"
+          end
+        SOURCE
+      end
+      expect(output).to include("[DEPRECATION]")
+      expect(output).to include("Separate `path` call is deprecated")
+    end
+
+    it "warns when using separate gateway method" do
+      output = capture_stderr do
+        Bard::Config.new("test", source: <<~SOURCE)
+          target :production do
+            ssh "user@host:22"
+            gateway "bastion@host:22"
+          end
+        SOURCE
+      end
+      expect(output).to include("[DEPRECATION]")
+      expect(output).to include("Separate `gateway` call is deprecated")
+    end
+
+    it "warns when using separate ssh_key method" do
+      output = capture_stderr do
+        Bard::Config.new("test", source: <<~SOURCE)
+          target :production do
+            ssh "user@host:22"
+            ssh_key "~/.ssh/id_rsa"
+          end
+        SOURCE
+      end
+      expect(output).to include("[DEPRECATION]")
+      expect(output).to include("Separate `ssh_key` call is deprecated")
+    end
+
+    it "warns when using separate env method" do
+      output = capture_stderr do
+        Bard::Config.new("test", source: <<~SOURCE)
+          target :production do
+            ssh "user@host:22"
+            env "RAILS_ENV=production"
+          end
+        SOURCE
+      end
+      expect(output).to include("[DEPRECATION]")
+      expect(output).to include("Separate `env` call is deprecated")
+    end
+
+    it "warns when using strategy method" do
+      output = capture_stderr do
+        Bard::Config.new("test", source: <<~SOURCE)
+          target :production do
+            ssh "user@host:22"
+            strategy :ssh
+          end
+        SOURCE
+      end
+      expect(output).to include("[DEPRECATION]")
+      expect(output).to include("`strategy` is deprecated")
+    end
+
+    it "warns when using option method" do
+      output = capture_stderr do
+        Bard::Config.new("test", source: <<~SOURCE)
+          target :production do
+            ssh "user@host:22"
+            strategy :ssh
+            option :verbose, true
+          end
+        SOURCE
+      end
+      expect(output).to include("[DEPRECATION]")
+      expect(output).to include("`option` is deprecated")
+    end
   end
 end
