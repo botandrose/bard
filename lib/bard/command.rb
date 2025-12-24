@@ -64,28 +64,37 @@ module Bard
       # Support both new Target (with server attribute) and old Server architecture
       ssh_server = on.respond_to?(:server) ? on.server : on
 
+      # Get options from Target first (for deprecated separate method calls), fall back to SSHServer
+      env_value = on.respond_to?(:env) ? on.env : nil
+      env_value ||= ssh_server.env if ssh_server.respond_to?(:env)
+
+      ssh_key = on.respond_to?(:ssh_key) ? on.ssh_key : nil
+      ssh_key ||= ssh_server.ssh_key if ssh_server.respond_to?(:ssh_key)
+
+      gateway = on.respond_to?(:gateway) ? on.gateway : nil
+      gateway ||= ssh_server.gateway if ssh_server.respond_to?(:gateway)
+
       cmd = command
-      if ssh_server.env
-        cmd = "#{ssh_server.env} #{command}"
-      end
+      cmd = "#{env_value} #{command}" if env_value
+
       unless home
         path = on.respond_to?(:path) ? on.path : ssh_server.path
         cmd = "cd #{path} && #{cmd}" if path
       end
 
       ssh_opts = ["-tt", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null"]
-      ssh_opts << "-i #{ssh_server.ssh_key}" if ssh_server.ssh_key
+      ssh_opts << "-i #{ssh_key}" if ssh_key
 
       # Handle new SSHServer vs old Server architecture
       if ssh_server.respond_to?(:host)
         # New SSHServer - has separate host/port/user
         ssh_opts << "-p #{ssh_server.port}" if ssh_server.port && ssh_server.port != "22"
-        ssh_opts << "-o ProxyJump=#{ssh_server.gateway}" if ssh_server.gateway
+        ssh_opts << "-o ProxyJump=#{gateway}" if gateway
         ssh_target = "#{ssh_server.user}@#{ssh_server.host}"
       else
         # Old Server - uses URI-based ssh_uri
         ssh_target = ssh_server.ssh_uri
-        if ssh_server.gateway
+        if gateway
           gateway_uri = ssh_server.ssh_uri(:gateway)
           ssh_opts << "-o ProxyJump=#{gateway_uri}"
         end

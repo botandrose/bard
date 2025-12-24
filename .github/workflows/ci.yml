@@ -34,5 +34,10 @@ jobs:
           done
           echo "DOCKER_HOST=tcp://127.0.0.1:8080" >> $GITHUB_ENV
 
+      - name: Build test container image
+        run: |
+          sudo podman pull ubuntu:22.04
+          sudo podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
+
       - name: Run tests
         run: bundle exec rake

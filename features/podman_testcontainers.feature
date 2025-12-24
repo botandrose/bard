@@ -1,16 +1,16 @@
-@podman
-Feature: bard run against a podman TestContainers host
+Feature: bard core functionality smoke tests
+  These are end-to-end smoke tests that verify the basic happy paths work
+  against a real SSH server running in a container.
+
   Background:
-    Given a podman testcontainer is ready for bard
+    Given a test server is running
 
-  Scenario: Running ls via bard run
-    Given a remote file "test-file.txt" exists in the test container
-    When I run bard "ls" against the test container
-    Then the bard command should succeed
-    And the bard output should include "test-file.txt"
+  Scenario: bard run executes a command on the remote server
+    When I run: bard run "echo hello"
+    Then it should succeed
+    And the output should contain "hello"
 
-  Scenario: Running commands in isolated containers
-    Given a remote file "another-file.txt" containing "content" exists in the test container
-    When I run bard "cat another-file.txt" against the test container
-    Then the bard command should succeed
-    And the bard output should include "content"
+  Scenario: bard run operates in the configured path
+    When I run: bard run "pwd"
+    Then it should succeed
+    And the output should contain "testproject"
