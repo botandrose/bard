@@ -3,10 +3,11 @@ FROM ubuntu:22.04
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install SSH server and basic tools
+# Install SSH server, git, and basic tools
 RUN apt-get update && \
     apt-get install -y \
     openssh-server \
+    git \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 

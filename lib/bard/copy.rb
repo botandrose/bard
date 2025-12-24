@@ -29,10 +29,16 @@ module Bard
 
       ssh_key = ssh_server.ssh_key ? "-i #{ssh_server.ssh_key}" : ""
 
+      ssh_opts = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+      # scp uses -P for port (uppercase, unlike ssh's -p)
+      port = ssh_server.port
+      port_opt = port && port.to_s != "22" ? "-P #{port}" : ""
+
       from_and_to = [path, target_or_server.scp_uri(path)]
       from_and_to.reverse! if direction == :from
 
-      command = ["scp", gateway, ssh_key, *from_and_to].join(" ")
+      command = ["scp", ssh_opts, gateway, ssh_key, port_opt, *from_and_to].reject(&:empty?).join(" ")
       Bard::Command.run! command, verbose: verbose
     end
 

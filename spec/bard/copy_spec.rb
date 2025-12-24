@@ -2,17 +2,17 @@ require "spec_helper"
 require "bard/copy"
 
 describe Bard::Copy do
-  let(:production) { double("production", key: :production, scp_uri: "user@example.com:/path/to/file", rsync_uri: "user@example.com:/path/to/", gateway: nil, ssh_key: nil, path: "/path/to") }
+  let(:production) { double("production", key: :production, scp_uri: "user@example.com:/path/to/file", rsync_uri: "user@example.com:/path/to/", gateway: nil, ssh_key: nil, port: "22", path: "/path/to") }
   let(:local) { double("local", key: :local) }
 
   context ".file" do
     it "should copy a file from a remote server to the local machine" do
-      expect(Bard::Command).to receive(:run!).with("scp   user@example.com:/path/to/file path/to/file", verbose: false)
+      expect(Bard::Command).to receive(:run!).with("scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null user@example.com:/path/to/file path/to/file", verbose: false)
       Bard::Copy.file "path/to/file", from: production, to: local
     end
 
     it "should copy a file from the local machine to a remote server" do
-      expect(Bard::Command).to receive(:run!).with("scp   path/to/file user@example.com:/path/to/file", verbose: false)
+      expect(Bard::Command).to receive(:run!).with("scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null path/to/file user@example.com:/path/to/file", verbose: false)
       Bard::Copy.file "path/to/file", from: local, to: production
     end
   end

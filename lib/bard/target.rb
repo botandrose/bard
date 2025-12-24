@@ -235,22 +235,23 @@ module Bard
     # File transfer
     def copy_file(path, to:, verbose: false)
       require_capability!(:ssh)
-      to.require_capability!(:ssh)
+      to.require_capability!(:ssh) if to.respond_to?(:require_capability!)
       Copy.file(path, from: self, to: to, verbose: verbose)
     end
 
     def copy_dir(path, to:, verbose: false)
       require_capability!(:ssh)
-      to.require_capability!(:ssh)
+      to.require_capability!(:ssh) if to.respond_to?(:require_capability!)
       Copy.dir(path, from: self, to: to, verbose: verbose)
     end
 
     # URI methods for compatibility
     def scp_uri(file_path = nil)
-      uri = URI("scp://#{ssh_uri}")
-      uri.path = "/#{path}"
-      uri.path += "/#{file_path}" if file_path
-      uri
+      # Use traditional scp format: user@host:path (relative to home)
+      # Port is NOT included here - it must be passed via -P flag to scp
+      full_path = path
+      full_path += "/#{file_path}" if file_path
+      "#{server.user}@#{server.host}:#{full_path}"
     end
 
     def rsync_uri(file_path = nil)
