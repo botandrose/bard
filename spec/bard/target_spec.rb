@@ -72,7 +72,7 @@ describe Bard::Target do
       end
 
       it "auto-configures ping URL from hostname" do
-        expect(target.ping_urls).to include("example.com")
+        expect(target.ping_urls).to include("https://example.com")
       end
     end
 

@@ -68,7 +68,7 @@ module Bard
 
         # Auto-configure ping from hostname
         hostname = @server.hostname
-        ping(hostname) if hostname
+        ping("https://#{hostname}") if hostname
       end
     end
 
