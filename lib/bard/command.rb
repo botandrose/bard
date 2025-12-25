@@ -82,7 +82,7 @@ module Bard
         cmd = "cd #{path} && #{cmd}" if path
       end
 
-      ssh_opts = ["-tt", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null"]
+      ssh_opts = ["-tt", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=ERROR"]
       ssh_opts << "-i #{ssh_key}" if ssh_key
 
       # Handle new SSHServer vs old Server architecture

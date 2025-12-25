@@ -29,7 +29,7 @@ module Bard
 
       ssh_key = ssh_server.ssh_key ? "-i #{ssh_server.ssh_key}" : ""
 
-      ssh_opts = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+      ssh_opts = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 
       # scp uses -P for port (uppercase, unlike ssh's -p)
       port = ssh_server.port
@@ -119,7 +119,7 @@ module Bard
       from_str = "-p#{from_uri.port || 22} #{from_uri.user}@#{from_uri.host}"
       to_str = to.rsync_uri(path).sub(%r(/[^/]+$), '/')
 
-      command = %(ssh -A #{from_str} 'rsync -e \"ssh -A -p#{to_uri.port || 22} -o StrictHostKeyChecking=no\" --delete --info=progress2 -az #{from.path}/#{path} #{to_str}')
+      command = %(ssh -A #{from_str} 'rsync -e \"ssh -A -p#{to_uri.port || 22} -o StrictHostKeyChecking=no -o LogLevel=ERROR\" --delete --info=progress2 -az #{from.path}/#{path} #{to_str}')
       Bard::Command.run! command, verbose: verbose
     end
   end
