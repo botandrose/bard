@@ -117,8 +117,8 @@ module Bard
     # Ping configuration
     def ping(*urls)
       if urls.empty?
-        # Getter
-        @ping_urls
+        # Getter - normalize URLs like Server does
+        @ping_urls.map { |url| normalize_ping(url) }
       elsif urls.first == false
         # Disable ping
         @ping_urls = []
@@ -277,6 +277,15 @@ module Bard
           t.send(key, value)
         end
       end
+    end
+
+    private
+
+    def normalize_ping(value)
+      return nil if value == false || value.nil?
+      normalized = value.to_s
+      normalized = "https://#{normalized}" unless normalized.start_with?("http")
+      normalized
     end
   end
 end
