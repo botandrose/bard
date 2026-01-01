@@ -101,6 +101,10 @@ module Bard
       URI("ssh://#{value}")
     end
 
+    def port
+      ssh_uri.port || 22
+    end
+
     def scp_uri file_path=nil
       ssh_uri.dup.tap do |uri|
         uri.scheme = "scp"
