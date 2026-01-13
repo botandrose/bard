@@ -35,7 +35,7 @@ module Bard
       port = ssh_server.port
       port_opt = port && port.to_s != "22" ? "-P #{port}" : ""
 
-      from_and_to = [path, target_or_server.scp_uri(path)]
+      from_and_to = [path, target_or_server.scp_uri(path).to_s]
       from_and_to.reverse! if direction == :from
 
       command = ["scp", ssh_opts, gateway, ssh_key, port_opt, *from_and_to].reject(&:empty?).join(" ")
