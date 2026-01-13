@@ -37,7 +37,11 @@ describe Bard::Target do
       end
 
       it "parses SSH URI" do
-        expect(target.ssh_uri).to eq("deploy@example.com:22")
+        expect(target.ssh_uri).to be_a(URI::Generic)
+        expect(target.ssh_uri.scheme).to eq("ssh")
+        expect(target.ssh_uri.user).to eq("deploy")
+        expect(target.ssh_uri.host).to eq("example.com")
+        expect(target.ssh_uri.port).to eq(22)
       end
     end
 

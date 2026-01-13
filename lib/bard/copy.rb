@@ -65,18 +65,7 @@ module Bard
       # Support both new Target (with server attribute) and old Server
       ssh_server = target_or_server.respond_to?(:server) ? target_or_server.server : target_or_server
 
-      # Get ssh_uri - it might be a URI object (old Server), string (new SSHServer), or mock
-      ssh_uri_value = ssh_server.respond_to?(:ssh_uri) ? ssh_server.ssh_uri : nil
-      if ssh_uri_value.respond_to?(:port)
-        # Already a URI-like object (old Server or mock)
-        ssh_uri = ssh_uri_value
-      elsif ssh_uri_value.is_a?(String)
-        # String from new SSHServer
-        ssh_uri = URI("ssh://#{ssh_uri_value}")
-      else
-        # Fallback
-        ssh_uri = ssh_uri_value
-      end
+      ssh_uri = ssh_server.ssh_uri
 
       gateway = ssh_server.gateway ? "-oProxyCommand=\"ssh #{ssh_server.gateway} -W %h:%p\"" : ""
 
@@ -97,24 +86,8 @@ module Bard
 
       raise NotImplementedError if from_server.gateway || to_server.gateway || from_server.ssh_key || to_server.ssh_key
 
-      # Get ssh_uri - it might be a URI object (old Server), string (new SSHServer), or mock
-      from_uri_value = from_server.respond_to?(:ssh_uri) ? from_server.ssh_uri : nil
-      if from_uri_value.respond_to?(:port)
-        from_uri = from_uri_value
-      elsif from_uri_value.is_a?(String)
-        from_uri = URI("ssh://#{from_uri_value}")
-      else
-        from_uri = from_uri_value
-      end
-
-      to_uri_value = to_server.respond_to?(:ssh_uri) ? to_server.ssh_uri : nil
-      if to_uri_value.respond_to?(:port)
-        to_uri = to_uri_value
-      elsif to_uri_value.is_a?(String)
-        to_uri = URI("ssh://#{to_uri_value}")
-      else
-        to_uri = to_uri_value
-      end
+      from_uri = from_server.ssh_uri
+      to_uri = to_server.ssh_uri
 
       from_str = "-p#{from_uri.port || 22} #{from_uri.user}@#{from_uri.host}"
       to_str = to.rsync_uri(path).sub(%r(/[^/]+$), '/')

@@ -247,15 +247,13 @@ module Bard
 
     # URI methods for compatibility
     def scp_uri(file_path = nil)
-      # Use traditional scp format: user@host:path (relative to home)
-      # Port is NOT included here - it must be passed via -P flag to scp
-      full_path = path
+      full_path = "/#{path}"
       full_path += "/#{file_path}" if file_path
-      "#{server.user}@#{server.host}:#{full_path}"
+      URI::Generic.build(scheme: "scp", userinfo: server.user, host: server.host, port: server.port.to_i, path: full_path)
     end
 
     def rsync_uri(file_path = nil)
-      uri = URI("ssh://#{ssh_uri}")
+      uri = ssh_uri
       str = "#{uri.user}@#{uri.host}"
       str += ":#{path}"
       str += "/#{file_path}" if file_path

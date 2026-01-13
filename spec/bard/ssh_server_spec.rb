@@ -40,14 +40,18 @@ describe Bard::SSHServer do
   end
 
   describe "#ssh_uri" do
-    it "returns the SSH connection string" do
+    it "returns a URI object" do
       server = described_class.new("deploy@example.com:22")
-      expect(server.ssh_uri).to eq("deploy@example.com:22")
+      expect(server.ssh_uri).to be_a(URI::Generic)
+      expect(server.ssh_uri.scheme).to eq("ssh")
+      expect(server.ssh_uri.user).to eq("deploy")
+      expect(server.ssh_uri.host).to eq("example.com")
+      expect(server.ssh_uri.port).to eq(22)
     end
 
     it "includes port if non-standard" do
       server = described_class.new("deploy@example.com:2222")
-      expect(server.ssh_uri).to eq("deploy@example.com:2222")
+      expect(server.ssh_uri.port).to eq(2222)
     end
   end
 

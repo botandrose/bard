@@ -23,7 +23,7 @@ module Bard
     end
 
     def ssh_uri
-      "#{user}@#{host}:#{port}"
+      URI("ssh://#{user}@#{host}:#{port}")
     end
 
     def hostname
