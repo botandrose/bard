@@ -184,7 +184,8 @@ SCRIPT
 
   def run_bard(command)
     Dir.chdir(@test_dir) do
-      @stdout, @status = Open3.capture2e("bard #{command}")
+      bard_coverage = File.join(ROOT, "features/support/bard-coverage")
+      @stdout, @status = Open3.capture2e("#{bard_coverage} #{command}")
     end
   end
 

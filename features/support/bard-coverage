@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+root = File.expand_path("../../..", __FILE__)
+
+require "simplecov"
+SimpleCov.root(root)
+SimpleCov.start do
+  command_name "Cucumber (subprocess #{$$})"
+  track_files "lib/**/*.rb"
+  add_filter "spec/"
+  add_filter "features/"
+  coverage_dir "#{root}/coverage"
+end
+
+$LOAD_PATH.unshift("#{root}/lib")
+require "bard/cli"
+Bard::CLI.start ARGV

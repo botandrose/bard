@@ -1,8 +1,17 @@
+require "simplecov"
+SimpleCov.start do
+  command_name "Cucumber"
+  track_files "lib/**/*.rb"
+  add_filter "spec/"
+  add_filter "features/"
+end
+
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../../lib')
+require "bard"
 require 'rspec/expectations'
 require 'fileutils'
 
-ENV["PATH"] = "#{File.dirname(File.expand_path(__FILE__))}/../../bin:#{ENV['PATH']}"
+ENV["PATH"] = "#{File.dirname(File.expand_path(__FILE__))}:#{ENV['PATH']}"
 ENV["GIT_DIR"] = nil
 ENV["GIT_WORK_TREE"] = nil
 ENV["GIT_INDEX_FILE"] = nil
