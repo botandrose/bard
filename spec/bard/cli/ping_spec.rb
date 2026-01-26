@@ -4,7 +4,7 @@ require "bard/cli/ping"
 require "thor"
 
 class TestPingCLI < Thor
-  include Bard::CLI::Ping
+  Bard::CLI::Ping.setup(self)
 
   attr_reader :config
 
@@ -21,8 +21,8 @@ describe Bard::CLI::Ping do
 
   before do
     allow(cli).to receive(:config).and_return(config)
-    allow(cli).to receive(:puts)
-    allow(cli).to receive(:exit)
+    allow_any_instance_of(Bard::CLI::Ping).to receive(:puts)
+    allow_any_instance_of(Bard::CLI::Ping).to receive(:exit)
   end
 
   describe "#ping" do
@@ -39,7 +39,7 @@ describe Bard::CLI::Ping do
     it "should print down URLs when they exist" do
       down_urls = ["https://down.example.com"]
       allow(Bard::Ping).to receive(:call).and_return(down_urls)
-      expect(cli).to receive(:puts).with("https://down.example.com is down!")
+      expect_any_instance_of(Bard::CLI::Ping).to receive(:puts).with("https://down.example.com is down!")
 
       cli.ping
     end

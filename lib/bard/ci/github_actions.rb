@@ -5,9 +5,8 @@ require "bard/ci/runner"
 module Bard
   class CI
     class GithubActions < Runner
-
       def exists?
-        true
+        File.exist?(".github/workflows/ci.yml")
       end
 
       def console

@@ -1,29 +1,18 @@
 require "forwardable"
+require "bard/ci/runner"
 
 module Bard
   class CI
-    def initialize project_name, branch, local: false
+    def initialize(project_name, branch, runner_name: nil)
       @project_name = project_name
       @branch = branch
-      @local = !!local
+      @runner_name = runner_name
     end
 
     extend Forwardable
     delegate [:run, :resume, :exists?, :console, :status] => :runner
 
     private
-
-    def local?
-      @local
-    end
-
-    def github_actions?
-      File.exist?(".github/workflows/ci.yml")
-    end
-
-    def jenkins?
-      !local? && !github_actions?
-    end
 
     def runner
       @runner ||= choose_runner_class.new(@project_name, @branch, sha)
@@ -34,15 +23,14 @@ module Bard
     end
 
     def choose_runner_class
-      if local?
-        require_relative "./ci/local"
-        Local
-      elsif github_actions?
-        require_relative "./ci/github_actions"
-        GithubActions
-      elsif jenkins?
-        require_relative "./ci/jenkins"
-        Jenkins
+      if @runner_name
+        runner_class = Runner[@runner_name]
+        raise "Unknown CI runner: #{@runner_name}" unless runner_class
+        runner_class
+      else
+        runner_class = Runner.default
+        raise "No CI runner available" unless runner_class
+        runner_class
       end
     end
   end

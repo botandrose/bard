@@ -3,6 +3,7 @@
 require "thor"
 require "bard/config"
 require "bard/command"
+require "bard/plugin"
 require "term/ansicolor"
 
 module Bard
@@ -19,24 +20,18 @@ module Bard
       master_key: "MasterKey",
       setup: "Setup",
       run: "Run",
-      open: "Open",
       ssh: "SSH",
-      install: "Install",
-      ping: "Ping",
-      hurt: "Hurt",
-      vim: "Vim",
     }.each do |command, klass|
       require "bard/cli/#{command}"
       include const_get(klass)
     end
 
-    {
-      provision: "Provision",
-      new: "New",
-    }.each do |command, klass|
-      require "bard/cli/#{command}"
-      const_get(klass).setup(self)
-    end
+    Plugin.load_all!
+    Plugin.all.each { |plugin| plugin.apply_to_cli(self) }
+
+    # Load core CI runners AFTER plugins so GithubActions is the default (last registered wins)
+    require "bard/ci/local"
+    require "bard/ci/github_actions"
 
     def self.exit_on_failure? = true
 

@@ -131,19 +131,7 @@ module Bard
       return nil if @ci_system == false
 
       require "bard/ci"
-
-      # Use the existing CI class which handles auto-detection
-      case @ci_system
-      when :local
-        CI.new(project_name, branch, local: true)
-      when :github_actions, :jenkins, nil
-        # CI class auto-detects between github_actions and jenkins
-        CI.new(project_name, branch)
-      when false
-        nil
-      else
-        CI.new(project_name, branch)
-      end
+      CI.new(project_name, branch, runner_name: @ci_system)
     end
 
     private

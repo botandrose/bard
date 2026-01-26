@@ -2,6 +2,7 @@ require "spec_helper"
 require "bard/cli"
 require "bard/cli/ci"
 require "thor"
+require "ostruct"
 
 class TestCICLI < Thor
   include Bard::CLI::CI
@@ -15,6 +16,10 @@ class TestCICLI < Thor
 
   def project_name
     "test_project"
+  end
+
+  def config
+    @config ||= OpenStruct.new(ci: nil)
   end
 end
 
@@ -116,7 +121,7 @@ describe Bard::CLI::CI do
         allow(ci_runner).to receive(:exists?).and_return(true)
         allow(ci_runner).to receive(:run).and_return(true)
 
-        expect(Bard::CI).to receive(:new).with("test_project", "develop", local: nil)
+        expect(Bard::CI).to receive(:new).with("test_project", "develop", runner_name: nil)
         expect(cli).to receive(:puts).with("Continuous integration: starting build on develop...")
 
         cli.ci("develop")
@@ -124,12 +129,12 @@ describe Bard::CLI::CI do
     end
 
     context "with local-ci option" do
-      it "passes local option to CI runner" do
+      it "passes local runner_name to CI" do
         allow(cli).to receive(:options).and_return({ "local-ci" => true })
         allow(ci_runner).to receive(:exists?).and_return(true)
         allow(ci_runner).to receive(:run).and_return(true)
 
-        expect(Bard::CI).to receive(:new).with("test_project", "feature-branch", local: true)
+        expect(Bard::CI).to receive(:new).with("test_project", "feature-branch", runner_name: :local)
 
         cli.ci
       end

@@ -463,6 +463,10 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture documentation.
 
 See [CUSTOM_STRATEGIES.md](CUSTOM_STRATEGIES.md) for a step-by-step guide to creating custom deployment strategies.
 
+## Plugin Development
+
+See [PLUGINS.md](PLUGINS.md) for a guide to creating plugins.
+
 ## Development
 
 ```bash

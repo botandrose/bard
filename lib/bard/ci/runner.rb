@@ -6,6 +6,37 @@ module Bard
     class Runner < Struct.new(:project_name, :branch, :sha)
       include Retryable
 
+      @runners = {}
+
+      class << self
+        attr_reader :runners
+
+        def inherited(subclass)
+          super
+          name = extract_runner_name(subclass)
+          runners[name] = subclass if name
+        end
+
+        def [](name)
+          runners[name.to_sym]
+        end
+
+        # Returns the last registered runner (most recently loaded wins)
+        def default
+          runners.values.last
+        end
+
+        private
+
+        def extract_runner_name(klass)
+          klass.name&.split("::")&.last
+            &.gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+            &.gsub(/([a-z\d])([A-Z])/, '\1_\2')
+            &.downcase
+            &.to_sym
+        end
+      end
+
       def run
         start
         @start_time = Time.new.to_i

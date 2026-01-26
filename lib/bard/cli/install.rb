@@ -1,16 +1,11 @@
-module Bard::CLI::Install
-  def self.included mod
-    mod.class_eval do
+require "bard/cli/command"
 
-      desc "install", "copies bin/setup and bin/ci scripts into current project."
-      def install
-        install_files_path = File.expand_path(File.join(__dir__, "../../../install_files"))
+class Bard::CLI::Install < Bard::CLI::Command
+  desc "install", "copies bin/setup and bin/ci scripts into current project."
+  def install
+    install_files_path = File.expand_path(File.join(__dir__, "../../../install_files"))
 
-        system "cp -R #{install_files_path}/* bin/"
-        system "cp -R #{install_files_path}/.github ./"
-      end
-
-    end
+    system "cp -R #{install_files_path}/* bin/"
+    system "cp -R #{install_files_path}/.github ./"
   end
 end
-

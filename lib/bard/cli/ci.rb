@@ -10,7 +10,8 @@ module Bard::CLI::CI
       option :resume, type: :boolean
       desc "ci [branch=HEAD]", "runs ci against BRANCH"
       def ci branch=Bard::Git.current_branch
-        ci = Bard::CI.new(project_name, branch, local: options["local-ci"])
+        runner_name = options["local-ci"] ? :local : config.ci
+        ci = Bard::CI.new(project_name, branch, runner_name: runner_name)
         if ci.exists?
           return puts ci.status if options["status"]
 

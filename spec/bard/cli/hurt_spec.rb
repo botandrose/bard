@@ -4,7 +4,7 @@ require "bard/cli/hurt"
 require "thor"
 
 class TestHurtCLI < Thor
-  include Bard::CLI::Hurt
+  Bard::CLI::Hurt.setup(self)
 end
 
 describe Bard::CLI::Hurt do

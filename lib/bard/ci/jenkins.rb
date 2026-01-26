@@ -4,7 +4,6 @@ require "bard/ci/runner"
 module Bard
   class CI
     class Jenkins < Runner
-
       def exists?
         `curl -s -I #{ci_host}/` =~ /\b200 OK\b/
       end

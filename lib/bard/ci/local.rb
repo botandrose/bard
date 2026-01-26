@@ -4,7 +4,6 @@ require "bard/ci/runner"
 module Bard
   class CI
     class Local < Runner
-
       def exists?
         true
       end
