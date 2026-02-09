@@ -1,4 +1,4 @@
-require "open3"
+require "tempfile"
 require "bard/ci/runner"
 
 module Bard
@@ -15,7 +15,8 @@ module Bard
       protected
 
       def start
-        @stdin, @stdout_and_stderr, @wait_thread = Open3.popen2e("CLEAN=true bin/rake ci")
+        @output_file = Tempfile.new("bard-ci")
+        @wait_thread = Process.detach(spawn("CLEAN=true bin/rake ci", [:out, :err] => @output_file))
       end
 
       def building?
@@ -46,9 +47,9 @@ module Bard
           sleep(2)
         end
 
-        @stdin.close
-        @console = @stdout_and_stderr.read
-        @stdout_and_stderr.close
+        @output_file.rewind
+        @console = @output_file.read
+        @output_file.close!
       end
     end
   end
