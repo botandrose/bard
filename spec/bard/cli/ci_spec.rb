@@ -140,6 +140,30 @@ describe Bard::CLI::CI do
       end
     end
 
+    context "with ci option" do
+      it "passes specified runner_name to CI" do
+        allow(cli).to receive(:options).and_return({ "ci" => "jenkins" })
+        allow(ci_runner).to receive(:exists?).and_return(true)
+        allow(ci_runner).to receive(:run).and_return(true)
+
+        expect(Bard::CI).to receive(:new).with("test_project", "feature-branch", runner_name: :jenkins)
+
+        cli.ci
+      end
+    end
+
+    context "with both local-ci and ci options" do
+      it "local-ci takes precedence" do
+        allow(cli).to receive(:options).and_return({ "local-ci" => true, "ci" => "jenkins" })
+        allow(ci_runner).to receive(:exists?).and_return(true)
+        allow(ci_runner).to receive(:run).and_return(true)
+
+        expect(Bard::CI).to receive(:new).with("test_project", "feature-branch", runner_name: :local)
+
+        cli.ci
+      end
+    end
+
     context "with resume option" do
       it "calls resume instead of run" do
         allow(cli).to receive(:options).and_return({ "resume" => true })

@@ -9,6 +9,7 @@ module Bard::CLI::Deploy
 
       option :"skip-ci", type: :boolean
       option :"local-ci", type: :boolean
+      option :ci, type: :string
       option :clone, type: :boolean
       option :target, type: :string, default: "production"
       desc "deploy [BRANCH]", "deploys branch to target (default: current branch to production)"
@@ -19,7 +20,7 @@ module Bard::CLI::Deploy
           if !Bard::Git.up_to_date_with_remote?(branch)
             run! "git push origin #{branch}:#{branch}"
           end
-          invoke :ci, [branch], options.slice("local-ci") unless options["skip-ci"]
+          invoke :ci, [branch], options.slice("local-ci", "ci") unless options["skip-ci"]
 
         else
           run! "git fetch origin"
@@ -54,7 +55,7 @@ module Bard::CLI::Deploy
 
           run! "git push -f origin #{branch}:#{branch}"
 
-          invoke :ci, [branch], options.slice("local-ci") unless options["skip-ci"]
+          invoke :ci, [branch], options.slice("local-ci", "ci") unless options["skip-ci"]
 
           run! "git push origin #{branch}:master"
           if Bard::Git.current_branch != "master"

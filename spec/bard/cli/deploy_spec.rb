@@ -200,5 +200,15 @@ describe Bard::CLI::Deploy do
         cli.deploy
       end
     end
+
+    context "with ci option" do
+      it "passes ci option to CI invocation" do
+        allow(cli).to receive(:options).and_return({ "ci" => "jenkins", target: "production" })
+
+        expect(cli).to receive(:invoke).with(:ci, ["feature-branch"], { "ci" => "jenkins" })
+
+        cli.deploy
+      end
+    end
   end
 end

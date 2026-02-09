@@ -21,6 +21,27 @@ Feature: bard ci
     Then the output should contain "Test failed: expected 1 but got 2"
     And the output should contain "Automated tests failed!"
 
+  Scenario: --ci option runs specified CI runner
+    Given a local CI script that passes
+    When I run: bard ci --ci=local
+    Then the output should contain "Continuous integration: starting build"
+    And the output should contain "Continuous integration: success!"
+
+  Scenario: --ci option reports failure from specified runner
+    Given a local CI script that fails with "Custom runner failed"
+    When I run expecting failure: bard ci --ci=local
+    Then the output should contain "Custom runner failed"
+    And the output should contain "Automated tests failed!"
+
+  Scenario: deploy passes --ci option to CI
+    Given a local CI script that passes
+    And I create a file "ci-option-test.txt" with content "ci option test"
+    And I commit the changes with message "Add CI option test file"
+    When I run: bard deploy --ci=local
+    Then the output should contain "Continuous integration: starting build"
+    And the output should contain "Continuous integration: success!"
+    And the output should contain "Deploy Succeeded"
+
   Scenario: deploy runs CI before deploying
     Given a local CI script that passes
     And I create a file "ci-test.txt" with content "ci test"

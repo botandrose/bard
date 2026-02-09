@@ -6,11 +6,18 @@ module Bard::CLI::CI
     mod.class_eval do
 
       option :"local-ci", type: :boolean
+      option :ci, type: :string
       option :status, type: :boolean
       option :resume, type: :boolean
       desc "ci [branch=HEAD]", "runs ci against BRANCH"
       def ci branch=Bard::Git.current_branch
-        runner_name = options["local-ci"] ? :local : config.ci
+        runner_name = if options["local-ci"]
+          :local
+        elsif options["ci"]
+          options["ci"].to_sym
+        else
+          config.ci
+        end
         ci = Bard::CI.new(project_name, branch, runner_name: runner_name)
         if ci.exists?
           return puts ci.status if options["status"]
