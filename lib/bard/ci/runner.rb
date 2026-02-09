@@ -80,9 +80,6 @@ module Bard
         @state ||= State.new(project_name)
       end
 
-      def create!
-      end
-
       # Abstract methods - override in subclasses
       def start
         raise NotImplementedError, "#{self.class}#start not implemented"

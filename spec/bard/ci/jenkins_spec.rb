@@ -59,27 +59,35 @@ RSpec.describe Bard::CI::Jenkins do
     end
   end
 
-  describe "#create!" do
-    it "creates a Jenkins job using the git remote URL" do
+  describe "#exists?" do
+    it "returns truthy when the job exists" do
+      allow(jenkins).to receive(:`).with(/curl -s -I/).and_return("HTTP/1.1 200 OK\r\n")
+
+      expect(jenkins.exists?).to be_truthy
+    end
+
+    it "auto-creates the job when it does not exist" do
+      allow(jenkins).to receive(:`).with(/curl -s -I/).and_return("HTTP/1.1 404 Not Found\r\n")
       allow(jenkins).to receive(:`).with("git remote get-url origin").and_return("git@gitlab.com:botandrose/test-project.git\n")
       allow(File).to receive(:exist?).with("config/master.key").and_return(false)
       expect(jenkins).to receive(:`).with(/curl -s -X POST.*createItem\?name=test-project.*Content-Type: application\/xml/)
 
-      jenkins.create!
+      jenkins.exists?
     end
 
     it "includes a master key build step when config/master.key exists" do
+      allow(jenkins).to receive(:`).with(/curl -s -I/).and_return("HTTP/1.1 404 Not Found\r\n")
       allow(jenkins).to receive(:`).with("git remote get-url origin").and_return("git@gitlab.com:botandrose/test-project.git\n")
       allow(File).to receive(:exist?).with("config/master.key").and_return(true)
       allow(File).to receive(:read).with("config/master.key").and_return("abc123secret")
 
       config_xml = nil
-      allow(jenkins).to receive(:`) do |cmd|
+      allow(jenkins).to receive(:`).with(/createItem/) do |cmd|
         config_xml = cmd
         ""
       end
 
-      jenkins.create!
+      jenkins.exists?
       expect(config_xml).to include("abc123secret")
       expect(config_xml).to include("config/master.key")
     end

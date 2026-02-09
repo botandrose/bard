@@ -20,8 +20,9 @@ module Bard::CLI::CI
         end
         ci = Bard::CI.new(project_name, branch, runner_name: runner_name)
         unless ci.exists?
-          puts "No CI found for #{project_name}, creating..."
-          ci.create!
+          puts red("No CI found for #{project_name}!")
+          puts "Re-run with --skip-ci to bypass CI, if you absolutely must, and know what you're doing."
+          exit 1
         end
 
         return puts ci.status if options["status"]

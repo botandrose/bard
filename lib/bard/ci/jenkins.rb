@@ -6,10 +6,10 @@ module Bard
   class CI
     class Jenkins < Runner
       def exists?
-        `curl -s -I #{ci_host}/` =~ /\b200 OK\b/
+        `curl -s -I #{ci_host}/` =~ /\b200 OK\b/ or create!
       end
 
-      def create!
+      private def create!
         git_url = `git remote get-url origin`.strip
         config = JOB_CONFIG_XML.sub("GIT_URL", git_url)
         if File.exist?("config/master.key")

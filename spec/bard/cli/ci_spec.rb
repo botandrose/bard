@@ -103,16 +103,12 @@ describe Bard::CLI::CI do
     end
 
     context "when CI doesn't exist" do
-      it "creates the CI job and continues" do
+      it "shows error message and exits" do
         allow(cli).to receive(:options).and_return({})
         allow(ci_runner).to receive(:exists?).and_return(false)
-        allow(ci_runner).to receive(:create!)
-        allow(ci_runner).to receive(:run).and_return(true)
+        allow(cli).to receive(:exit).with(1).and_raise(SystemExit)
 
-        expect(ci_runner).to receive(:create!)
-        expect(cli).to receive(:puts).with("No CI found for test_project, creating...")
-
-        cli.ci
+        expect { cli.ci }.to raise_error(SystemExit)
       end
     end
 
