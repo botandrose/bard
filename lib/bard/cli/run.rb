@@ -10,10 +10,11 @@ module Bard::CLI::Run
       $VERBOSE = original_verbose
 
       option :target, type: :string, default: "production"
+      option :home, type: :boolean
       desc "run <command>", "run the given command on the specified target"
       def run *args
         target = config[options[:target].to_sym]
-        target.run! *args.join(" "), verbose: true
+        target.run! *args.join(" "), verbose: true, home: options[:home]
       rescue Bard::Command::Error => e
         puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
         exit 1

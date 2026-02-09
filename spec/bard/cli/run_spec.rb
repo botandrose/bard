@@ -34,7 +34,7 @@ describe Bard::CLI::Run do
     end
 
     it "should run command on production server" do
-      expect(server).to receive(:run!).with("ls -la", verbose: true)
+      expect(server).to receive(:run!).with("ls -la", verbose: true, home: nil)
 
       cli.run("ls", "-la")
     end
@@ -44,7 +44,15 @@ describe Bard::CLI::Run do
       allow(cli).to receive(:config).and_return(config.merge(staging: staging_server))
       allow(cli).to receive(:options).and_return({ target: "staging" })
 
-      expect(staging_server).to receive(:run!).with("ls -la", verbose: true)
+      expect(staging_server).to receive(:run!).with("ls -la", verbose: true, home: nil)
+
+      cli.run("ls", "-la")
+    end
+
+    it "should pass home option to target" do
+      allow(cli).to receive(:options).and_return({ target: "production", home: true })
+
+      expect(server).to receive(:run!).with("ls -la", verbose: true, home: true)
 
       cli.run("ls", "-la")
     end
