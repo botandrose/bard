@@ -9,6 +9,12 @@ module Bard
         `curl -s -I #{ci_host}/` =~ /\b200 OK\b/
       end
 
+      def create!
+        git_url = `git remote get-url origin`.strip
+        config = JOB_CONFIG_XML.sub("GIT_URL", git_url)
+        `curl -s -X POST "http://#{auth}@ci.botandrose.com/createItem?name=#{project_name}" -H "Content-Type: application/xml" -d '#{config}'`
+      end
+
       def console
         raw = `curl -s #{ci_host}/lastBuild/console`
         raw[%r{<pre.*?>(.+)</pre>}m, 1]
@@ -86,7 +92,9 @@ module Bard
           command = "curl -s -g '#{ci_host}/api/json?depth=1&tree=builds[queueId,number]'"
           output = `#{command}`
           raise "Blank response from CI" if output.empty?
-          JSON.parse(output)["builds"][0]["queueId"] == @queueId
+          builds = JSON.parse(output)["builds"]
+          raise "Build not found in builds list" if builds.empty?
+          builds.first["queueId"] == @queueId
         end
       end
 
@@ -101,6 +109,54 @@ module Bard
           end
         end
       end
+      JOB_CONFIG_XML = <<~XML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project>
+          <actions/>
+          <description></description>
+          <keepDependencies>false</keepDependencies>
+          <properties>
+            <hudson.model.ParametersDefinitionProperty>
+              <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                  <name>GIT_REF</name>
+                  <description></description>
+                  <defaultValue>master</defaultValue>
+                </hudson.model.StringParameterDefinition>
+              </parameterDefinitions>
+            </hudson.model.ParametersDefinitionProperty>
+          </properties>
+          <scm class="hudson.plugins.git.GitSCM" plugin="git@3.3.0">
+            <configVersion>2</configVersion>
+            <userRemoteConfigs>
+              <hudson.plugins.git.UserRemoteConfig>
+                <url>GIT_URL</url>
+              </hudson.plugins.git.UserRemoteConfig>
+            </userRemoteConfigs>
+            <branches>
+              <hudson.plugins.git.BranchSpec>
+                <name>$GIT_REF</name>
+              </hudson.plugins.git.BranchSpec>
+            </branches>
+            <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+            <submoduleCfg class="list"/>
+            <extensions/>
+          </scm>
+          <canRoam>true</canRoam>
+          <disabled>false</disabled>
+          <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+          <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+          <triggers/>
+          <concurrentBuild>false</concurrentBuild>
+          <builders>
+            <hudson.tasks.Shell>
+              <command>bash -l -c &quot;bin/setup &amp;&amp; bin/ci&quot;</command>
+            </hudson.tasks.Shell>
+          </builders>
+          <publishers/>
+          <buildWrappers/>
+        </project>
+      XML
     end
   end
 end

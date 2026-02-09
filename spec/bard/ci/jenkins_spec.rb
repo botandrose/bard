@@ -43,6 +43,31 @@ RSpec.describe Bard::CI::Jenkins do
     end
   end
 
+  describe "#started?" do
+    before do
+      jenkins.instance_variable_set(:@queueId, 99)
+    end
+
+    it "retries when builds list is empty (job just created)" do
+      allow(jenkins).to receive(:`).with(/api\/json\?depth=1/).and_return(
+        '{"builds":[]}',
+        '{"builds":[{"queueId":99,"number":1}]}'
+      )
+      allow(jenkins).to receive(:sleep)
+
+      expect(jenkins.send(:started?)).to eq true
+    end
+  end
+
+  describe "#create!" do
+    it "creates a Jenkins job using the git remote URL" do
+      allow(jenkins).to receive(:`).with("git remote get-url origin").and_return("git@gitlab.com:botandrose/test-project.git\n")
+      expect(jenkins).to receive(:`).with(/curl -s -X POST.*createItem\?name=test-project.*Content-Type: application\/xml/)
+
+      jenkins.create!
+    end
+  end
+
   describe "#building? and #success?" do
     before do
       jenkins.instance_variable_set(:@job_id, 42)
