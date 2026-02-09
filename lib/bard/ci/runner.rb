@@ -42,7 +42,7 @@ module Bard
         @start_time = Time.new.to_i
         @last_time_elapsed = get_last_time_elapsed
         save_state
-        wait_until_started if respond_to?(:wait_until_started)
+        wait_until_started
 
         poll_until_complete { |elapsed, last_time| yield elapsed, last_time }
 
@@ -91,6 +91,9 @@ module Bard
 
       def success?
         raise NotImplementedError, "#{self.class}#success? not implemented"
+      end
+
+      def wait_until_started
       end
 
       def get_last_time_elapsed

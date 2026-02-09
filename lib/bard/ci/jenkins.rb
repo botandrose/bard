@@ -23,7 +23,7 @@ module Bard
       end
 
       def start
-        command = "curl -s -I -X POST -L '#{ci_host}/buildWithParameters?GIT_REF=#{sha}'"
+        command = "curl -s -I -X POST -L '#{ci_host}/buildWithParameters?GIT_REF=#{branch}'"
         output = `#{command}`
         @queueId = output[%r{Location: .+/queue/item/(\d+)/}, 1].to_i
       end
@@ -31,7 +31,7 @@ module Bard
       def building?
         retry_with_backoff do
           self.last_response = `curl -s #{ci_host}/#{job_id}/api/json?tree=building,result`
-          raise "Blank response from CI" if last_response.blank?
+          raise "Blank response from CI" if last_response.empty?
         end
         last_response.include? '"building":true'
       end
@@ -61,9 +61,9 @@ module Bard
       private
 
       def get_last_time_elapsed
-        retry_with_backoff do
+        response = retry_with_backoff do
           response = `curl -s #{ci_host}/lastStableBuild/api/xml`
-          raise "Blank response from CI" if response.blank?
+          raise "Blank response from CI" if response.empty?
           response
         end
         response.match(/<duration>(\d+)<\/duration>/)
@@ -85,7 +85,7 @@ module Bard
         retry_with_backoff do
           command = "curl -s -g '#{ci_host}/api/json?depth=1&tree=builds[queueId,number]'"
           output = `#{command}`
-          raise "Blank response from CI" if output.blank?
+          raise "Blank response from CI" if output.empty?
           JSON.parse(output)["builds"][0]["queueId"] == @queueId
         end
       end
@@ -94,8 +94,10 @@ module Bard
         @job_id ||= begin
           retry_with_backoff do
             output = `curl -s -g '#{ci_host}/api/json?depth=1&tree=builds[queueId,number]'`
-            raise "Blank response from CI" if output.blank?
-            output[/"number":(\d+),"queueId":#{@queueId}\b/, 1].to_i
+            raise "Blank response from CI" if output.empty?
+            builds = JSON.parse(output)["builds"]
+            build = builds.find { |b| b["queueId"] == @queueId }
+            build["number"]
           end
         end
       end
