@@ -62,9 +62,26 @@ RSpec.describe Bard::CI::Jenkins do
   describe "#create!" do
     it "creates a Jenkins job using the git remote URL" do
       allow(jenkins).to receive(:`).with("git remote get-url origin").and_return("git@gitlab.com:botandrose/test-project.git\n")
+      allow(File).to receive(:exist?).with("config/master.key").and_return(false)
       expect(jenkins).to receive(:`).with(/curl -s -X POST.*createItem\?name=test-project.*Content-Type: application\/xml/)
 
       jenkins.create!
+    end
+
+    it "includes a master key build step when config/master.key exists" do
+      allow(jenkins).to receive(:`).with("git remote get-url origin").and_return("git@gitlab.com:botandrose/test-project.git\n")
+      allow(File).to receive(:exist?).with("config/master.key").and_return(true)
+      allow(File).to receive(:read).with("config/master.key").and_return("abc123secret")
+
+      config_xml = nil
+      allow(jenkins).to receive(:`) do |cmd|
+        config_xml = cmd
+        ""
+      end
+
+      jenkins.create!
+      expect(config_xml).to include("abc123secret")
+      expect(config_xml).to include("config/master.key")
     end
   end
 

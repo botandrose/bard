@@ -12,6 +12,16 @@ module Bard
       def create!
         git_url = `git remote get-url origin`.strip
         config = JOB_CONFIG_XML.sub("GIT_URL", git_url)
+        if File.exist?("config/master.key")
+          master_key = File.read("config/master.key").strip
+          master_key_step = <<~XML.chomp
+            <hudson.tasks.Shell>
+                  <command>echo #{master_key} > config/master.key</command>
+                </hudson.tasks.Shell>
+
+          XML
+          config = config.sub("<builders>\n", "<builders>\n        #{master_key_step}")
+        end
         `curl -s -X POST "http://#{auth}@ci.botandrose.com/createItem?name=#{project_name}" -H "Content-Type: application/xml" -d '#{config}'`
       end
 
@@ -150,7 +160,10 @@ module Bard
           <concurrentBuild>false</concurrentBuild>
           <builders>
             <hudson.tasks.Shell>
-              <command>bash -l -c &quot;bin/setup &amp;&amp; bin/ci&quot;</command>
+              <command>bash -l -c bin/setup</command>
+            </hudson.tasks.Shell>
+            <hudson.tasks.Shell>
+              <command>bash -l -c bin/ci</command>
             </hudson.tasks.Shell>
           </builders>
           <publishers/>
