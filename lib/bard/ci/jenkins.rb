@@ -1,5 +1,6 @@
 require "json"
 require "bard/ci/runner"
+require "bard/secrets"
 
 module Bard
   class CI
@@ -73,7 +74,7 @@ module Bard
       end
 
       def auth
-        "botandrose:11cc2ba6ef2e43fbfbedc1f466724f6290"
+        @auth ||= "#{Bard::Secrets.fetch("jenkins-user")}:#{Bard::Secrets.fetch("jenkins-token")}"
       end
 
       def ci_host

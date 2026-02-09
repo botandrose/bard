@@ -5,7 +5,7 @@ describe Bard::Github do
   let(:github) { Bard::Github.new("test-project") }
 
   before do
-    allow(github).to receive(:`).with("git ls-remote -t git@github.com:botandrosedesign/secrets").and_return("github-apikey|12345")
+    allow(Bard::Secrets).to receive(:fetch).with("github-apikey").and_return("12345")
   end
 
   describe "#get" do

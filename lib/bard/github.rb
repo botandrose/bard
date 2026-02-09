@@ -3,6 +3,7 @@ require "json"
 require "base64"
 require "rbnacl"
 require "bard/ci/retryable"
+require "bard/secrets"
 
 module Bard
   class Github < Struct.new(:project_name)
@@ -107,10 +108,7 @@ module Bard
     private
 
     def api_key
-      @api_key ||= begin
-        raw = `git ls-remote -t git@github.com:botandrosedesign/secrets`
-        raw[/github-apikey\|(.+)$/, 1]
-      end
+      @api_key ||= Bard::Secrets.fetch("github-apikey")
     end
 
     def request path, &block
