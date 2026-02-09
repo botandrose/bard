@@ -9,10 +9,11 @@ module Bard::CLI::Run
       Thor::THOR_RESERVED_WORDS -= ["run"]
       $VERBOSE = original_verbose
 
-      desc "run <command>", "run the given command on production"
+      option :target, type: :string, default: "production"
+      desc "run <command>", "run the given command on the specified target"
       def run *args
-        server = config[:production]
-        server.run! *args.join(" "), verbose: true
+        target = config[options[:target].to_sym]
+        target.run! *args.join(" "), verbose: true
       rescue Bard::Command::Error => e
         puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
         exit 1

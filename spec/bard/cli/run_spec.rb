@@ -25,6 +25,7 @@ describe Bard::CLI::Run do
     allow(cli).to receive(:exit)
     allow(cli).to receive(:red).and_return("")
     allow(cli).to receive(:yellow).and_return("")
+    allow(cli).to receive(:options).and_return({ target: "production" })
   end
 
   describe "#run" do
@@ -34,6 +35,16 @@ describe Bard::CLI::Run do
 
     it "should run command on production server" do
       expect(server).to receive(:run!).with("ls -la", verbose: true)
+
+      cli.run("ls", "-la")
+    end
+
+    it "should run command on specified target" do
+      staging_server = double("staging_server")
+      allow(cli).to receive(:config).and_return(config.merge(staging: staging_server))
+      allow(cli).to receive(:options).and_return({ target: "staging" })
+
+      expect(staging_server).to receive(:run!).with("ls -la", verbose: true)
 
       cli.run("ls", "-la")
     end
