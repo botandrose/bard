@@ -45,26 +45,39 @@ describe Bard::Provision::SSH do
     context "when SSH is not available on target port but available on default port" do
       it "reconfigures SSH port and adds to known hosts" do
         allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
-        allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(false)
+        allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(false, true)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri).and_return(true)
         allow(ssh_provisioner).to receive(:ssh_known_host?).with(provision_ssh_uri).and_return(false)
+        allow(ssh_provisioner).to receive(:sleep)
 
         expect(ssh_provisioner).to receive(:add_ssh_known_host!).with(provision_ssh_uri).twice
         expect(provision_server).to receive(:run!).with(
-          'echo "Port 2222" | sudo tee /etc/ssh/sshd_config.d/port_2222.conf; sudo service ssh restart',
+          'echo "Port 2222" | sudo tee /etc/ssh/sshd_config.d/port_2222.conf && sudo service ssh restart',
           home: true
         )
 
         ssh_provisioner.call
       end
 
-      it "prints status messages during reconfiguration" do
+      it "raises if new port is not responding after reconfiguration" do
         allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(false)
+        allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri).and_return(true)
+        allow(ssh_provisioner).to receive(:ssh_known_host?).with(provision_ssh_uri).and_return(true)
+        allow(provision_server).to receive(:run!)
+        allow(ssh_provisioner).to receive(:sleep)
+
+        expect { ssh_provisioner.call }.to raise_error(/reconfigured SSH to port 2222 but it's not responding/)
+      end
+
+      it "prints status messages during reconfiguration" do
+        allow(ssh_provisioner).to receive(:password_auth_enabled?).and_return(false)
+        allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri, port: 2222).and_return(false, true)
         allow(ssh_provisioner).to receive(:ssh_available?).with(provision_ssh_uri).and_return(true)
         allow(ssh_provisioner).to receive(:ssh_known_host?).and_return(false)
         allow(ssh_provisioner).to receive(:add_ssh_known_host!)
         allow(provision_server).to receive(:run!)
+        allow(ssh_provisioner).to receive(:sleep)
 
         expect(ssh_provisioner).to receive(:print).with("SSH:")
         expect(ssh_provisioner).to receive(:print).with(" Adding known host,")
@@ -218,7 +231,7 @@ describe Bard::Provision::SSH do
     describe "#disable_password_auth!" do
       it "creates sshd config file to disable password authentication and restarts ssh" do
         expect(provision_server).to receive(:run!).with(
-          %q{echo "PasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/disable_password_auth.conf; sudo service ssh restart},
+          %q{echo "PasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/disable_password_auth.conf && sudo service ssh restart},
           home: true
         )
 

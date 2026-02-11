@@ -19,7 +19,14 @@ class Bard::Provision::SSH < Bard::Provision
         add_ssh_known_host!(provision_server.ssh_uri)
       end
       print " Reconfiguring port to #{target_port},"
-      provision_server.run! %(echo "Port #{target_port}" | sudo tee /etc/ssh/sshd_config.d/port_#{target_port}.conf; sudo service ssh restart), home: true
+      provision_server.run! %(echo "Port #{target_port}" | sudo tee /etc/ssh/sshd_config.d/port_#{target_port}.conf && sudo service ssh restart), home: true
+      5.times do
+        sleep 1
+        break if ssh_available?(provision_server.ssh_uri, port: target_port)
+      end
+      if !ssh_available?(provision_server.ssh_uri, port: target_port)
+        raise "reconfigured SSH to port #{target_port} but it's not responding — check firewall and sshd_config Include directive"
+      end
     end
 
     if !ssh_known_host?(provision_server.ssh_uri)
@@ -65,7 +72,7 @@ class Bard::Provision::SSH < Bard::Provision
 
   def disable_password_auth!
     provision_server.run!(
-      %q{echo "PasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/disable_password_auth.conf; sudo service ssh restart},
+      %q{echo "PasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/disable_password_auth.conf && sudo service ssh restart},
       home: true
     )
   end

@@ -136,7 +136,7 @@ module Bard
     end
 
     def run! command, home: false, verbose: false, quiet: false, capture: false
-      result = Bard::Command.run! command, on: self, home:, verbose:, quiet:
+      result = Bard::Command.run!(command, on: self, home:, verbose:, quiet:)
       result if capture
     end
 
