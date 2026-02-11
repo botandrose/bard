@@ -52,7 +52,9 @@ module Bard
     # New v2.0 API - creates Target instances
     def target(key, &block)
       key = key.to_sym
-      @servers[key] ||= Target.new(key, self)
+      unless @servers[key].is_a?(Target)
+        @servers[key] = Target.new(key, self)
+      end
       @servers[key].instance_eval(&block) if block
       @servers[key]
     end

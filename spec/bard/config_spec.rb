@@ -148,6 +148,18 @@ describe Bard::Config do
     end
   end
 
+  context "with target overriding default server" do
+    subject { described_class.new("tracker", source: <<~SOURCE) }
+      target :staging do
+        ssh false
+      end
+    SOURCE
+
+    it "replaces the default Server with a Target" do
+      expect(subject[:staging]).to be_a(Bard::Target)
+    end
+  end
+
   context "with github_pages directive" do
     subject { described_class.new("test", source: "github_pages 'example.com'") }
 

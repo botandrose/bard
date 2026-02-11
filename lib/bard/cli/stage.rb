@@ -12,7 +12,16 @@ module Bard::CLI::Stage
         end
 
         run! "git push -u origin #{branch}", verbose: true
-        config[:staging].run! "git fetch && git checkout -f origin/#{branch} && bin/setup"
+
+        target = config[:staging]
+        if target.respond_to?(:deploy_strategy) && target.deploy_strategy
+          require "bard/deploy_strategy/#{target.deploy_strategy}"
+          strategy = target.deploy_strategy_instance
+          strategy.deploy
+        else
+          target.run! "git fetch && git checkout -f origin/#{branch} && bin/setup"
+        end
+
         puts green("Stage Succeeded")
 
         ping :staging

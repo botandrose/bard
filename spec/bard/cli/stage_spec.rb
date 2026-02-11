@@ -55,6 +55,26 @@ describe Bard::CLI::Stage do
       end
     end
 
+    context "when staging target has a deploy strategy" do
+      let(:strategy_instance) { double("strategy") }
+      let(:staging_server) { double("staging", deploy_strategy: :fake) }
+
+      before do
+        allow(staging_server).to receive(:respond_to?).with(:deploy_strategy).and_return(true)
+        allow(staging_server).to receive(:deploy_strategy_instance).and_return(strategy_instance)
+        allow(cli).to receive(:require).with("bard/deploy_strategy/fake").and_return(true)
+      end
+
+      it "uses the deploy strategy instead of SSH" do
+        expect(cli).to receive(:run!).with("git push -u origin main", verbose: true)
+        expect(strategy_instance).to receive(:deploy)
+        expect(staging_server).not_to receive(:run!)
+        expect(cli).to receive(:ping).with(:staging)
+
+        cli.stage
+      end
+    end
+
     context "when production server is not defined" do
       let(:servers) { { staging: staging_server } }
 
