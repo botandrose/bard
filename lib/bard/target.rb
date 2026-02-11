@@ -217,9 +217,10 @@ module Bard
     end
 
     # Remote command execution
-    def run!(command, home: false, verbose: false, quiet: false)
+    def run!(command, home: false, verbose: false, quiet: false, capture: false)
       require_capability!(:ssh)
-      Command.run!(command, on: self, home: home, verbose: verbose, quiet: quiet)
+      result = Command.run!(command, on: self, home: home, verbose: verbose, quiet: quiet)
+      result if capture
     end
 
     def run(command, home: false, verbose: false, quiet: false)

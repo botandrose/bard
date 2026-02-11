@@ -17,9 +17,9 @@ module Bard
     end
 
     def run! verbose: false, quiet: false
-      if !run(verbose:, quiet:)
-        raise Error.new(full_command)
-      end
+      result = run(verbose:, quiet:)
+      raise Error.new(full_command) unless result
+      result
     end
 
     def run verbose: false, quiet: false

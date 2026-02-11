@@ -135,8 +135,9 @@ module Bard
       key
     end
 
-    def run! command, home: false, verbose: false, quiet: false
-      Bard::Command.run! command, on: self, home:, verbose:, quiet:
+    def run! command, home: false, verbose: false, quiet: false, capture: false
+      result = Bard::Command.run! command, on: self, home:, verbose:, quiet:
+      result if capture
     end
 
     def run command, home: false, verbose: false, quiet: false
