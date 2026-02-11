@@ -1,6 +1,7 @@
 # this file gets loaded in the CLI context, not the Rails boot context
 
 require "thor"
+require "bard/version"
 require "bard/config"
 require "bard/command"
 require "bard/plugin"
@@ -32,6 +33,12 @@ module Bard
     # Load core CI runners AFTER plugins so GithubActions is the default (last registered wins)
     require "bard/ci/local"
     require "bard/ci/github_actions"
+
+    map "--version" => :version
+    desc "version", "Display version"
+    def version
+      puts Bard::VERSION
+    end
 
     def self.exit_on_failure? = true
 
