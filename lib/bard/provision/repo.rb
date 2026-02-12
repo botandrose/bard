@@ -16,7 +16,7 @@ class Bard::Provision::Repo < Bard::Provision
         print " Add public key to GitHub repo deploy keys,"
         title = "#{server.ssh_uri.user}@#{server.ssh_uri.host}"
         key = provision_server.run "cat ~/.ssh/id_rsa.pub", home: true
-        Bard::Github.new(server.project_name).add_deploy_key title:, key:
+        Bard::Github.new(config.project_name).add_deploy_key title:, key:
       end
       print " Cloning repo,"
       provision_server.run! "git clone git@github.com:botandrosedesign/#{project_name}", home: true
@@ -50,7 +50,7 @@ class Bard::Provision::Repo < Bard::Provision
   end
 
   def project_name
-    server.project_name
+    config.project_name
   end
 
   def on_latest_master?

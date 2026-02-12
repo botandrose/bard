@@ -5,7 +5,7 @@ class Bard::Provision::LogRotation < Bard::Provision
     print "Log Rotation:"
 
     provision_server.run! <<~SH, quiet: true
-      file=/etc/logrotate.d/#{server.project_name}
+      file=/etc/logrotate.d/#{config.project_name}
       if [ ! -f $file ]; then
         sudo tee $file > /dev/null <<EOF
       $(pwd)/log/*.log {

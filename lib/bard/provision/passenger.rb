@@ -30,7 +30,7 @@ class Bard::Provision::Passenger < Bard::Provision
   end
 
   def app_configured?
-    provision_server.run "[ -f /etc/nginx/sites-enabled/#{server.project_name} ]", quiet: true
+    provision_server.run "[ -f /etc/nginx/sites-enabled/#{config.project_name} ]", quiet: true
   end
 end
 
