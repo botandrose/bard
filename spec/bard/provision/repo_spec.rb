@@ -5,7 +5,7 @@ require "bard/provision/repo"
 describe Bard::Provision::Repo do
   let(:ssh_uri) { double("ssh_uri", user: "deploy", host: "example.com") }
   let(:server) { double("server", ssh_uri: ssh_uri, project_name: "test_project") }
-  let(:config) { { production: server } }
+  let(:config) { double("config", project_name: "test_project", :[] => server) }
   let(:ssh_url) { "deploy@example.com" }
   let(:provision_server) { double("provision_server") }
   let(:github_api) { double("github_api") }

@@ -4,7 +4,7 @@ require "bard/provision/passenger"
 
 describe Bard::Provision::Passenger do
   let(:server) { double("server", project_name: "test_app") }
-  let(:config) { { production: server } }
+  let(:config) { double("config", project_name: "test_app", :[] => server) }
   let(:ssh_url) { "user@example.com" }
   let(:provision_server) { double("provision_server") }
   let(:passenger) { Bard::Provision::Passenger.new(config, ssh_url) }

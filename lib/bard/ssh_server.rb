@@ -30,6 +30,12 @@ module Bard
       host
     end
 
+    def to_s
+      str = "#{user}@#{host}"
+      str += ":#{port}" if port && port != "22"
+      str
+    end
+
     def connection_string
       "#{user}@#{host}"
     end

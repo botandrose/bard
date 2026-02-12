@@ -22,7 +22,7 @@ class Bard::CLI::Provision < Bard::CLI::Command
 
   desc "provision [ssh_url] --steps=all", "takes an optional ssh url to a raw ubuntu 22.04 install, and readies it in the shape of :production"
   option :steps, type: :array, default: STEPS
-  def provision ssh_url=config[:production].ssh
+  def provision ssh_url=config[:production].ssh&.to_s
     # unfreeze the string for later mutation
     ssh_url = ssh_url.dup
     options[:steps].each do |step|

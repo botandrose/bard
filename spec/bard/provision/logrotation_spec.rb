@@ -4,7 +4,7 @@ require "bard/provision/logrotation"
 
 describe Bard::Provision::LogRotation do
   let(:server) { double("server", project_name: "test_app") }
-  let(:config) { { production: server } }
+  let(:config) { double("config", project_name: "test_app", :[] => server) }
   let(:ssh_url) { "user@example.com" }
   let(:provision_server) { double("provision_server") }
   let(:logrotation) { Bard::Provision::LogRotation.new(config, ssh_url) }
