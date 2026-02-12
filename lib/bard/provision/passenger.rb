@@ -9,7 +9,7 @@ class Bard::Provision::Passenger < Bard::Provision
         %(grep -qxF "RAILS_ENV=production" /etc/environment || echo "RAILS_ENV=production" | sudo tee -a /etc/environment),
         %(grep -qxF "EDITOR=vim" /etc/environment || echo "EDITOR=vim" | sudo tee -a /etc/environment),
         "sudo apt-get install -y vim dirmngr gnupg apt-transport-https ca-certificates",
-        "curl https://oss-binaries.phusionpassenger.com/auto-software-signing-gpg-key.txt | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/phusion.gpg >/dev/null",
+        "curl https://oss-binaries.phusionpassenger.com/auto-software-signing-gpg-key-2025.txt | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/phusion.gpg >/dev/null",
         %(echo "deb https://oss-binaries.phusionpassenger.com/apt/passenger jammy main" | sudo tee /etc/apt/sources.list.d/passenger.list),
         "sudo apt-get update -y",
         "sudo apt-get install -y nginx libnginx-mod-http-passenger",
