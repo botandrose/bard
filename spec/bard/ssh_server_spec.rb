@@ -81,7 +81,7 @@ describe Bard::SSHServer do
 
     it "executes command via SSH" do
       expect(Open3).to receive(:capture3)
-        .with(/ssh.*deploy@example.com.*cd \/app && ls/)
+        .with(/ssh.*deploy@example.com.*cd.+\/app.+ls/)
         .and_return(["output", "", 0])
 
       server.run("ls")
@@ -94,7 +94,7 @@ describe Bard::SSHServer do
       )
 
       expect(Open3).to receive(:capture3)
-        .with(/RAILS_ENV=production/)
+        .with(/RAILS_ENV.*production/)
         .and_return(["output", "", 0])
 
       server_with_env.run("ls")
@@ -108,7 +108,7 @@ describe Bard::SSHServer do
 
     it "executes command via SSH" do
       expect(Open3).to receive(:capture3)
-        .with(/ssh.*deploy@example.com.*cd \/app && ls/)
+        .with(/ssh.*deploy@example.com.*cd.+\/app.+ls/)
         .and_return(["output", "", 0])
 
       server.run!("ls")
@@ -129,7 +129,7 @@ describe Bard::SSHServer do
 
     it "replaces current process with SSH command" do
       expect(server).to receive(:exec)
-        .with(/ssh.*deploy@example.com.*cd \/app && ls/)
+        .with(/ssh.*deploy@example.com.*cd.+\/app.+ls/)
 
       server.exec!("ls")
     end
@@ -140,7 +140,7 @@ describe Bard::SSHServer do
       server = described_class.new("deploy@example.com:22", path: "/var/www/app")
 
       expect(Open3).to receive(:capture3)
-        .with(/cd \/var\/www\/app && ls/)
+        .with(/cd.+\/var\/www\/app.+ls/)
         .and_return(["output", "", 0])
 
       server.run("ls")

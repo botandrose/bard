@@ -1,4 +1,5 @@
 require "uri"
+require "shellwords"
 require "bard/command"
 
 module Bard
@@ -99,7 +100,7 @@ module Bard
       remote_cmd += "cd #{path} && " if path
       remote_cmd += command
 
-      cmd += " '#{remote_cmd}'"
+      cmd += " #{Shellwords.shellescape(remote_cmd)}"
       cmd
     end
   end

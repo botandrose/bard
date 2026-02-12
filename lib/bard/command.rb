@@ -1,4 +1,5 @@
 require "open3"
+require "shellwords"
 
 module Bard
   class Command < Struct.new(:command, :on, :home)
@@ -100,7 +101,7 @@ module Bard
         end
       end
 
-      cmd = "ssh #{ssh_opts.join(' ')} #{ssh_target} '#{cmd}'"
+      cmd = "ssh #{ssh_opts.join(' ')} #{ssh_target} #{Shellwords.shellescape(cmd)}"
 
       cmd += " 2>&1" if quiet
       cmd

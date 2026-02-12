@@ -16,7 +16,8 @@ describe Bard::Provision::Swapfile do
 
   describe "#call" do
     it "sets up swapfile on the server" do
-      expect(provision_server).to receive(:run!).with(/if \[ ! -f \/swapfile \]/)
+      expect(provision_server).to receive(:run!).with(/if \[ ! -f \/swapfile \]/, home: true).ordered
+      expect(provision_server).to receive(:run!).with("sudo swapon --show | grep -q /swapfile", home: true).ordered
 
       swapfile.call
     end

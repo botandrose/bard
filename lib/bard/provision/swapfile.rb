@@ -6,12 +6,12 @@ class Bard::Provision::Swapfile < Bard::Provision
 
     provision_server.run! <<~SH, home: true
       if [ ! -f /swapfile ]; then
-        sudo fallocate -l $(grep MemTotal /proc/meminfo | awk "{print \\$2}")K /swapfile
+        sudo fallocate -l $(grep MemTotal /proc/meminfo | awk '{print $2}')K /swapfile
       fi
       sudo chmod 600 /swapfile
-      sudo swapon --show | grep -q /swapfile || sudo mkswap /swapfile
-      sudo swapon --show | grep -q /swapfile || sudo swapon /swapfile
-      grep -q "/swapfile none swap sw 0 0" /etc/fstab || echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+      sudo swapon --show | grep -q '/swapfile' || sudo mkswap /swapfile
+      sudo swapon --show | grep -q '/swapfile' || sudo swapon /swapfile
+      grep -q '/swapfile none swap sw 0 0' /etc/fstab || echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
     SH
 
     provision_server.run! "sudo swapon --show | grep -q /swapfile", home: true

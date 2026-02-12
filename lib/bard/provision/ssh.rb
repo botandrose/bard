@@ -63,7 +63,7 @@ class Bard::Provision::SSH < Bard::Provision
 
   def password_auth_enabled?
     result = provision_server.run!(
-      %q{grep -E "^\\s*PasswordAuthentication\\s+yes" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true},
+      %q{grep -E '^\s*PasswordAuthentication\s+yes' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true},
       home: true,
       capture: true
     )
