@@ -58,3 +58,6 @@ module Bard
     end
   end
 end
+
+# Auto-load all strategy files
+Dir[File.join(__dir__, "deploy_strategy", "*.rb")].each { |f| require f }

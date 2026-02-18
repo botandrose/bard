@@ -15,7 +15,6 @@ module Bard::CLI::Stage
 
         target = config[:staging]
         if target.respond_to?(:deploy_strategy) && target.deploy_strategy
-          require "bard/deploy_strategy/#{target.deploy_strategy}"
           strategy = target.deploy_strategy_instance
           strategy.deploy
         else

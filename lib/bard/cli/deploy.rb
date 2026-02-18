@@ -79,7 +79,6 @@ module Bard::CLI::Deploy
           # Use deployment strategy for v2.0 Targets, or fallback for v1.x Servers
           target = config[to]
           if target.respond_to?(:deploy_strategy) && target.deploy_strategy
-            require "bard/deploy_strategy/#{target.deploy_strategy}"
             strategy = target.deploy_strategy_instance
             strategy.deploy
           elsif target.respond_to?(:github_pages) && target.github_pages

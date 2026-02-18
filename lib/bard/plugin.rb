@@ -21,6 +21,7 @@ module Bard
 
       def load_all!
         Dir[File.join(__dir__, "plugins", "*.rb")].sort.each { |f| require f }
+        Dir[File.join(Dir.pwd, "lib", "bard", "plugins", "*.rb")].sort.each { |f| require f }
         all.each(&:apply!)
       end
 
