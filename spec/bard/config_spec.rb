@@ -160,6 +160,22 @@ describe Bard::Config do
     end
   end
 
+  context "with remove_target" do
+    subject { described_class.new("tracker", source: <<~SOURCE) }
+      remove_target :staging
+      target :staging do
+        ssh "deploy@new-host.com"
+      end
+    SOURCE
+
+    it "replaces the default with a fresh target" do
+      staging = subject[:staging]
+      expect(staging).to be_a(Bard::Target)
+      expect(staging.ssh.to_s).to eq "deploy@new-host.com"
+      expect(staging.ping).to eq ["https://new-host.com"]
+    end
+  end
+
   context "with github_pages directive" do
     subject { described_class.new("test", source: "github_pages 'example.com'") }
 

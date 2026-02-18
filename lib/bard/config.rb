@@ -49,6 +49,10 @@ module Bard
       @servers[key] = Server.define(project_name, key, &block)
     end
 
+    def remove_target(key)
+      @servers.delete(key.to_sym)
+    end
+
     # New v2.0 API - creates Target instances
     def target(key, &block)
       key = key.to_sym
