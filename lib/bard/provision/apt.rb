@@ -7,7 +7,7 @@ class Bard::Provision::Apt < Bard::Provision
       %(echo "\\$nrconf{restart} = \\"a\\";" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf),
       "sudo apt-get update -y",
       "sudo apt-get upgrade -y",
-      "sudo apt-get install -y curl",
+      "sudo apt-get install -y curl build-essential",
     ].join("; "), home: true
 
     puts " ✓"

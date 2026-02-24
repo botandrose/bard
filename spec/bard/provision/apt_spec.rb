@@ -20,7 +20,7 @@ describe Bard::Provision::Apt do
         %(echo "\\$nrconf{restart} = \\"a\\";" | sudo tee /etc/needrestart/conf.d/90-autorestart.conf),
         "sudo apt-get update -y",
         "sudo apt-get upgrade -y",
-        "sudo apt-get install -y curl"
+        "sudo apt-get install -y curl build-essential"
       ].join("; ")
 
       expect(provision_server).to receive(:run!).with(expected_commands, home: true)
