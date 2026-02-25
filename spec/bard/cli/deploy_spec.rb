@@ -25,6 +25,7 @@ describe Bard::CLI::Deploy do
   let(:cli) { TestDeployCLI.new }
 
   before do
+    allow(config).to receive(:ci).and_return(nil)
     allow(cli).to receive(:config).and_return(config)
     allow(cli).to receive(:options).and_return({ target: "production" })
     allow(cli).to receive(:puts)
@@ -88,6 +89,17 @@ describe Bard::CLI::Deploy do
           cli.deploy
         end
       end
+
+      context "with ci disabled in config" do
+        it "skips CI step" do
+          allow(config).to receive(:ci).and_return(false)
+
+          expect(cli).not_to receive(:invoke).with(:ci, anything, anything)
+          expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
+
+          cli.deploy
+        end
+      end
     end
 
     context "when on feature branch" do
@@ -127,6 +139,20 @@ describe Bard::CLI::Deploy do
 
           cli.deploy
         end
+      end
+    end
+
+    context "when on feature branch with ci disabled in config" do
+      before do
+        allow(cli).to receive(:options).and_return({ target: "production" })
+        allow(config).to receive(:ci).and_return(false)
+      end
+
+      it "skips CI step" do
+        expect(cli).not_to receive(:invoke).with(:ci, anything, anything)
+        expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
+
+        cli.deploy
       end
     end
 

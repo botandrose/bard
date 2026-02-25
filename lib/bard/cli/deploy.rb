@@ -20,7 +20,7 @@ module Bard::CLI::Deploy
           if !Bard::Git.up_to_date_with_remote?(branch)
             run! "git push origin #{branch}:#{branch}"
           end
-          invoke :ci, [branch], options.slice("local-ci", "ci") unless options["skip-ci"]
+          invoke :ci, [branch], options.slice("local-ci", "ci") unless options["skip-ci"] || config.ci == false
 
         else
           run! "git fetch origin"
@@ -55,7 +55,7 @@ module Bard::CLI::Deploy
 
           run! "git push -f origin #{branch}:#{branch}"
 
-          invoke :ci, [branch], options.slice("local-ci", "ci") unless options["skip-ci"]
+          invoke :ci, [branch], options.slice("local-ci", "ci") unless options["skip-ci"] || config.ci == false
 
           run! "git push origin #{branch}:master"
           if Bard::Git.current_branch != "master"
