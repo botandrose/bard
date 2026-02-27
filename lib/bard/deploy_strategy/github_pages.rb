@@ -8,7 +8,7 @@ module Bard
     class GithubPages < DeployStrategy
       def initialize(target, url = nil, **options)
         super(target)
-        @url = url
+        @url = url || target.github_pages
         @options = options
 
         # Auto-configure ping URL if provided
