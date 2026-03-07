@@ -65,7 +65,15 @@ module Bard
       ensure
         # cleanup
         run! <<~SH
-          cat tmp/pids/server.pid | xargs -I {} kill {}
+          PID=$(cat tmp/pids/server.pid 2>/dev/null)
+          if [ -n "$PID" ]; then
+            kill $PID 2>/dev/null
+            for i in 1 2 3 4 5; do
+              kill -0 $PID 2>/dev/null || break
+              sleep 1
+            done
+            kill -9 $PID 2>/dev/null || true
+          fi
           rm -rf public/assets
         SH
       end
