@@ -1,6 +1,4 @@
-require "bard/server"
 require "bard/target"
-require "bard/deprecation"
 
 module Bard
   class Config
@@ -13,17 +11,14 @@ module Bard
     attr_reader :project_name, :targets
 
     def initialize(project_name = nil, path: nil, source: nil)
-      # Support both positional and keyword argument for project_name
       @project_name = project_name
-      @servers = {}  # Unified hash for both Server and Target instances
+      @targets = {}
       @data_paths = []
       @backup = nil
       @ci_system = nil
 
-      # Load default configuration (creates Server instances for backward compat)
       load_defaults if project_name
 
-      # Load user configuration
       if path && File.exist?(path)
         source = File.read(path)
       end
@@ -32,48 +27,27 @@ module Bard
       end
     end
 
-    # Backward compatible accessor
-    def servers
-      @servers
-    end
-
-    # New v2.0 accessor (same as servers)
-    def targets
-      @servers
-    end
-
-    # Old v1.x API - creates Server instances
-    def server(key, &block)
-      Deprecation.warn "`server` is deprecated; use `target` instead (will be removed in v2.0)"
-      key = key.to_sym
-      @servers[key] = Server.define(project_name, key, &block)
-    end
-
     def remove_target(key)
-      @servers.delete(key.to_sym)
+      @targets.delete(key.to_sym)
     end
 
-    # New v2.0 API - creates Target instances
     def target(key, &block)
       key = key.to_sym
-      unless @servers[key].is_a?(Target)
-        @servers[key] = Target.new(key, self)
+      unless @targets[key].is_a?(Target)
+        @targets[key] = Target.new(key, self)
       end
-      @servers[key].instance_eval(&block) if block
-      @servers[key]
+      @targets[key].instance_eval(&block) if block
+      @targets[key]
     end
 
-    # Get a server/target by key
     def [](key)
       key = key.to_sym
-      # Fallback to staging if production not defined
-      if @servers[key].nil? && key == :production
+      if @targets[key].nil? && key == :production
         key = :staging
       end
-      @servers[key]
+      @targets[key]
     end
 
-    # Data paths configuration
     def data(*paths)
       if paths.empty?
         @data_paths
@@ -120,7 +94,6 @@ module Bard
       backup false
     end
 
-    # CI configuration
     def ci(system = nil)
       if system.nil?
         @ci_system
@@ -142,36 +115,27 @@ module Bard
 
     private
 
-    # Load default server configurations (v1.x compatible)
     def load_defaults
-      @servers[:local] = Server.new(
-        project_name,
-        :local,
-        false,
-        "./",
-        ["#{project_name}.local"],
-      )
-      @servers[:gubs] = Server.new(
-        project_name,
-        :gubs,
-        "botandrose@cloud.hackett.world:22022",
-        "Sites/#{project_name}",
-        false,
-      )
-      @servers[:ci] = Server.new(
-        project_name,
-        :ci,
-        "jenkins@staging.botandrose.com:22022",
-        "jobs/#{project_name}/workspace",
-        false,
-      )
-      @servers[:staging] = Server.new(
-        project_name,
-        :staging,
-        "www@staging.botandrose.com:22022",
-        project_name,
-        ["#{project_name}.botandrose.com"],
-      )
+      target :local do
+        ssh false
+        ping false
+      end
+
+      target :gubs do
+        ssh "botandrose@cloud.hackett.world:22022"
+        ping false
+      end
+
+      target :ci do
+        ssh "jenkins@staging.botandrose.com:22022",
+          path: "jobs/#{config.project_name}/workspace"
+        ping false
+      end
+
+      target :staging do
+        ssh "www@staging.botandrose.com:22022"
+        ping "#{config.project_name}.botandrose.com"
+      end
     end
   end
 

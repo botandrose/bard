@@ -7,19 +7,15 @@ module Bard::CLI::Stage
 
       desc "stage [branch=HEAD]", "pushes current branch, and stages it"
       def stage branch=Bard::Git.current_branch
-        unless config.servers.key?(:production)
+        unless config.targets.key?(:production)
           raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
         end
 
         run! "git push -u origin #{branch}", verbose: true
 
         target = config[:staging]
-        if target.respond_to?(:deploy_strategy) && target.deploy_strategy
-          strategy = target.deploy_strategy_instance
-          strategy.deploy
-        else
-          target.run! "git fetch && git checkout -f origin/#{branch} && bin/setup"
-        end
+        strategy = target.deploy_strategy_instance
+        strategy.deploy
 
         puts green("Stage Succeeded")
 

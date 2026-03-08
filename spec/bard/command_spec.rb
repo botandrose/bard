@@ -3,7 +3,8 @@ require "bard/command"
 require "shellwords"
 
 describe Bard::Command do
-  let(:remote) { double("remote", to_sym: :remote, ssh: true, env: nil, path: "/path/to", ssh_key: nil, ssh_uri: "user@example.com", gateway: nil) }
+  let(:ssh_server) { double("ssh_server", user: "user", host: "example.com", port: "22") }
+  let(:remote) { double("remote", to_sym: :remote, server: ssh_server, env: nil, path: "/path/to", ssh_key: nil, gateway: nil) }
 
   describe ".run" do
     it "should run a command locally" do

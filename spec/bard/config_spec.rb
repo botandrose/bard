@@ -10,9 +10,15 @@ describe Bard::Config do
       end
     end
 
-    describe "#servers" do
-      it "is prefilled with many servers" do
-        expect(subject.servers.keys).to eq %i[local gubs ci staging]
+    describe "#targets" do
+      it "is prefilled with default targets" do
+        expect(subject.targets.keys).to eq %i[local gubs ci staging]
+      end
+
+      it "creates Target instances for defaults" do
+        subject.targets.each_value do |target|
+          expect(target).to be_a(Bard::Target)
+        end
       end
     end
 
@@ -40,7 +46,7 @@ describe Bard::Config do
 
   context "with production definition" do
     subject { described_class.new("tracker", source: <<~SOURCE) }
-      server :production do
+      target :production do
         ssh "www@ssh.botandrose.com:22022"
         ping "tracker.botandrose.com"
       end
@@ -55,18 +61,18 @@ describe Bard::Config do
       end
     end
 
-    describe "#servers" do
-      it "contains the defined server" do
-        expect(subject.servers.keys).to eq %i[local gubs ci staging production]
+    describe "#targets" do
+      it "contains the defined target" do
+        expect(subject.targets.keys).to eq %i[local gubs ci staging production]
       end
     end
 
-    describe "#server" do
+    describe "#target" do
       it "can overwrite existing definition" do
-        subject.server :staging do
+        subject.target :staging do
           ssh "www@tracker-staging.botandrose.com:22022"
         end
-        expect(subject[:staging].ssh).to eq "www@tracker-staging.botandrose.com:22022"
+        expect(subject[:staging].server.to_s).to eq "www@tracker-staging.botandrose.com:22022"
       end
     end
 
@@ -148,15 +154,16 @@ describe Bard::Config do
     end
   end
 
-  context "with target overriding default server" do
+  context "with target overriding default" do
     subject { described_class.new("tracker", source: <<~SOURCE) }
       target :staging do
         ssh false
       end
     SOURCE
 
-    it "replaces the default Server with a Target" do
+    it "replaces the default with the new configuration" do
       expect(subject[:staging]).to be_a(Bard::Target)
+      expect(subject[:staging].ssh).to eq false
     end
   end
 
@@ -185,8 +192,8 @@ describe Bard::Config do
       end
     end
 
-    describe "#server" do
-      it "creates a production server with github_pages enabled" do
+    describe "#target" do
+      it "creates a production target with github_pages enabled" do
         production = subject[:production]
         expect(production).not_to be_nil
         expect(production.github_pages).to eq "example.com"
@@ -195,4 +202,3 @@ describe Bard::Config do
     end
   end
 end
-

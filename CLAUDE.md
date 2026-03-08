@@ -44,7 +44,7 @@ bundle exec bin/bard
 - **`Bard::CLI`** (`lib/bard/cli.rb`) - Thor-based command dispatcher. Commands are modules in `lib/bard/cli/` included into CLI.
 - **`Bard::Config`** (`lib/bard/config.rb`) - DSL parser for `bard.rb` files. Manages targets and settings.
 - **`Bard::Target`** (`lib/bard/target.rb`) - Deployment destination with capabilities (ssh, ping, data). Supports dynamic strategy DSL via `method_missing`.
-- **`Bard::Server`** (`lib/bard/server.rb`) - Legacy v1.x server representation (deprecated, use Target).
+- **`Bard::SSHServer`** (`lib/bard/ssh_server.rb`) - SSH connection details (user, host, port, gateway, ssh_key, env).
 - **`Bard::DeployStrategy`** (`lib/bard/deploy_strategy.rb`) - Base class for deployment strategies. Subclasses auto-register via Ruby's `inherited` hook.
 
 ### Capability System

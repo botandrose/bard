@@ -20,7 +20,8 @@ class TestDeployCLI < Thor
 end
 
 describe Bard::CLI::Deploy do
-  let(:production_server) { double("production", run!: true, github_pages: false, path: "/var/www/test_project") }
+  let(:deploy_strategy) { double("deploy_strategy", deploy: true) }
+  let(:production_server) { double("production", run!: true, path: "/var/www/test_project", deploy_strategy: :ssh, deploy_strategy_instance: deploy_strategy) }
   let(:config) { { production: production_server } }
   let(:cli) { TestDeployCLI.new }
 
@@ -59,8 +60,7 @@ describe Bard::CLI::Deploy do
 
           expect(cli).not_to receive(:run!).with(/git push/)
           expect(cli).to receive(:invoke).with(:ci, ["master"], {})
-          expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
-          expect(cli).to receive(:puts) # "Deploy Succeeded"
+          expect(deploy_strategy).to receive(:deploy)
           expect(cli).to receive(:ping).with(:production)
 
           cli.deploy
@@ -73,7 +73,7 @@ describe Bard::CLI::Deploy do
 
           expect(cli).to receive(:run!).with("git push origin master:master")
           expect(cli).to receive(:invoke).with(:ci, ["master"], {})
-          expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
+          expect(deploy_strategy).to receive(:deploy)
 
           cli.deploy
         end
@@ -84,7 +84,7 @@ describe Bard::CLI::Deploy do
           allow(cli).to receive(:options).and_return({ "skip-ci" => true, target: "production" })
 
           expect(cli).not_to receive(:invoke).with(:ci, anything, anything)
-          expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
+          expect(deploy_strategy).to receive(:deploy)
 
           cli.deploy
         end
@@ -95,7 +95,7 @@ describe Bard::CLI::Deploy do
           allow(config).to receive(:ci).and_return(false)
 
           expect(cli).not_to receive(:invoke).with(:ci, anything, anything)
-          expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
+          expect(deploy_strategy).to receive(:deploy)
 
           cli.deploy
         end
@@ -114,7 +114,7 @@ describe Bard::CLI::Deploy do
           expect(cli).to receive(:run!).with("git push -f origin feature-branch:feature-branch")
           expect(cli).to receive(:invoke).with(:ci, ["feature-branch"], {})
           expect(cli).to receive(:run!).with("git push origin feature-branch:master")
-          expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
+          expect(deploy_strategy).to receive(:deploy)
 
           cli.deploy
         end
@@ -150,7 +150,7 @@ describe Bard::CLI::Deploy do
 
       it "skips CI step" do
         expect(cli).not_to receive(:invoke).with(:ci, anything, anything)
-        expect(production_server).to receive(:run!).with("git pull origin master && bin/setup")
+        expect(deploy_strategy).to receive(:deploy)
 
         cli.deploy
       end
@@ -179,19 +179,19 @@ describe Bard::CLI::Deploy do
     end
 
     context "with github pages" do
-      it "deploys to github pages" do
-        allow(production_server).to receive(:github_pages).and_return(true)
-        github_pages = double("github_pages")
-        allow(Bard::GithubPages).to receive(:new).and_return(github_pages)
+      let(:deploy_strategy) { double("github_pages_strategy") }
+      let(:production_server) { double("production", run!: true, path: "/var/www/test_project", deploy_strategy: :github_pages, deploy_strategy_instance: deploy_strategy) }
 
-        expect(github_pages).to receive(:deploy).with(production_server)
+      it "deploys using deploy strategy" do
+        expect(deploy_strategy).to receive(:deploy)
 
         cli.deploy
       end
     end
 
     context "with custom deployment target" do
-      let(:staging_server) { double("staging", run!: true, github_pages: false) }
+      let(:staging_strategy) { double("staging_strategy", deploy: true) }
+      let(:staging_server) { double("staging", run!: true, deploy_strategy: :ssh, deploy_strategy_instance: staging_strategy) }
 
       before do
         allow(config).to receive(:[]).with(:staging).and_return(staging_server)
@@ -199,7 +199,7 @@ describe Bard::CLI::Deploy do
       end
 
       it "deploys to specified target" do
-        expect(staging_server).to receive(:run!).with("git pull origin master && bin/setup")
+        expect(staging_strategy).to receive(:deploy)
         expect(cli).to receive(:ping).with(:staging)
 
         cli.deploy

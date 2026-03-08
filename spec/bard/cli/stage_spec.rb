@@ -15,9 +15,10 @@ class TestStageCLI < Thor
 end
 
 describe Bard::CLI::Stage do
-  let(:staging_server) { double("staging") }
-  let(:servers) { { production: double("production"), staging: staging_server } }
-  let(:config) { double("config", servers: servers) }
+  let(:staging_strategy) { double("staging_strategy", deploy: true) }
+  let(:staging_server) { double("staging", deploy_strategy: :ssh, deploy_strategy_instance: staging_strategy) }
+  let(:targets) { { production: double("production"), staging: staging_server } }
+  let(:config) { double("config", targets: targets) }
   let(:cli) { TestStageCLI.new }
 
   before do
@@ -41,7 +42,7 @@ describe Bard::CLI::Stage do
     context "when production server is defined" do
       it "pushes branch and stages it" do
         expect(cli).to receive(:run!).with("git push -u origin main", verbose: true)
-        expect(staging_server).to receive(:run!).with("git fetch && git checkout -f origin/main && bin/setup")
+        expect(staging_strategy).to receive(:deploy)
         expect(cli).to receive(:ping).with(:staging)
 
         cli.stage
@@ -49,7 +50,7 @@ describe Bard::CLI::Stage do
 
       it "accepts custom branch" do
         expect(cli).to receive(:run!).with("git push -u origin develop", verbose: true)
-        expect(staging_server).to receive(:run!).with("git fetch && git checkout -f origin/develop && bin/setup")
+        expect(staging_strategy).to receive(:deploy)
 
         cli.stage("develop")
       end
@@ -57,18 +58,11 @@ describe Bard::CLI::Stage do
 
     context "when staging target has a deploy strategy" do
       let(:strategy_instance) { double("strategy") }
-      let(:staging_server) { double("staging", deploy_strategy: :fake) }
+      let(:staging_server) { double("staging", deploy_strategy: :fake, deploy_strategy_instance: strategy_instance) }
 
-      before do
-        allow(staging_server).to receive(:respond_to?).with(:deploy_strategy).and_return(true)
-        allow(staging_server).to receive(:deploy_strategy_instance).and_return(strategy_instance)
-        allow(cli).to receive(:require).with("bard/deploy_strategy/fake").and_return(true)
-      end
-
-      it "uses the deploy strategy instead of SSH" do
+      it "uses the deploy strategy" do
         expect(cli).to receive(:run!).with("git push -u origin main", verbose: true)
         expect(strategy_instance).to receive(:deploy)
-        expect(staging_server).not_to receive(:run!)
         expect(cli).to receive(:ping).with(:staging)
 
         cli.stage
@@ -76,7 +70,7 @@ describe Bard::CLI::Stage do
     end
 
     context "when production server is not defined" do
-      let(:servers) { { staging: staging_server } }
+      let(:targets) { { staging: staging_server } }
 
       it "raises an error" do
         expect { cli.stage }.to raise_error(Thor::Error, /bard stage.*is disabled/)

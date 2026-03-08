@@ -116,9 +116,8 @@ describe Bard::Target do
   end
 
   describe "#path" do
-    it "stores and retrieves path" do
-      target.path("/var/www/app")
-      expect(target.path).to eq("/var/www/app")
+    it "defaults to project name" do
+      expect(target.path).to eq("testapp")
     end
 
     it "can be set via ssh options" do

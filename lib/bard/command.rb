@@ -24,15 +24,8 @@ module Bard
     end
 
     def run verbose: false, quiet: false
-      # no-op if server doesn't really exist
-      if on.to_sym != :local
-        # Check for new Target architecture
-        if on.respond_to?(:server) && on.server.nil?
-          return true
-        # Check for old Server architecture
-        elsif on.respond_to?(:ssh) && on.ssh == false
-          return true
-        end
+      if on.to_sym != :local && on.server.nil?
+        return true
       end
       if verbose
         system full_command(quiet: quiet)
@@ -62,44 +55,21 @@ module Bard
     end
 
     def remote_command quiet: false
-      # Support both new Target (with server attribute) and old Server architecture
-      ssh_server = on.respond_to?(:server) ? on.server : on
-
-      # Get options from Target first (for deprecated separate method calls), fall back to SSHServer
-      env_value = on.respond_to?(:env) ? on.env : nil
-      env_value ||= ssh_server.env if ssh_server.respond_to?(:env)
-
-      ssh_key = on.respond_to?(:ssh_key) ? on.ssh_key : nil
-      ssh_key ||= ssh_server.ssh_key if ssh_server.respond_to?(:ssh_key)
-
-      gateway = on.respond_to?(:gateway) ? on.gateway : nil
-      gateway ||= ssh_server.gateway if ssh_server.respond_to?(:gateway)
+      ssh_server = on.server
 
       cmd = command
-      cmd = "#{env_value} #{command}" if env_value
+      cmd = "#{on.env} #{command}" if on.env
 
       unless home
-        path = on.respond_to?(:path) ? on.path : ssh_server.path
-        cmd = "cd #{path} && #{cmd}" if path
+        cmd = "cd #{on.path} && #{cmd}" if on.path
       end
 
       ssh_opts = ["-tt", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=ERROR"]
-      ssh_opts << "-i #{ssh_key}" if ssh_key
+      ssh_opts << "-i #{on.ssh_key}" if on.ssh_key
+      ssh_opts << "-p #{ssh_server.port}" if ssh_server.port && ssh_server.port != "22"
+      ssh_opts << "-o ProxyJump=#{on.gateway}" if on.gateway
 
-      # Handle new SSHServer vs old Server architecture
-      if ssh_server.respond_to?(:host)
-        # New SSHServer - has separate host/port/user
-        ssh_opts << "-p #{ssh_server.port}" if ssh_server.port && ssh_server.port != "22"
-        ssh_opts << "-o ProxyJump=#{gateway}" if gateway
-        ssh_target = "#{ssh_server.user}@#{ssh_server.host}"
-      else
-        # Old Server - uses URI-based ssh_uri
-        ssh_target = ssh_server.ssh_uri
-        if gateway
-          gateway_uri = ssh_server.ssh_uri(:gateway)
-          ssh_opts << "-o ProxyJump=#{gateway_uri}"
-        end
-      end
+      ssh_target = "#{ssh_server.user}@#{ssh_server.host}"
 
       cmd = "ssh #{ssh_opts.join(' ')} #{ssh_target} #{Shellwords.shellescape(cmd)}"
 

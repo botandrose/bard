@@ -2,7 +2,6 @@ require "uri"
 require "bard/command"
 require "bard/copy"
 require "bard/deploy_strategy"
-require "bard/deprecation"
 
 module Bard
   class Target
@@ -76,43 +75,12 @@ module Bard
       server&.ssh_uri
     end
 
-    # Path configuration
-    def path(new_path = nil)
-      if new_path
-        Deprecation.warn "Separate `path` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", path: \"#{new_path}\"` (will be removed in v2.0)"
-        @path = new_path
-      else
-        @path || config.project_name
-      end
+    # Attribute readers
+    def path
+      @path || config.project_name
     end
 
-    # Deprecated separate setter methods - use ssh(..., option: value) instead
-    def gateway(value = nil)
-      if value
-        Deprecation.warn "Separate `gateway` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", gateway: \"#{value}\"` (will be removed in v2.0)"
-        @gateway = value
-      else
-        @gateway
-      end
-    end
-
-    def ssh_key(value = nil)
-      if value
-        Deprecation.warn "Separate `ssh_key` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", ssh_key: \"#{value}\"` (will be removed in v2.0)"
-        @ssh_key = value
-      else
-        @ssh_key
-      end
-    end
-
-    def env(value = nil)
-      if value
-        Deprecation.warn "Separate `env` call is deprecated; pass as keyword argument to `ssh` instead, e.g., `ssh \"user@host\", env: \"#{value}\"` (will be removed in v2.0)"
-        @env = value
-      else
-        @env
-      end
-    end
+    attr_reader :gateway, :ssh_key, :env
 
     # Ping configuration
     def ping(*urls)
@@ -164,18 +132,6 @@ module Bard
       end
     end
 
-    # Deprecated strategy configuration methods
-    def strategy(name)
-      Deprecation.warn "`strategy` is deprecated; use the strategy method directly, e.g., `#{name} \"url\"` instead of `strategy :#{name}` (will be removed in v2.0)"
-      @deploy_strategy = name
-    end
-
-    def option(key, value)
-      Deprecation.warn "`option` is deprecated; pass options as keyword arguments to the strategy method, e.g., `jets \"url\", #{key}: #{value.inspect}` (will be removed in v2.0)"
-      @strategy_options_hash[@deploy_strategy] ||= {}
-      @strategy_options_hash[@deploy_strategy][key] = value
-    end
-
     def strategy_options(strategy_name)
       @strategy_options_hash[strategy_name] || {}
     end
@@ -204,9 +160,6 @@ module Bard
         if args.first && args.first.to_s =~ /^https?:\/\//
           ping(args.first)
         end
-
-        # Call the strategy's initializer if it wants to configure the target
-        # (This will be handled by the strategy class)
       else
         super
       end
@@ -246,7 +199,7 @@ module Bard
       Copy.dir(path, from: self, to: to, verbose: verbose)
     end
 
-    # URI methods for compatibility
+    # URI methods
     def scp_uri(file_path = nil)
       full_path = "/#{path}"
       full_path += "/#{file_path}" if file_path

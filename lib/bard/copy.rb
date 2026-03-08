@@ -21,9 +21,8 @@ module Bard
       end
     end
 
-    def scp_using_local direction, target_or_server
-      # Support both new Target (with server attribute) and old Server
-      ssh_server = target_or_server.respond_to?(:server) ? target_or_server.server : target_or_server
+    def scp_using_local direction, target
+      ssh_server = target.server
 
       gateway = ssh_server.gateway ? "-oProxyCommand='ssh #{ssh_server.gateway} -W %h:%p'" : ""
 
@@ -31,11 +30,10 @@ module Bard
 
       ssh_opts = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 
-      # scp uses -P for port (uppercase, unlike ssh's -p)
       port = ssh_server.port
       port_opt = port && port.to_s != "22" ? "-P #{port}" : ""
 
-      from_and_to = [path, target_or_server.scp_uri(path).to_s]
+      from_and_to = [path, target.scp_uri(path).to_s]
       from_and_to.reverse! if direction == :from
 
       command = ["scp", ssh_opts, gateway, ssh_key, port_opt, *from_and_to].reject(&:empty?).join(" ")
@@ -43,8 +41,8 @@ module Bard
     end
 
     def scp_as_mediator
-      from_server = from.respond_to?(:server) ? from.server : from
-      to_server = to.respond_to?(:server) ? to.server : to
+      from_server = from.server
+      to_server = to.server
 
       raise NotImplementedError if from_server.gateway || to_server.gateway || from_server.ssh_key || to_server.ssh_key
       command = "scp -o ForwardAgent=yes #{from.scp_uri(path)} #{to.scp_uri(path)}"
@@ -61,9 +59,8 @@ module Bard
       end
     end
 
-    def rsync_using_local direction, target_or_server
-      # Support both new Target (with server attribute) and old Server
-      ssh_server = target_or_server.respond_to?(:server) ? target_or_server.server : target_or_server
+    def rsync_using_local direction, target
+      ssh_server = target.server
 
       ssh_uri = ssh_server.ssh_uri
 
@@ -72,7 +69,7 @@ module Bard
       ssh_key = ssh_server.ssh_key ? "-i #{ssh_server.ssh_key}" : ""
       ssh = "-e'ssh #{gateway} -p#{ssh_uri.port || 22}'"
 
-      from_and_to = ["./#{path}", target_or_server.rsync_uri(path)]
+      from_and_to = ["./#{path}", target.rsync_uri(path)]
       from_and_to.reverse! if direction == :from
       from_and_to[-1].sub! %r(/[^/]+$), '/'
 
@@ -81,8 +78,8 @@ module Bard
     end
 
     def rsync_as_mediator
-      from_server = from.respond_to?(:server) ? from.server : from
-      to_server = to.respond_to?(:server) ? to.server : to
+      from_server = from.server
+      to_server = to.server
 
       raise NotImplementedError if from_server.gateway || to_server.gateway || from_server.ssh_key || to_server.ssh_key
 
