@@ -19,14 +19,26 @@ module Bard
         @registry.values
       end
 
-      def load_all!
-        Dir[File.join(__dir__, "plugins", "*.rb")].sort.each { |f| require f }
-        Dir[File.join(Dir.pwd, "lib", "bard", "plugins", "*.rb")].sort.each { |f| require f }
-        all.each(&:apply!)
+      def load!(cli)
+        load_builtins
+        load_externals
+        all.each do |plugin|
+          plugin.apply!(cli)
+        end
       end
 
       def reset!
         @registry = {}
+      end
+
+      private
+
+      def load_builtins
+        Dir[File.join(__dir__, "plugins", "*.rb")].sort.each { |f| require f }
+      end
+
+      def load_externals
+        Dir[File.join(Dir.pwd, "lib", "bard", "plugins", "*.rb")].sort.each { |f| require f }
       end
     end
 
@@ -60,18 +72,14 @@ module Bard
       @config_methods[name] = block
     end
 
-    # Apply plugin to the system (non-CLI parts)
-    def apply!
+    def apply!(cli)
       @requires.each { |path| require path }
       apply_target_methods!
       apply_config_methods!
-    end
-
-    def apply_to_cli(cli_class)
       @cli_requires.each { |path| require path }
       @cli_modules.each do |mod|
         mod = resolve_constant(mod) if mod.is_a?(String)
-        mod.setup(cli_class)
+        mod.setup(cli)
       end
     end
 

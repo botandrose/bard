@@ -27,8 +27,7 @@ module Bard
       include const_get(klass)
     end
 
-    Plugin.load_all!
-    Plugin.all.each { |plugin| plugin.apply_to_cli(self) }
+    Plugin.load!(self)
 
     # Load core CI runners AFTER plugins so GithubActions is the default (last registered wins)
     require "bard/ci/local"
