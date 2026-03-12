@@ -171,31 +171,31 @@ module Bard
 
     # Remote command execution
     def run!(command, home: false, verbose: false, quiet: false, capture: false)
-      require_capability!(:ssh)
+      require_capability!(:ssh) unless key == :local
       result = Command.run!(command, on: self, home: home, verbose: verbose, quiet: quiet)
       result if capture
     end
 
     def run(command, home: false, verbose: false, quiet: false)
-      require_capability!(:ssh)
+      require_capability!(:ssh) unless key == :local
       Command.run(command, on: self, home: home, verbose: verbose, quiet: quiet)
     end
 
     def exec!(command, home: false)
-      require_capability!(:ssh)
+      require_capability!(:ssh) unless key == :local
       Command.exec!(command, on: self, home: home)
     end
 
     # File transfer
     def copy_file(path, to:, verbose: false)
-      require_capability!(:ssh)
-      to.require_capability!(:ssh) if to.respond_to?(:require_capability!)
+      require_capability!(:ssh) unless key == :local
+      to.require_capability!(:ssh) unless to.key == :local
       Copy.file(path, from: self, to: to, verbose: verbose)
     end
 
     def copy_dir(path, to:, verbose: false)
-      require_capability!(:ssh)
-      to.require_capability!(:ssh) if to.respond_to?(:require_capability!)
+      require_capability!(:ssh) unless key == :local
+      to.require_capability!(:ssh) unless to.key == :local
       Copy.dir(path, from: self, to: to, verbose: verbose)
     end
 

@@ -133,7 +133,7 @@ describe Bard::Target do
 
     describe "#run!" do
       it "requires SSH capability" do
-        target_without_ssh = described_class.new(:local, config)
+        target_without_ssh = described_class.new(:staging, config)
         expect { target_without_ssh.run!("ls") }
           .to raise_error(/SSH not configured/)
       end
@@ -147,7 +147,7 @@ describe Bard::Target do
 
     describe "#run" do
       it "requires SSH capability" do
-        target_without_ssh = described_class.new(:local, config)
+        target_without_ssh = described_class.new(:staging, config)
         expect { target_without_ssh.run("ls") }
           .to raise_error(/SSH not configured/)
       end
@@ -161,7 +161,7 @@ describe Bard::Target do
 
     describe "#exec!" do
       it "requires SSH capability" do
-        target_without_ssh = described_class.new(:local, config)
+        target_without_ssh = described_class.new(:staging, config)
         expect { target_without_ssh.exec!("ls") }
           .to raise_error(/SSH not configured/)
       end
@@ -189,13 +189,13 @@ describe Bard::Target do
 
     describe "#copy_file" do
       it "requires SSH capability on source" do
-        target_without_ssh = described_class.new(:local, config)
+        target_without_ssh = described_class.new(:staging, config)
         expect { target_without_ssh.copy_file("test.txt", to: dest_target) }
           .to raise_error(/SSH not configured/)
       end
 
       it "requires SSH capability on destination" do
-        target_without_ssh = described_class.new(:local, config)
+        target_without_ssh = described_class.new(:staging, config)
         expect { source_target.copy_file("test.txt", to: target_without_ssh) }
           .to raise_error(/SSH not configured/)
       end
@@ -209,13 +209,13 @@ describe Bard::Target do
 
     describe "#copy_dir" do
       it "requires SSH capability on source" do
-        target_without_ssh = described_class.new(:local, config)
+        target_without_ssh = described_class.new(:staging, config)
         expect { target_without_ssh.copy_dir("test/", to: dest_target) }
           .to raise_error(/SSH not configured/)
       end
 
       it "requires SSH capability on destination" do
-        target_without_ssh = described_class.new(:local, config)
+        target_without_ssh = described_class.new(:staging, config)
         expect { source_target.copy_dir("test/", to: target_without_ssh) }
           .to raise_error(/SSH not configured/)
       end
