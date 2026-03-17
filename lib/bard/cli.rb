@@ -55,7 +55,14 @@ module Bard
       end
 
       def project_name
-        @project_name ||= File.expand_path(".").split("/").last
+        @project_name ||= begin
+          git_common_dir = `git rev-parse --git-common-dir 2>/dev/null`.chomp
+          if $?.success? && !git_common_dir.empty?
+            File.basename(File.dirname(File.expand_path(git_common_dir)))
+          else
+            File.basename(File.expand_path("."))
+          end
+        end
       end
     end
   end
