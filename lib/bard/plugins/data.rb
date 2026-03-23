@@ -41,4 +41,12 @@ end
 
 Bard::Plugin.register :data do
   cli Bard::CLI::Data
+
+  config_method :data do |*paths|
+    if paths.empty?
+      @data_paths ||= []
+    else
+      @data_paths = paths
+    end
+  end
 end

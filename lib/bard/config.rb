@@ -8,11 +8,12 @@ module Bard
 
     def self.detect_project_name
       git_common_dir = `git rev-parse --git-common-dir 2>/dev/null`.chomp
-      if $?.success? && !git_common_dir.empty?
-        File.basename(File.dirname(File.expand_path(git_common_dir)))
+      dirname = if $?.success? && !git_common_dir.empty?
+        File.dirname(File.expand_path(git_common_dir))
       else
-        File.basename(Dir.getwd)
+        Dir.getwd
       end
+      File.basename(dirname)
     end
 
     attr_reader :project_name, :targets
@@ -20,8 +21,6 @@ module Bard
     def initialize(project_name = nil, path: nil, source: nil)
       @project_name = project_name
       @targets = {}
-      @data_paths = []
-
       load_defaults if project_name
 
       if path && File.exist?(path)
@@ -51,18 +50,6 @@ module Bard
         key = :staging
       end
       @targets[key]
-    end
-
-    def data(*paths)
-      if paths.empty?
-        @data_paths
-      else
-        @data_paths = paths
-      end
-    end
-
-    def data_paths
-      @data_paths
     end
 
     private
