@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/deploy"
+require "bard/plugins/deploy"
 require "thor"
 
 class TestDeployCLI < Thor

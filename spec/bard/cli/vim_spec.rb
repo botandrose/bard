@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/vim"
+require "bard/plugins/vim"
 require "thor"
 
 class TestVimCLI < Thor

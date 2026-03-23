@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/master_key"
+require "bard/plugins/master_key"
 require "thor"
 
 class TestMasterKeyCLI < Thor

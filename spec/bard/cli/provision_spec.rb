@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/provision"
+require "bard/plugins/provision"
 
 describe Bard::CLI::Provision do
   let(:config) { { production: double("production", ssh: "user@example.com") } }

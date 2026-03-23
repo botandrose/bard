@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/new"
+require "bard/plugins/new"
 
 describe Bard::CLI::New do
   let(:new_cli) { Bard::CLI::New.new(double("cli")) }

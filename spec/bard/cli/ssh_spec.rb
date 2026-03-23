@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/ssh"
+require "bard/plugins/ssh"
 require "thor"
 
 class TestSSHCLI < Thor

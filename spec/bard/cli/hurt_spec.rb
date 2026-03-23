@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/hurt"
+require "bard/plugins/hurt"
 require "thor"
 
 class TestHurtCLI < Thor

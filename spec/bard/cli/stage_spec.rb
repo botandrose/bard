@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/stage"
+require "bard/plugins/stage"
 require "thor"
 
 class TestStageCLI < Thor

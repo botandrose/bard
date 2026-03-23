@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/data"
+require "bard/plugins/data"
 
 require "thor"
 

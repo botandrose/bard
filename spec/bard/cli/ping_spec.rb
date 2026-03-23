@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/ping"
+require "bard/plugins/ping"
 require "thor"
 
 class TestPingCLI < Thor

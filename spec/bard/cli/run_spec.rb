@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/run"
+require "bard/plugins/run"
 require "thor"
 
 class TestRunCLI < Thor
