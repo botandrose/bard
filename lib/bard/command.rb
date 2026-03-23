@@ -24,9 +24,6 @@ module Bard
     end
 
     def run verbose: false, quiet: false
-      if on.to_sym != :local && on.server.nil?
-        return true
-      end
       if verbose
         system full_command(quiet: quiet)
       else
