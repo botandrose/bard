@@ -11,7 +11,7 @@ class Bard::CLI::Data < Bard::CLI::Command
     to = config[options[:to]]
 
     if to.key == :production
-      url = to.ping.first
+      url = to.url
       puts yellow "WARNING: You are about to push data to production, overwriting everything that is there!"
       answer = ask("If you really want to do this, please type in the full HTTPS url of the production server:")
       if answer != url

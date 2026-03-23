@@ -1,5 +1,6 @@
 require "spec_helper"
 require "bard/target"
+require "bard/plugins/ping/target_methods"
 
 describe "Capability System" do
   let(:config) { double("config", project_name: "testapp") }
@@ -13,9 +14,9 @@ describe "Capability System" do
 
     it "can enable multiple capabilities" do
       target.enable_capability(:ssh)
-      target.enable_capability(:ping)
+      target.enable_capability(:url)
       expect(target.has_capability?(:ssh)).to be true
-      expect(target.has_capability?(:ping)).to be true
+      expect(target.has_capability?(:url)).to be true
     end
   end
 
@@ -41,9 +42,9 @@ describe "Capability System" do
         .to raise_error(/SSH not configured for this target/)
     end
 
-    it "provides custom error message for ping capability" do
-      expect { target.require_capability!(:ping) }
-        .to raise_error(/Ping URL not configured for this target/)
+    it "provides custom error message for url capability" do
+      expect { target.require_capability!(:url) }
+        .to raise_error(/URL not configured for this target/)
     end
 
     it "provides generic error message for unknown capabilities" do
@@ -82,15 +83,10 @@ describe "Capability System" do
       end
     end
 
-    context "Ping-dependent methods" do
-      it "ping! requires ping capability" do
+    context "URL-dependent methods" do
+      it "ping! requires url capability" do
         expect { target.ping! }
-          .to raise_error(/Ping URL not configured/)
-      end
-
-      it "open requires ping capability" do
-        expect { target.open }
-          .to raise_error(/Ping URL not configured/)
+          .to raise_error(/URL not configured/)
       end
     end
   end

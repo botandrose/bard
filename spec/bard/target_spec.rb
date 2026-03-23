@@ -1,5 +1,6 @@
 require "spec_helper"
 require "bard/target"
+require "bard/plugins/ping/target_methods"
 
 describe Bard::Target do
   let(:config) { double("config", project_name: "testapp") }
@@ -16,7 +17,7 @@ describe Bard::Target do
 
     it "initializes with no capabilities" do
       expect(target.has_capability?(:ssh)).to be false
-      expect(target.has_capability?(:ping)).to be false
+      expect(target.has_capability?(:url)).to be false
     end
 
     it "initializes with no deploy strategy" do
@@ -75,8 +76,8 @@ describe Bard::Target do
         expect(target.env).to eq("RAILS_ENV=production")
       end
 
-      it "auto-configures ping URL from hostname" do
-        expect(target.ping_urls).to include("https://example.com")
+      it "auto-configures url from hostname" do
+        expect(target.url).to eq("https://example.com")
       end
     end
 
@@ -93,25 +94,45 @@ describe Bard::Target do
     end
   end
 
-  describe "#ping" do
-    it "enables ping capability with single URL" do
-      target.ping("https://example.com")
-      expect(target.has_capability?(:ping)).to be true
-      expect(target.ping_urls).to include("https://example.com")
+  describe "#url" do
+    it "enables url capability" do
+      target.url("https://example.com")
+      expect(target.has_capability?(:url)).to be true
+      expect(target.url).to eq("https://example.com")
     end
 
+    it "normalizes URLs without scheme" do
+      target.url("example.com")
+      expect(target.url).to eq("https://example.com")
+    end
+
+    it "disables url with false" do
+      target.url("https://example.com")
+      target.url(false)
+      expect(target.has_capability?(:url)).to be false
+      expect(target.url).to be_nil
+    end
+  end
+
+  describe "#ping" do
     it "accepts multiple URLs" do
-      target.ping("https://example.com", "/health", "/status")
-      expect(target.ping_urls).to include("https://example.com")
-      expect(target.ping_urls).to include("/health")
-      expect(target.ping_urls).to include("/status")
+      target.ping("https://example.com", "https://example.com/health")
+      expect(target.ping).to eq(["https://example.com", "https://example.com/health"])
+    end
+
+    it "defaults to url when not explicitly set" do
+      target.url("https://example.com")
+      expect(target.ping).to eq(["https://example.com"])
+    end
+
+    it "returns empty array when no url or ping configured" do
+      expect(target.ping).to eq([])
     end
 
     it "disables ping with false" do
       target.ping("https://example.com")
       target.ping(false)
-      expect(target.has_capability?(:ping)).to be false
-      expect(target.ping_urls).to be_empty
+      expect(target.ping).to be_empty
     end
   end
 

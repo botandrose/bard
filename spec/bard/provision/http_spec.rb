@@ -3,7 +3,7 @@ require "bard/plugins/provision/base"
 require "bard/plugins/provision/http"
 
 describe Bard::Provision::HTTP do
-  let(:server) { double("server", ping: ["https://example.com"]) }
+  let(:server) { double("server", url: "https://example.com") }
   let(:config) { { production: server } }
   let(:ssh_url) { "user@example.com" }
   let(:provision_server) { double("provision_server") }

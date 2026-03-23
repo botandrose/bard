@@ -52,7 +52,7 @@ describe Bard::CLI::Data do
     end
 
     context "pushing to production" do
-      let(:to) { double("to", key: :production, ping: ["https://example.com"]) }
+      let(:to) { double("to", key: :production, url: "https://example.com") }
 
       before do
         allow(cli).to receive(:options).and_return({from: "local", to: "production"})

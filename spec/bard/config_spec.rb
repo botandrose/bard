@@ -41,7 +41,7 @@ describe Bard::Config do
     subject { described_class.new("tracker", source: <<~SOURCE) }
       target :production do
         ssh "www@ssh.botandrose.com:22022"
-        ping "tracker.botandrose.com"
+        url "tracker.botandrose.com"
       end
 
       data "public/system", "public/ckeditor"
@@ -100,7 +100,7 @@ describe Bard::Config do
       staging = subject[:staging]
       expect(staging).to be_a(Bard::Target)
       expect(staging.ssh.to_s).to eq "deploy@new-host.com"
-      expect(staging.ping).to eq ["https://new-host.com"]
+      expect(staging.url).to eq "https://new-host.com"
     end
   end
 

@@ -12,7 +12,7 @@ module Bard
       @key = key
       @config = config
       @capabilities = []
-      @ping_urls = []
+      @url = nil
       @strategy_options_hash = {}
       @deploy_strategy = nil
       @path = nil
@@ -33,8 +33,8 @@ module Bard
         error_message = case capability
         when :ssh
           "SSH not configured for this target"
-        when :ping
-          "Ping URL not configured for this target"
+        when :url
+          "URL not configured for this target"
         else
           "#{capability} capability not configured for this target"
         end
@@ -65,9 +65,9 @@ module Bard
         # Set SSH as default deployment strategy if none set
         @deploy_strategy ||= :ssh
 
-        # Auto-configure ping from hostname
+        # Auto-configure url from hostname
         hostname = @server.hostname
-        ping("https://#{hostname}") if hostname
+        url("https://#{hostname}") if hostname
       end
     end
 
@@ -82,38 +82,17 @@ module Bard
 
     attr_reader :gateway, :ssh_key, :env
 
-    # Ping configuration
-    def ping(*urls)
-      if urls.empty?
-        # Getter - normalize URLs like Server does
-        @ping_urls.map { |url| normalize_ping(url) }
-      elsif urls.first == false
-        # Disable ping
-        @ping_urls = []
-        @capabilities.delete(:ping)
+    # URL configuration
+    def url(value = nil)
+      if value.nil?
+        @url
+      elsif value == false
+        @url = nil
+        @capabilities.delete(:url)
       else
-        # Enable ping
-        @ping_urls = urls.flatten
-        enable_capability(:ping)
+        @url = normalize_url(value)
+        enable_capability(:url)
       end
-    end
-
-    def ping_urls
-      @ping_urls
-    end
-
-    def ping!
-      require_capability!(:ping)
-      require "bard/ping"
-      failed_urls = Bard::Ping.call(self)
-      if failed_urls.any?
-        raise "Ping failed for: #{failed_urls.join(', ')}"
-      end
-    end
-
-    def open
-      require_capability!(:ping)
-      system "open #{ping_urls.first}"
     end
 
     # Deploy strategy
@@ -143,9 +122,9 @@ module Bard
         # Store options
         @strategy_options_hash[method] = kwargs
 
-        # Auto-configure ping if first arg is a URL
+        # Auto-configure url if first arg is a URL
         if args.first && args.first.to_s =~ /^https?:\/\//
-          ping(args.first)
+          url(args.first)
         end
       else
         super
@@ -220,8 +199,7 @@ module Bard
 
     private
 
-    def normalize_ping(value)
-      return nil if value == false || value.nil?
+    def normalize_url(value)
       normalized = value.to_s
       normalized = "https://#{normalized}" unless normalized.start_with?("http")
       normalized

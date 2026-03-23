@@ -19,7 +19,7 @@ class TestOpenCLI < Thor
 end
 
 describe Bard::CLI::Open do
-  let(:server) { double("server", ping: ["https://example.com"]) }
+  let(:server) { double("server", url: "https://example.com") }
   let(:config) { { production: server } }
   let(:cli) { TestOpenCLI.new }
 
@@ -40,7 +40,7 @@ describe Bard::CLI::Open do
     end
 
     it "should open specified server URL" do
-      staging_server = double("staging", ping: ["https://staging.example.com"])
+      staging_server = double("staging", url: "https://staging.example.com")
       allow(config).to receive(:[]).with(:staging).and_return(staging_server)
 
       expect_any_instance_of(Bard::CLI::Open).to receive(:exec).with("xdg-open https://staging.example.com")
@@ -61,7 +61,7 @@ describe Bard::CLI::Open do
       expect(command.send(:open_url, :ci)).to eq("https://github.com/botandrosedesign/test_project/actions/workflows/ci.yml")
     end
 
-    it "returns server ping URL for other servers" do
+    it "returns server url for other servers" do
       command = Bard::CLI::Open.new(cli)
       expect(command.send(:open_url, :production)).to eq("https://example.com")
     end

@@ -1,5 +1,6 @@
 require "bard/plugin"
 require "bard/cli/command"
+require "bard/plugins/ping"
 require "bard/git"
 require "bard/command"
 require "bard/plugins/deploy/ci"

@@ -34,9 +34,9 @@ describe "Dynamic DSL Methods" do
       expect(options[:env]).to eq("production")
     end
 
-    it "auto-configures ping URL from first argument if it's a URL" do
+    it "auto-configures url from first argument if it's a URL" do
       target.jets("https://api.example.com")
-      expect(target.ping_urls).to include("https://api.example.com")
+      expect(target.url).to eq("https://api.example.com")
     end
 
     it "works with multiple strategies" do
@@ -65,7 +65,7 @@ describe "Dynamic DSL Methods" do
       expect(target.has_capability?(:ssh)).to be true
     end
 
-    it "allows strategy configuration without ping URL" do
+    it "allows strategy configuration without url" do
       target.docker(skip_build: true)
       options = target.strategy_options(:docker)
       expect(options[:skip_build]).to be true

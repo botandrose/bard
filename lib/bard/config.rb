@@ -57,25 +57,23 @@ module Bard
     def load_defaults
       target :local do
         ssh false
-        ping false
       end
 
       target :gubs do
         ssh "botandrose@cloud.hackett.world:22022"
-        ping false
+        url false
       end
 
       target :ci do
         ssh "jenkins@staging.botandrose.com:22022",
           path: "jobs/#{config.project_name}/workspace"
-        ping false
+        url false
       end
 
       target :staging do
         ssh "www@staging.botandrose.com:22022"
-        ping "#{config.project_name}.botandrose.com"
+        url "#{config.project_name}.botandrose.com"
       end
     end
   end
-
 end

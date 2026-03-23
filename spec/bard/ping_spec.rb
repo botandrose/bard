@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/ping"
+require "bard/plugins/ping/check"
 
 describe Bard::Ping do
   let(:server) { double("server", ping: ["http://example.com"]) }

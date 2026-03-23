@@ -41,9 +41,7 @@ EOF"
   def nginx_server_name
     case ENV["RAILS_ENV"]
     when "production"
-      (config[:production].ping.map do |str|
-        "*.#{URI.parse(str).host}"
-      end + ["_"]).join(" ")
+      "*.#{URI.parse(config[:production].url).host} _"
     when "staging" then "#{project_name}.botandrose.com"
     else "#{project_name}.localhost"
     end

@@ -13,7 +13,7 @@ class Bard::CLI::Open < Bard::CLI::Command
     if server.to_sym == :ci
       "https://github.com/botandrosedesign/#{project_name}/actions/workflows/ci.yml"
     else
-      config[server].ping.first
+      config[server].url
     end
   end
 end

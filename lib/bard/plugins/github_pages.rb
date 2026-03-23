@@ -6,16 +6,13 @@ require "bard/plugins/github_pages/strategy"
 Bard::Plugin.register :github_pages do
   # Config DSL: github_pages "url" sets up a production target
   config_method :github_pages do |url|
-    urls = []
     uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
     hostname = uri.hostname.sub(/^www\./, "")
-    urls = [hostname]
-    urls << "www.#{hostname}" if hostname.count(".") < 2
 
     target :production do
       github_pages url
       ssh false
-      ping(*urls) if urls.any?
+      url(hostname) if hostname
     end
 
     backup(false) if respond_to?(:backup)

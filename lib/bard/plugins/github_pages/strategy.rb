@@ -11,8 +11,7 @@ module Bard
         @url = url || target.github_pages
         @options = options
 
-        # Auto-configure ping URL if provided
-        target.ping(url) if url
+        target.url(url) if url
       end
 
       def deploy

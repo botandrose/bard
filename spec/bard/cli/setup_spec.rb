@@ -44,7 +44,7 @@ describe Bard::CLI::Setup do
 
   describe "#nginx_server_name" do
     let(:command) { Bard::CLI::Setup.new(cli) }
-    let(:production_server) { double("production", ping: ["https://example.com"]) }
+    let(:production_server) { double("production", url: "https://example.com") }
 
     before do
       allow(cli).to receive(:config).and_return({ production: production_server })

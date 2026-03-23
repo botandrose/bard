@@ -4,7 +4,6 @@ require "thor"
 require "bard/version"
 require "bard/config"
 require "bard/command"
-require "bard/ping"
 require "bard/plugin"
 require "term/ansicolor"
 
@@ -13,13 +12,6 @@ module Bard
     include Term::ANSIColor
 
     class_option :verbose, type: :boolean, aliases: :v
-
-    desc "ping [target=production]", "hits the target over http to verify that its up."
-    def ping target=:production
-      down_urls = Bard::Ping.call(config[target])
-      down_urls.each { |url| puts "#{url} is down!" }
-      exit 1 if down_urls.any?
-    end
 
     map "--version" => :version
     desc "version", "Display version"
