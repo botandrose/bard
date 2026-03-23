@@ -54,7 +54,7 @@ describe Bard::CLI::New do
 
   describe "#template_path" do
     it "returns the path to the rails template" do
-      expect(new_cli.send(:template_path)).to match(/new_rails_template\.rb$/)
+      expect(new_cli.send(:template_path)).to match(/rails_template\.rb$/)
     end
   end
 

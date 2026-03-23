@@ -97,7 +97,7 @@ class Bard::CLI::New < Bard::CLI::Command
   end
 
   def template_path
-    File.expand_path("../cli/new_rails_template.rb", __dir__)
+    File.expand_path("new/rails_template.rb", __dir__)
   end
 end
 
