@@ -202,25 +202,26 @@ class Bard::CLI::MasterKey < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :deploy do
-  cli Bard::CLI::Deploy
-  cli Bard::CLI::Stage
-  cli Bard::CLI::CI
-  cli Bard::CLI::MasterKey
+require "bard/config"
 
-  config_method :ci do |system = nil|
+class Bard::Config
+  def ci(system = nil)
     if system.nil?
       @ci_system
     else
       @ci_system = system
     end
   end
+end
 
-  target_method :deploy_strategy do
+require "bard/target"
+
+class Bard::Target
+  def deploy_strategy
     @deploy_strategy
   end
 
-  target_method :deploy_strategy_instance do
+  def deploy_strategy_instance
     strategy = @deploy_strategy
     strategy ||= :ssh if has_capability?(:ssh)
     raise "No deployment strategy configured for target #{key}" unless strategy
@@ -231,7 +232,7 @@ Bard::Plugin.register :deploy do
     strategy_class.new(self)
   end
 
-  target_method :strategy_options do |strategy_name|
+  def strategy_options(strategy_name)
     @strategy_options_hash ||= {}
     @strategy_options_hash[strategy_name] || {}
   end

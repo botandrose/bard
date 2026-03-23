@@ -10,6 +10,3 @@ class Bard::CLI::Install < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :install do
-  cli Bard::CLI::Install
-end

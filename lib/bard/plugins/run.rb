@@ -23,6 +23,3 @@ class Bard::CLI::Run < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :run do
-  cli Bard::CLI::Run
-end

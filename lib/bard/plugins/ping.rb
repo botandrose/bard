@@ -10,6 +10,3 @@ class Bard::CLI::Ping < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :ping do
-  cli Bard::CLI::Ping
-end

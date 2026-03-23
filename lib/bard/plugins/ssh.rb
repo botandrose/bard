@@ -8,6 +8,3 @@ class Bard::CLI::SSH < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :ssh do
-  cli Bard::CLI::SSH
-end

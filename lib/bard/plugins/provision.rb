@@ -32,6 +32,3 @@ class Bard::CLI::Provision < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :provision do
-  cli Bard::CLI::Provision
-end

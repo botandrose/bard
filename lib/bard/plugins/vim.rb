@@ -7,6 +7,3 @@ class Bard::CLI::Vim < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :vim do
-  cli Bard::CLI::Vim
-end

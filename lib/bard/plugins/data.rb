@@ -38,10 +38,10 @@ class Bard::CLI::Data < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :data do
-  cli Bard::CLI::Data
+require "bard/config"
 
-  config_method :data do |*paths|
+class Bard::Config
+  def data(*paths)
     if paths.empty?
       @data_paths ||= []
     else

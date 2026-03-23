@@ -17,6 +17,3 @@ class Bard::CLI::Open < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :open do
-  cli Bard::CLI::Open
-end

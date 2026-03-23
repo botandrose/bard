@@ -100,6 +100,3 @@ class Bard::CLI::New < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :new do
-  cli Bard::CLI::New
-end

@@ -47,6 +47,3 @@ EOF"
   end
 end
 
-Bard::Plugin.register :setup do
-  cli Bard::CLI::Setup
-end

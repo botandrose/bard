@@ -14,6 +14,3 @@ class Bard::CLI::Hurt < Bard::Plugin::Command
   end
 end
 
-Bard::Plugin.register :hurt do
-  cli Bard::CLI::Hurt
-end

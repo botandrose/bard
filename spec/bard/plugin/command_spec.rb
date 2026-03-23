@@ -1,5 +1,4 @@
 require "spec_helper"
-require "bard/cli"
 require "bard/plugin"
 
 class TestCommand < Bard::Plugin::Command
@@ -41,9 +40,13 @@ describe Bard::Plugin::Command do
   end
 
   describe "delegation" do
-    it "should delegate to the wrapped object" do
+    it "delegates unknown methods to the cli" do
       allow(cli_mock).to receive(:some_method).and_return("delegated")
-      expect(command.some_method).to eq("delegated")
+      expect(command.send(:some_method)).to eq("delegated")
+    end
+
+    it "raises NoMethodError for methods not on cli" do
+      expect { command.send(:nonexistent_method) }.to raise_error(NoMethodError)
     end
   end
 end

@@ -4,18 +4,37 @@ Bard uses a plugin system to extend functionality. Plugins can add CLI commands,
 
 ## Plugin Structure
 
-Plugins live in `lib/bard/plugins/` and register themselves:
+Plugins live in `lib/bard/plugins/` and are auto-loaded. Command classes auto-register when they subclass `Bard::Plugin::Command`:
 
 ```ruby
 # lib/bard/plugins/my_plugin.rb
 require "bard/plugin"
 
-Bard::Plugin.register :my_plugin do
-  # Add CLI commands (class must implement .setup)
-  cli "Bard::CLI::MyPlugin", require: "bard/cli/my_plugin"
+class Bard::CLI::MyPlugin < Bard::Plugin::Command
+  desc "mycommand", "Description of my command"
+  option :verbose, type: :boolean
+  def mycommand
+    puts "Hello from my plugin!"
+    puts config[:production].url
+  end
+end
+```
 
-  # Add methods to Target
-  target_method :my_feature do |url = nil|
+That's it — no registration block needed. The `Command` base class provides:
+- Automatic registration via Ruby's `inherited` hook
+- `desc` and `option` class methods for Thor integration
+- Delegation to the CLI instance (access to `config`, `project_name`, `run!`, `options`, etc.)
+
+## Extending Target and Config
+
+To add methods to `Bard::Target` or `Bard::Config`, reopen the class directly:
+
+```ruby
+# lib/bard/plugins/my_plugin.rb
+require "bard/target"
+
+class Bard::Target
+  def my_feature(url = nil)
     if url.nil?
       @my_feature_url
     else
@@ -23,50 +42,17 @@ Bard::Plugin.register :my_plugin do
       enable_capability(:my_feature)
     end
   end
+end
 
-  # Add methods to Config
-  config_method :my_global_setting do |value = nil|
+require "bard/config"
+
+class Bard::Config
+  def my_global_setting(value = nil)
     if value.nil?
       @my_global_setting
     else
       @my_global_setting = value
     end
-  end
-end
-```
-
-## CLI Commands
-
-CLI commands inherit from `Bard::Plugin::Command` and implement a `setup` class method:
-
-```ruby
-# lib/bard/cli/my_plugin.rb
-
-class Bard::CLI::MyPlugin < Bard::Plugin::Command
-  desc "mycommand", "Description of my command"
-  def mycommand
-    puts "Hello from my plugin!"
-  end
-end
-```
-
-The `Command` base class provides:
-- Automatic `setup` that registers the command with the CLI
-- Delegation to the CLI instance (access to `config`, `project_name`, etc.)
-- `desc` and `option` class methods for Thor integration
-
-For Thor subcommand groups (nested under `bard mygroup`):
-
-```ruby
-# lib/bard/cli/my_subcommand.rb
-class Bard::CLI::MySubcommand < Thor
-  def self.setup(cli)
-    cli.register(self, "mygroup", "mygroup COMMAND", "My subcommand group")
-  end
-
-  desc "action", "Do something"
-  def action
-    puts "Hello from subcommand!"
   end
 end
 ```
@@ -110,4 +96,4 @@ Strategies auto-register via Ruby's `inherited` hook. The class name determines 
 
 ## Plugin Loading
 
-Plugins are loaded automatically from `lib/bard/plugins/`. The load order is alphabetical by filename. For CI runners, the last registered runner becomes the default.
+Plugins are loaded automatically from `lib/bard/plugins/`. The load order is alphabetical by filename. External plugins are loaded from the project's `lib/bard/plugins/` directory.

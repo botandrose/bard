@@ -1,11 +1,9 @@
-require "bard/plugin"
-
-# Load the deploy strategy (auto-registers via inherited hook)
 require "bard/plugins/github_pages/strategy"
+require "bard/config"
+require "bard/target"
 
-Bard::Plugin.register :github_pages do
-  # Config DSL: github_pages "url" sets up a production target
-  config_method :github_pages do |url|
+class Bard::Config
+  def github_pages(url)
     uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
     hostname = uri.hostname.sub(/^www\./, "")
 
@@ -17,9 +15,10 @@ Bard::Plugin.register :github_pages do
 
     backup(false) if respond_to?(:backup)
   end
+end
 
-  # Target DSL: github_pages sets deploy strategy
-  target_method :github_pages do |url = nil|
+class Bard::Target
+  def github_pages(url = nil)
     if url.nil?
       @github_pages_url
     else
