@@ -14,8 +14,6 @@ module Bard
       @project_name = project_name
       @targets = {}
       @data_paths = []
-      @backup = nil
-      @ci_system = nil
 
       load_defaults if project_name
 
@@ -60,59 +58,6 @@ module Bard
       @data_paths
     end
 
-    def backup(value = nil, &block)
-      if block_given?
-        @backup = BackupConfig.new(&block)
-      elsif value == false
-        @backup = BackupConfig.new { disabled }
-      elsif value.nil? # Getter
-        @backup ||= BackupConfig.new { bard }
-      else
-        raise ArgumentError, "backup accepts false or a block"
-      end
-    end
-
-    def backup_enabled?
-      backup == true
-    end
-
-    def github_pages url
-      urls = []
-      uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
-      hostname = uri.hostname.sub(/^www\./, '')
-      urls = [hostname]
-      if hostname.count(".") < 2
-        urls << "www.#{hostname}"
-      end
-
-      target :production do
-        github_pages url
-        ssh false
-        ping(*urls) if urls.any?
-      end
-
-      backup false
-    end
-
-    def ci(system = nil)
-      if system.nil?
-        @ci_system
-      else
-        @ci_system = system
-      end
-    end
-
-    def ci_system
-      @ci_system
-    end
-
-    def ci_instance(branch)
-      return nil if @ci_system == false
-
-      require "bard/ci"
-      CI.new(project_name, branch, runner_name: @ci_system)
-    end
-
     private
 
     def load_defaults
@@ -139,44 +84,4 @@ module Bard
     end
   end
 
-  class BackupConfig
-    attr_reader :destinations
-
-    def initialize(&block)
-      @destinations = []
-      instance_eval(&block) if block_given?
-    end
-
-    def bard
-      @bard = true
-    end
-
-    def bard?
-      !!@bard
-    end
-
-    def disabled
-      @disabled = true
-    end
-
-    def disabled?
-      !!@disabled
-    end
-
-    def enabled?
-      !disabled?
-    end
-
-    def s3(name, **kwargs)
-      @destinations << {
-        name: name,
-        type: :s3,
-        **kwargs,
-      }
-    end
-
-    def self_managed?
-      @destinations.any?
-    end
-  end
 end

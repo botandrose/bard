@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/ci"
+require "bard/plugins/deploy"
 require "thor"
 require "ostruct"
 

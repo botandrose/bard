@@ -2,13 +2,13 @@ require "net/http"
 require "uri"
 
 module Bard
-  class Ping < Struct.new(:server)
-    def self.call server
-      new(server).call
+  class Ping < Struct.new(:target)
+    def self.call target
+      new(target).call
     end
 
     def call
-      server.ping.reject { |url| reachable?(url) }
+      target.ping.reject { |url| reachable?(url) }
     end
 
     private

@@ -18,7 +18,7 @@ Bard::Plugin.register :github_pages do
       ping(*urls) if urls.any?
     end
 
-    backup false
+    backup(false) if respond_to?(:backup)
   end
 
   # Target DSL: github_pages sets deploy strategy

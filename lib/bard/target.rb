@@ -119,19 +119,6 @@ module Bard
     # Deploy strategy
     attr_reader :deploy_strategy
 
-    # GitHub Pages deployment configuration
-    def github_pages(url = nil)
-      if url.nil?
-        # Getter
-        @github_pages_url
-      else
-        # Setter
-        @deploy_strategy = :github_pages
-        @github_pages_url = url
-        enable_capability(:github_pages)
-      end
-    end
-
     def strategy_options(strategy_name)
       @strategy_options_hash[strategy_name] || {}
     end
