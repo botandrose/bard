@@ -1,7 +1,6 @@
 require "bard/plugin"
-require "bard/cli/command"
 
-class Bard::CLI::Open < Bard::CLI::Command
+class Bard::CLI::Open < Bard::Plugin::Command
   desc "open [server=production]", "opens the url in the web browser."
   def open server=:production
     exec "xdg-open #{open_url server}"

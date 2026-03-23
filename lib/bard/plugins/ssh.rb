@@ -1,7 +1,6 @@
 require "bard/plugin"
-require "bard/cli/command"
 
-class Bard::CLI::SSH < Bard::CLI::Command
+class Bard::CLI::SSH < Bard::Plugin::Command
   option :home, type: :boolean
   desc "ssh [to=production]", "logs into the specified server via SSH"
   def ssh to=:production

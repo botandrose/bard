@@ -1,8 +1,7 @@
 require "bard/plugin"
-require "bard/cli/command"
 require "bard/plugins/provision/base"
 
-class Bard::CLI::Provision < Bard::CLI::Command
+class Bard::CLI::Provision < Bard::Plugin::Command
   STEPS = %w[
     SSH
     User

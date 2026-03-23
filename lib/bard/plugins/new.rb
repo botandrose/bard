@@ -1,8 +1,7 @@
 require "bard/plugin"
-require "bard/cli/command"
 require "bard/github"
 
-class Bard::CLI::New < Bard::CLI::Command
+class Bard::CLI::New < Bard::Plugin::Command
   RAILS_REQUIREMENT = "~> 8.0.0"
   desc "new <project-name>", "creates new bard app named <project-name>"
   def new project_name

@@ -1,8 +1,8 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/cli/command"
+require "bard/plugin"
 
-class TestCommand < Bard::CLI::Command
+class TestCommand < Bard::Plugin::Command
   desc "test_command", "test command description"
   option :verbose, type: :boolean
 
@@ -11,7 +11,7 @@ class TestCommand < Bard::CLI::Command
   end
 end
 
-describe Bard::CLI::Command do
+describe Bard::Plugin::Command do
   let(:cli_mock) { double("cli") }
   let(:command) { TestCommand.new(cli_mock) }
 

@@ -1,8 +1,7 @@
 require "bard/plugin"
-require "bard/cli/command"
 require "uri"
 
-class Bard::CLI::Setup < Bard::CLI::Command
+class Bard::CLI::Setup < Bard::Plugin::Command
   desc "setup", "installs app in nginx"
   def setup
     system "sudo tee /etc/nginx/snippets/common.conf >/dev/null <<-EOF

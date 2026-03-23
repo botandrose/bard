@@ -1,5 +1,4 @@
 require "bard/plugin"
-require "bard/cli/command"
 require "bard/plugins/ping"
 require "bard/git"
 require "bard/command"
@@ -11,7 +10,7 @@ require "bard/plugins/deploy/ci/local"
 require "bard/plugins/deploy/ci/github_actions"
 require "tmpdir"
 
-class Bard::CLI::Deploy < Bard::CLI::Command
+class Bard::CLI::Deploy < Bard::Plugin::Command
   option :"skip-ci", type: :boolean
   option :"local-ci", type: :boolean
   option :ci, type: :string
@@ -106,7 +105,7 @@ class Bard::CLI::Deploy < Bard::CLI::Command
   end
 end
 
-class Bard::CLI::Stage < Bard::CLI::Command
+class Bard::CLI::Stage < Bard::Plugin::Command
   desc "stage [branch=HEAD]", "pushes current branch, and stages it"
   def stage branch=Bard::Git.current_branch
     unless config.targets.key?(:production)
@@ -128,7 +127,7 @@ class Bard::CLI::Stage < Bard::CLI::Command
   end
 end
 
-class Bard::CLI::CI < Bard::CLI::Command
+class Bard::CLI::CI < Bard::Plugin::Command
   option :"local-ci", type: :boolean
   option :ci, type: :string
   option :status, type: :boolean
@@ -192,7 +191,7 @@ class Bard::CLI::CI < Bard::CLI::Command
   end
 end
 
-class Bard::CLI::MasterKey < Bard::CLI::Command
+class Bard::CLI::MasterKey < Bard::Plugin::Command
   option :from, default: "production"
   option :to, default: "local"
   desc "master_key --from=production --to=local", "copy master key from from to to"

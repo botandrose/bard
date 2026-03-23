@@ -37,13 +37,12 @@ end
 
 ## CLI Commands
 
-CLI commands inherit from `Bard::CLI::Command` and implement a `setup` class method:
+CLI commands inherit from `Bard::Plugin::Command` and implement a `setup` class method:
 
 ```ruby
 # lib/bard/cli/my_plugin.rb
-require "bard/cli/command"
 
-class Bard::CLI::MyPlugin < Bard::CLI::Command
+class Bard::CLI::MyPlugin < Bard::Plugin::Command
   desc "mycommand", "Description of my command"
   def mycommand
     puts "Hello from my plugin!"

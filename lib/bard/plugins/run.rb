@@ -1,8 +1,7 @@
 require "bard/plugin"
-require "bard/cli/command"
 require "bard/command"
 
-class Bard::CLI::Run < Bard::CLI::Command
+class Bard::CLI::Run < Bard::Plugin::Command
   option :target, type: :string, default: "production"
   option :home, type: :boolean
   desc "run <command>", "run the given command on the specified target"
