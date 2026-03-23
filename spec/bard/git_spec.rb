@@ -46,14 +46,18 @@ describe Bard::Git do
 
   describe ".sha_of" do
     it "should return the sha of a ref" do
-      allow(Bard::Git).to receive(:`).with("git rev-parse ref 2>/dev/null").and_return("sha\n")
-      allow(Bard::Git).to receive(:command_succeeded?).and_return(true)
+      allow(Bard::Git).to receive(:`).with("git rev-parse ref 2>/dev/null") {
+        `true` # sets $? to success
+        "sha\n"
+      }
       expect(Bard::Git.sha_of("ref")).to eq("sha")
     end
 
     it "should return nil if the ref does not exist" do
-      allow(Bard::Git).to receive(:`).with("git rev-parse ref 2>/dev/null").and_return("ref: fatal: ambiguous argument 'ref': unknown revision or path not in the working tree.\n")
-      allow(Bard::Git).to receive(:command_succeeded?).and_return(false)
+      allow(Bard::Git).to receive(:`).with("git rev-parse ref 2>/dev/null") {
+        `false` # sets $? to failure
+        "ref: fatal: ambiguous argument 'ref': unknown revision or path not in the working tree.\n"
+      }
       expect(Bard::Git.sha_of("ref")).to be_nil
     end
   end
