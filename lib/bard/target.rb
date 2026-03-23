@@ -1,7 +1,6 @@
 require "uri"
 require "bard/command"
 require "bard/copy"
-require "bard/deploy_strategy"
 
 module Bard
   class Target
@@ -13,8 +12,6 @@ module Bard
       @config = config
       @capabilities = []
       @url = nil
-      @strategy_options_hash = {}
-      @deploy_strategy = nil
       @path = nil
       @server = nil
     end
@@ -62,9 +59,6 @@ module Bard
         @env = options[:env] if options[:env]
         enable_capability(:ssh)
 
-        # Set SSH as default deployment strategy if none set
-        @deploy_strategy ||= :ssh
-
         # Auto-configure url from hostname
         hostname = @server.hostname
         url("https://#{hostname}") if hostname
@@ -93,46 +87,6 @@ module Bard
         @url = normalize_url(value)
         enable_capability(:url)
       end
-    end
-
-    # Deploy strategy
-    attr_reader :deploy_strategy
-
-    def strategy_options(strategy_name)
-      @strategy_options_hash[strategy_name] || {}
-    end
-
-    def deploy_strategy_instance
-      raise "No deployment strategy configured for target #{key}" unless @deploy_strategy
-
-      strategy_class = DeployStrategy[@deploy_strategy]
-      raise "Unknown deployment strategy: #{@deploy_strategy}" unless strategy_class
-
-      strategy_class.new(self)
-    end
-
-    # Dynamic strategy DSL via method_missing
-    def method_missing(method, *args, **kwargs, &block)
-      strategy_class = DeployStrategy[method]
-
-      if strategy_class
-        # This is a deployment strategy
-        @deploy_strategy = method
-
-        # Store options
-        @strategy_options_hash[method] = kwargs
-
-        # Auto-configure url if first arg is a URL
-        if args.first && args.first.to_s =~ /^https?:\/\//
-          url(args.first)
-        end
-      else
-        super
-      end
-    end
-
-    def respond_to_missing?(method, include_private = false)
-      DeployStrategy[method] || super
     end
 
     # Remote command execution

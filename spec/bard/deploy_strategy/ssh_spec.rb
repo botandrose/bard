@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/deploy_strategy"
+require "bard/plugins/deploy/strategy"
 require "bard/plugins/deploy/ssh_strategy"
 
 describe Bard::DeployStrategy::SSH do
@@ -57,11 +57,12 @@ describe Bard::DeployStrategy::SSH do
   end
 
   describe "integration with target" do
-    it "is enabled by ssh DSL method" do
+    it "is the default strategy when SSH is configured" do
+      require "bard/plugins/deploy"
       new_target = Bard::Target.new(:staging, config)
       new_target.ssh("deploy@staging.example.com:22")
 
-      expect(new_target.deploy_strategy).to eq(:ssh)
+      expect(new_target.deploy_strategy_instance).to be_a(described_class)
     end
   end
 end

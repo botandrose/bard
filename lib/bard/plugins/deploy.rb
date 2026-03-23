@@ -3,6 +3,7 @@ require "bard/cli/command"
 require "bard/plugins/ping"
 require "bard/git"
 require "bard/command"
+require "bard/plugins/deploy/strategy"
 require "bard/plugins/deploy/ci"
 require "bard/plugins/deploy/ssh_strategy"
 require "bard/plugins/deploy/ci/jenkins"
@@ -214,5 +215,25 @@ Bard::Plugin.register :deploy do
     else
       @ci_system = system
     end
+  end
+
+  target_method :deploy_strategy do
+    @deploy_strategy
+  end
+
+  target_method :deploy_strategy_instance do
+    strategy = @deploy_strategy
+    strategy ||= :ssh if has_capability?(:ssh)
+    raise "No deployment strategy configured for target #{key}" unless strategy
+
+    strategy_class = Bard::DeployStrategy[strategy]
+    raise "Unknown deployment strategy: #{strategy}" unless strategy_class
+
+    strategy_class.new(self)
+  end
+
+  target_method :strategy_options do |strategy_name|
+    @strategy_options_hash ||= {}
+    @strategy_options_hash[strategy_name] || {}
   end
 end

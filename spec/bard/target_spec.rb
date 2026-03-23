@@ -20,9 +20,6 @@ describe Bard::Target do
       expect(target.has_capability?(:url)).to be false
     end
 
-    it "initializes with no deploy strategy" do
-      expect(target.deploy_strategy).to be_nil
-    end
   end
 
   describe "#ssh" do

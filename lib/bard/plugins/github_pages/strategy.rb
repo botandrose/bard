@@ -1,4 +1,4 @@
-require "bard/deploy_strategy"
+require "bard/plugins/deploy/strategy"
 require "bard/git"
 require "fileutils"
 require "uri"

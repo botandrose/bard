@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/deploy_strategy"
+require "bard/plugins/deploy/strategy"
 
 describe Bard::DeployStrategy do
   describe "auto-registration" do
