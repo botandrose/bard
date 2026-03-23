@@ -2,10 +2,17 @@ require "bard/target"
 
 module Bard
   class Config
-    def self.current(working_directory: Dir.getwd)
-      project_name = File.basename(working_directory)
-      path = File.join(working_directory, "bard.rb")
-      new(project_name, path: path)
+    def self.current
+      new(detect_project_name, path: "bard.rb")
+    end
+
+    def self.detect_project_name
+      git_common_dir = `git rev-parse --git-common-dir 2>/dev/null`.chomp
+      if $?.success? && !git_common_dir.empty?
+        File.basename(File.dirname(File.expand_path(git_common_dir)))
+      else
+        File.basename(Dir.getwd)
+      end
     end
 
     attr_reader :project_name, :targets

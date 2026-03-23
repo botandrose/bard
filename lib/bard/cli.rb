@@ -38,18 +38,11 @@ module Bard
       end
 
       def config
-        @config ||= Bard::Config.new(project_name, path: "bard.rb")
+        @config ||= Bard::Config.current
       end
 
       def project_name
-        @project_name ||= begin
-          git_common_dir = `git rev-parse --git-common-dir 2>/dev/null`.chomp
-          if $?.success? && !git_common_dir.empty?
-            File.basename(File.dirname(File.expand_path(git_common_dir)))
-          else
-            File.basename(File.expand_path("."))
-          end
-        end
+        config.project_name
       end
     end
 
