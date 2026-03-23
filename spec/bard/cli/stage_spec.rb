@@ -4,7 +4,7 @@ require "bard/cli/stage"
 require "thor"
 
 class TestStageCLI < Thor
-  include Bard::CLI::Stage
+  Bard::CLI::Stage.setup(self)
 
   attr_reader :config
 

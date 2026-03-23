@@ -6,8 +6,8 @@ require "thor"
 
 require "term/ansicolor"
 
-class TestCLI < Thor
-  include Bard::CLI::Data
+class TestDataCLI < Thor
+  Bard::CLI::Data.setup(self)
   include Term::ANSIColor
 
   attr_reader :config
@@ -22,7 +22,7 @@ class TestCLI < Thor
 end
 
 describe Bard::CLI::Data do
-  let(:cli) { TestCLI.new }
+  let(:cli) { TestDataCLI.new }
 
   it "should have a data command" do
     expect(cli).to respond_to(:data)

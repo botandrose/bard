@@ -24,8 +24,7 @@ describe Bard::CLI::Command do
 
   describe ".option" do
     it "sets option arguments" do
-      expect(TestCommand.instance_variable_get(:@option_args)).to eq([:verbose])
-      expect(TestCommand.instance_variable_get(:@option_kwargs)).to eq({type: :boolean})
+      expect(TestCommand.instance_variable_get(:@options)).to eq([[[:verbose], {type: :boolean}]])
     end
   end
 

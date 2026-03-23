@@ -5,7 +5,7 @@ require "thor"
 require "ostruct"
 
 class TestCICLI < Thor
-  include Bard::CLI::CI
+  Bard::CLI::CI.setup(self)
 
   attr_reader :options
 

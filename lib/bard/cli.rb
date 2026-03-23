@@ -13,20 +13,6 @@ module Bard
 
     class_option :verbose, type: :boolean, aliases: :v
 
-    {
-      data: "Data",
-      stage: "Stage",
-      deploy: "Deploy",
-      ci: "CI",
-      master_key: "MasterKey",
-      setup: "Setup",
-      run: "Run",
-      ssh: "SSH",
-    }.each do |command, klass|
-      require "bard/cli/#{command}"
-      include const_get(klass)
-    end
-
     Plugin.load!(self)
 
     # Load core CI runners AFTER plugins so GithubActions is the default (last registered wins)

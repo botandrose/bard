@@ -4,7 +4,7 @@ require "bard/cli/run"
 require "thor"
 
 class TestRunCLI < Thor
-  include Bard::CLI::Run
+  Bard::CLI::Run.setup(self)
 
   attr_reader :config
 

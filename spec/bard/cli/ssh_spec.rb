@@ -4,7 +4,7 @@ require "bard/cli/ssh"
 require "thor"
 
 class TestSSHCLI < Thor
-  include Bard::CLI::SSH
+  Bard::CLI::SSH.setup(self)
 
   attr_reader :config, :options
 

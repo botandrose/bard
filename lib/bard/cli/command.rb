@@ -1,6 +1,12 @@
 require "delegate"
 
 class Bard::CLI::Command < SimpleDelegator
+  # SimpleDelegator doesn't delegate methods defined on Kernel.
+  # Override so Commands behave as if running in the CLI context.
+  [:puts, :print, :exit, :system, :exec, :`].each do |m|
+    define_method(m) { |*args, &block| __getobj__.__send__(m, *args, &block) }
+  end
+
   def self.desc command, description
     @command = command
     @method = command.split(" ").first.to_sym
@@ -8,13 +14,15 @@ class Bard::CLI::Command < SimpleDelegator
   end
 
   def self.option *args, **kwargs
-    @option_args = args
-    @option_kwargs = kwargs
+    @options ||= []
+    @options << [args, kwargs]
   end
 
   def self.setup cli
     cli.desc @command, @description
-    cli.option *@option_args, **@option_kwargs if @option_args || @option_kwargs
+    (@options || []).each do |args, kwargs|
+      cli.option *args, **kwargs
+    end
     # put in local variables so next block can capture it
     command_class = self
     method = @method

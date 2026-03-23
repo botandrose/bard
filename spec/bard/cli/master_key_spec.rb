@@ -4,7 +4,7 @@ require "bard/cli/master_key"
 require "thor"
 
 class TestMasterKeyCLI < Thor
-  include Bard::CLI::MasterKey
+  Bard::CLI::MasterKey.setup(self)
 
   attr_reader :config, :options
 

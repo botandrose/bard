@@ -4,7 +4,7 @@ require "bard/cli/deploy"
 require "thor"
 
 class TestDeployCLI < Thor
-  include Bard::CLI::Deploy
+  Bard::CLI::Deploy.setup(self)
 
   attr_reader :config, :options
 
