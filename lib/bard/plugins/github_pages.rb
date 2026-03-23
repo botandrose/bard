@@ -1,7 +1,7 @@
 require "bard/plugin"
 
 # Load the deploy strategy (auto-registers via inherited hook)
-require "bard/deploy_strategy/github_pages"
+require "bard/plugins/github_pages/strategy"
 
 Bard::Plugin.register :github_pages do
   # Config DSL: github_pages "url" sets up a production target

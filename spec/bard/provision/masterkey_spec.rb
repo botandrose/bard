@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/masterkey"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/masterkey"
 
 describe Bard::Provision::MasterKey do
   let(:config) { { production: double("production") } }

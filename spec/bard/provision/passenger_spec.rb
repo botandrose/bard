@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/passenger"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/passenger"
 
 describe Bard::Provision::Passenger do
   let(:server) { double("server", project_name: "test_app") }

@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/deploy"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/deploy"
 
 describe Bard::Provision::Deploy do
   let(:config) { { production: double("production") } }

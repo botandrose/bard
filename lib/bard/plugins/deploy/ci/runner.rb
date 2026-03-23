@@ -1,10 +1,10 @@
-require "bard/ci/state"
-require "bard/ci/retryable"
+require "bard/plugins/deploy/ci/state"
+require "bard/retryable"
 
 module Bard
   class CI
     class Runner < Struct.new(:project_name, :branch, :sha)
-      include Retryable
+      include Bard::Retryable
 
       @runners = {}
 

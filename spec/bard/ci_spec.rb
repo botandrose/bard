@@ -1,4 +1,4 @@
-require "bard/ci"
+require "bard/plugins/deploy/ci"
 
 describe Bard::CI do
   subject { described_class.new("tracker", "master") }

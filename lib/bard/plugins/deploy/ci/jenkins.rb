@@ -1,5 +1,5 @@
 require "json"
-require "bard/ci/runner"
+require "bard/plugins/deploy/ci/runner"
 require "bard/secrets"
 
 module Bard

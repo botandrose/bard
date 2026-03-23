@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/user"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/user"
 
 describe Bard::Provision::User do
   let(:old_ssh_uri) { double("old_ssh_uri", user: "root", host: "example.com", port: 22) }

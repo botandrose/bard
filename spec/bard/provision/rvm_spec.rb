@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/rvm"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/rvm"
 
 describe Bard::Provision::RVM do
   let(:config) { { production: double("production") } }

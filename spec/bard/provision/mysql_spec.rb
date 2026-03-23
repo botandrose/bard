@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/mysql"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/mysql"
 
 describe Bard::Provision::MySQL do
   let(:config) { { production: double("production") } }

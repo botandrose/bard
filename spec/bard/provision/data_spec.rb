@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/data"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/data"
 
 describe Bard::Provision::Data do
   let(:server) { double("server", key: :production) }

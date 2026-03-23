@@ -1,4 +1,4 @@
-require "bard/ci/runner"
+require "bard/plugins/deploy/ci/runner"
 
 RSpec.describe Bard::CI::Runner do
   describe ".runners" do
@@ -9,8 +9,8 @@ RSpec.describe Bard::CI::Runner do
 
   describe ".[]" do
     before do
-      require "bard/ci/local"
-      require "bard/ci/github_actions"
+      require "bard/plugins/deploy/ci/local"
+      require "bard/plugins/deploy/ci/github_actions"
     end
 
     it "looks up runners by name" do

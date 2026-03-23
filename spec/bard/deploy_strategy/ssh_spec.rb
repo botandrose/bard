@@ -1,6 +1,6 @@
 require "spec_helper"
 require "bard/deploy_strategy"
-require "bard/deploy_strategy/ssh"
+require "bard/plugins/deploy/ssh_strategy"
 
 describe Bard::DeployStrategy::SSH do
   let(:config) { double("config", project_name: "testapp") }

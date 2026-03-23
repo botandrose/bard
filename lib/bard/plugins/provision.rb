@@ -1,6 +1,6 @@
 require "bard/plugin"
 require "bard/cli/command"
-require "bard/provision"
+require "bard/plugins/provision/base"
 
 class Bard::CLI::Provision < Bard::CLI::Command
   STEPS = %w[
@@ -27,7 +27,7 @@ class Bard::CLI::Provision < Bard::CLI::Command
     # unfreeze the string for later mutation
     ssh_url = ssh_url.dup
     options[:steps].each do |step|
-      require "bard/provision/#{step.downcase}"
+      require "bard/plugins/provision/#{step.downcase}"
       Bard::Provision.const_get(step).call(config, ssh_url)
     end
   end

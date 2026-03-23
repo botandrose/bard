@@ -2,12 +2,12 @@ require "net/http"
 require "json"
 require "base64"
 require "rbnacl"
-require "bard/ci/retryable"
+require "bard/retryable"
 require "bard/secrets"
 
 module Bard
   class Github < Struct.new(:project_name)
-    include CI::Retryable
+    include Retryable
 
     def initialize(project_name, api_key: nil)
       super(project_name)

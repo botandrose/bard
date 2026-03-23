@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/ci/github_actions"
+require "bard/plugins/deploy/ci/github_actions"
 
 BASE_URL = "https://api.github.com/repos/botandrosedesign/metrc"
 

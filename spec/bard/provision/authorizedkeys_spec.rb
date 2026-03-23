@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/authorizedkeys"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/authorizedkeys"
 
 describe Bard::Provision::AuthorizedKeys do
   let(:config) { { production: double("production") } }

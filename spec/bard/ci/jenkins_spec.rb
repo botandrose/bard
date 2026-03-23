@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/ci/jenkins"
+require "bard/plugins/deploy/ci/jenkins"
 
 RSpec.describe Bard::CI::Jenkins do
   let(:jenkins) { described_class.new("test-project", "master", "abc123") }

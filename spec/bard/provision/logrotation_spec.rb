@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/logrotation"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/logrotation"
 
 describe Bard::Provision::LogRotation do
   let(:server) { double("server", project_name: "test_app") }

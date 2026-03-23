@@ -1,5 +1,5 @@
 require "tempfile"
-require "bard/ci/runner"
+require "bard/plugins/deploy/ci/runner"
 
 module Bard
   class CI

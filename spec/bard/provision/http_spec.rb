@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/http"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/http"
 
 describe Bard::Provision::HTTP do
   let(:server) { double("server", ping: ["https://example.com"]) }

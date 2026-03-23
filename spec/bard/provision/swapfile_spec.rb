@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/swapfile"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/swapfile"
 
 describe Bard::Provision::Swapfile do
   let(:config) { { production: double("production") } }

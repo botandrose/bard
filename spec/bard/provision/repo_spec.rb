@@ -1,6 +1,6 @@
 require "spec_helper"
-require "bard/provision"
-require "bard/provision/repo"
+require "bard/plugins/provision/base"
+require "bard/plugins/provision/repo"
 
 describe Bard::Provision::Repo do
   let(:ssh_uri) { double("ssh_uri", user: "deploy", host: "example.com") }
