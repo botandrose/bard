@@ -4,7 +4,6 @@ require "thor"
 require "bard/version"
 require "bard/config"
 require "bard/command"
-require "bard/plugin"
 require "term/ansicolor"
 
 module Bard
@@ -38,6 +37,10 @@ module Bard
       end
     end
 
-    Plugin.load!
+    # load builtin plugins
+    Dir[File.join(__dir__, "plugins", "*.rb")].sort.each { |f| require f }
+
+    # load external plugins
+    Dir[File.join(Dir.pwd, "lib", "bard", "plugins", "*.rb")].sort.each { |f| require f }
   end
 end
