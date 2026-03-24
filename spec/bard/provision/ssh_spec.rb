@@ -5,14 +5,14 @@ require "bard/plugins/provision/ssh"
 describe Bard::Provision::SSH do
   let(:ssh_uri) { double("ssh_uri", host: "example.com", port: 2222) }
   let(:provision_ssh_uri) { double("provision_ssh_uri", host: "example.com", port: nil) }
-  let(:server) { double("server", ssh_uri: ssh_uri) }
-  let(:config) { { production: server } }
+  let(:target) { double("target", ssh_uri: ssh_uri) }
+  let(:config) { { production: target } }
   let(:ssh_url) { "user@example.com" }
   let(:provision_server) { double("provision_server", ssh_uri: provision_ssh_uri) }
   let(:ssh_provisioner) { Bard::Provision::SSH.new(config, ssh_url) }
 
   before do
-    allow(ssh_provisioner).to receive(:server).and_return(server)
+    allow(ssh_provisioner).to receive(:target).and_return(target)
     allow(ssh_provisioner).to receive(:provision_server).and_return(provision_server)
     allow(ssh_provisioner).to receive(:print)
     allow(ssh_provisioner).to receive(:puts)
@@ -147,7 +147,7 @@ describe Bard::Provision::SSH do
 
   describe "private methods" do
     describe "#target_port" do
-      it "returns the server's SSH port" do
+      it "returns the target's SSH port" do
         expect(ssh_provisioner.send(:target_port)).to eq(2222)
       end
 

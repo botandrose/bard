@@ -2,8 +2,8 @@ require "spec_helper"
 require "bard/cli"
 
 describe "bard run" do
-  let(:server) { double("server") }
-  let(:config) { { production: server } }
+  let(:target) { double("target") }
+  let(:config) { { production: target } }
   let(:cli) { Bard::CLI.new }
 
   before do
@@ -20,14 +20,14 @@ describe "bard run" do
       expect(cli).to respond_to(:run)
     end
 
-    it "should run command on production server" do
-      expect(server).to receive(:run!).with("ls -la", verbose: true, home: nil)
+    it "should run command on production target" do
+      expect(target).to receive(:run!).with("ls -la", verbose: true, home: nil)
 
       cli.run("ls", "-la")
     end
 
     it "should run command on specified target" do
-      staging_server = double("staging_server")
+      staging_server = double("staging_target")
       allow(cli).to receive(:config).and_return(config.merge(staging: staging_server))
       allow(cli).to receive(:options).and_return({ target: "staging" })
 
@@ -39,14 +39,14 @@ describe "bard run" do
     it "should pass home option to target" do
       allow(cli).to receive(:options).and_return({ target: "production", home: true })
 
-      expect(server).to receive(:run!).with("ls -la", verbose: true, home: true)
+      expect(target).to receive(:run!).with("ls -la", verbose: true, home: true)
 
       cli.run("ls", "-la")
     end
 
     it "should handle command errors" do
       error = Bard::Command::Error.new("Command failed")
-      allow(server).to receive(:run!).and_raise(error)
+      allow(target).to receive(:run!).and_raise(error)
 
       expect(cli).to receive(:puts).with(/Running command failed/)
       expect(cli).to receive(:exit).with(1)

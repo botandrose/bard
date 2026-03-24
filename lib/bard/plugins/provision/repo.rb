@@ -14,7 +14,7 @@ class Bard::Provision::Repo < Bard::Provision
           provision_server.run! "ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -q -N \"\"", home: true
         end
         print " Add public key to GitHub repo deploy keys,"
-        title = "#{server.ssh_uri.user}@#{server.ssh_uri.host}"
+        title = "#{target.ssh_uri.user}@#{target.ssh_uri.host}"
         key = provision_server.run "cat ~/.ssh/id_rsa.pub", home: true
         Bard::Github.new(config.project_name).add_deploy_key title:, key:
       end

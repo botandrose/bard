@@ -5,14 +5,14 @@ require "bard/plugins/provision/user"
 describe Bard::Provision::User do
   let(:old_ssh_uri) { double("old_ssh_uri", user: "root", host: "example.com", port: 22) }
   let(:new_ssh_uri) { double("new_ssh_uri", user: "deploy", host: "example.com", port: 22) }
-  let(:server) { double("server", ssh_uri: new_ssh_uri) }
-  let(:config) { { production: server } }
+  let(:target) { double("target", ssh_uri: new_ssh_uri) }
+  let(:config) { { production: target } }
   let(:ssh_url) { "root@example.com" }
   let(:provision_server) { double("provision_server", ssh_uri: old_ssh_uri) }
   let(:user_provisioner) { Bard::Provision::User.new(config, ssh_url) }
 
   before do
-    allow(user_provisioner).to receive(:server).and_return(server)
+    allow(user_provisioner).to receive(:target).and_return(target)
     allow(user_provisioner).to receive(:provision_server).and_return(provision_server)
     allow(user_provisioner).to receive(:print)
     allow(user_provisioner).to receive(:puts)
@@ -89,7 +89,7 @@ describe Bard::Provision::User do
 
   describe "private methods" do
     describe "#new_user" do
-      it "returns the target user from server SSH URI" do
+      it "returns the target user from target SSH URI" do
         expect(user_provisioner.send(:new_user)).to eq("deploy")
       end
     end

@@ -3,14 +3,14 @@ require "bard/plugins/provision/base"
 require "bard/plugins/provision/passenger"
 
 describe Bard::Provision::Passenger do
-  let(:server) { double("server", project_name: "test_app") }
-  let(:config) { double("config", project_name: "test_app", :[] => server) }
+  let(:target) { double("target", project_name: "test_app") }
+  let(:config) { double("config", project_name: "test_app", :[] => target) }
   let(:ssh_url) { "user@example.com" }
   let(:provision_server) { double("provision_server") }
   let(:passenger) { Bard::Provision::Passenger.new(config, ssh_url) }
 
   before do
-    allow(passenger).to receive(:server).and_return(server)
+    allow(passenger).to receive(:target).and_return(target)
     allow(passenger).to receive(:provision_server).and_return(provision_server)
     allow(provision_server).to receive_message_chain(:ssh_uri, :host).and_return("192.168.1.100")
     allow(passenger).to receive(:print)

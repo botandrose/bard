@@ -4,12 +4,12 @@ module Bard
 
     private
 
-    def server
+    def target
       config[:production]
     end
 
     def provision_server
-      server.with(ssh: ssh_url)
+      target.with(ssh: ssh_url)
     end
   end
 end

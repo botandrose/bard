@@ -28,7 +28,7 @@ class Bard::Provision::User < Bard::Provision
   private
 
   def new_user
-    server.ssh_uri.user
+    target.ssh_uri.user
   end
 
   def old_user

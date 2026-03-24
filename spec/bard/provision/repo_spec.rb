@@ -4,15 +4,15 @@ require "bard/plugins/provision/repo"
 
 describe Bard::Provision::Repo do
   let(:ssh_uri) { double("ssh_uri", user: "deploy", host: "example.com") }
-  let(:server) { double("server", ssh_uri: ssh_uri, project_name: "test_project") }
-  let(:config) { double("config", project_name: "test_project", :[] => server) }
+  let(:target) { double("target", ssh_uri: ssh_uri, project_name: "test_project") }
+  let(:config) { double("config", project_name: "test_project", :[] => target) }
   let(:ssh_url) { "deploy@example.com" }
   let(:provision_server) { double("provision_server") }
   let(:github_api) { double("github_api") }
   let(:repo_provisioner) { Bard::Provision::Repo.new(config, ssh_url) }
 
   before do
-    allow(repo_provisioner).to receive(:server).and_return(server)
+    allow(repo_provisioner).to receive(:target).and_return(target)
     allow(repo_provisioner).to receive(:provision_server).and_return(provision_server)
     allow(repo_provisioner).to receive(:print)
     allow(repo_provisioner).to receive(:puts)
@@ -170,7 +170,7 @@ describe Bard::Provision::Repo do
     end
 
     describe "#project_name" do
-      it "returns the server's project name" do
+      it "returns the config's project name" do
         expect(repo_provisioner.send(:project_name)).to eq("test_project")
       end
     end

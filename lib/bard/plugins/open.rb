@@ -1,15 +1,15 @@
 class Bard::CLI
-  desc "open [server=production]", "opens the url in the web browser."
-  def open(server = :production)
-    exec "xdg-open #{open_url server}"
+  desc "open [target=production]", "opens the url in the web browser."
+  def open(target = :production)
+    exec "xdg-open #{open_url target}"
   end
 
   no_commands do
-    def open_url(server)
-      if server.to_sym == :ci
+    def open_url(target)
+      if target.to_sym == :ci
         "https://github.com/botandrosedesign/#{project_name}/actions/workflows/ci.yml"
       else
-        config[server].url
+        config[target].url
       end
     end
   end

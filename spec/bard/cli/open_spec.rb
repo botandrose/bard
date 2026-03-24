@@ -2,8 +2,8 @@ require "spec_helper"
 require "bard/cli"
 
 describe "bard open" do
-  let(:server) { double("server", url: "https://example.com") }
-  let(:config) { { production: server } }
+  let(:target) { double("target", url: "https://example.com") }
+  let(:config) { { production: target } }
   let(:cli) { Bard::CLI.new }
 
   before do
@@ -17,13 +17,13 @@ describe "bard open" do
       expect(cli).to respond_to(:open)
     end
 
-    it "should open production server URL by default" do
+    it "should open production target URL by default" do
       expect(cli).to receive(:exec).with("xdg-open https://example.com")
 
       cli.open
     end
 
-    it "should open specified server URL" do
+    it "should open specified target URL" do
       staging_server = double("staging", url: "https://staging.example.com")
       allow(config).to receive(:[]).with(:staging).and_return(staging_server)
 
@@ -32,7 +32,7 @@ describe "bard open" do
       cli.open(:staging)
     end
 
-    it "should open CI URL when server is ci" do
+    it "should open CI URL when target is ci" do
       expect(cli).to receive(:exec).with("xdg-open https://github.com/botandrosedesign/test_project/actions/workflows/ci.yml")
 
       cli.open(:ci)
@@ -40,11 +40,11 @@ describe "bard open" do
   end
 
   describe "#open_url" do
-    it "returns CI URL for ci server" do
+    it "returns CI URL for ci target" do
       expect(cli.open_url(:ci)).to eq("https://github.com/botandrosedesign/test_project/actions/workflows/ci.yml")
     end
 
-    it "returns server url for other servers" do
+    it "returns target url for other targets" do
       expect(cli.open_url(:production)).to eq("https://example.com")
     end
   end

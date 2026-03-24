@@ -2,8 +2,8 @@ require "spec_helper"
 require "bard/plugins/ping/check"
 
 describe Bard::Ping do
-  let(:server) { double("server", ping: ["http://example.com"]) }
-  let(:ping) { described_class.new(server) }
+  let(:target) { double("target", ping: ["http://example.com"]) }
+  let(:ping) { described_class.new(target) }
 
   def success_response
     Net::HTTPSuccess.new(1.0, "200", "OK")
@@ -13,14 +13,14 @@ describe Bard::Ping do
     Net::HTTPNotFound.new(1.0, "404", "Not Found")
   end
 
-  context "when the server is reachable" do
+  context "when the target is reachable" do
     it "returns an empty array" do
       allow(ping).to receive(:http_get).and_return(success_response)
       expect(ping.call).to be_empty
     end
   end
 
-  context "when the server is not reachable" do
+  context "when the target is not reachable" do
     it "returns the url" do
       allow(ping).to receive(:http_get).and_return(not_found_response)
       expect(ping.call).to eq(["http://example.com"])

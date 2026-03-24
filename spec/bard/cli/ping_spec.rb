@@ -3,20 +3,20 @@ require "bard/cli"
 require "thor"
 
 describe "bard ping" do
-  let(:server) { double("server", ping: ["https://example.com"]) }
-  let(:config) { double("config", targets: { production: server }) }
+  let(:target) { double("target", ping: ["https://example.com"]) }
+  let(:config) { double("config", targets: { production: target }) }
   let(:cli) { Bard::CLI.new }
 
   before do
     allow(cli).to receive(:config).and_return(config)
-    allow(config).to receive(:[]).with(:production).and_return(server)
+    allow(config).to receive(:[]).with(:production).and_return(target)
     allow(cli).to receive(:puts)
     allow(cli).to receive(:exit)
   end
 
   describe "#ping" do
-    it "should call Bard::Ping with the server" do
-      expect(Bard::Ping).to receive(:call).with(server).and_return([])
+    it "should call Bard::Ping with the target" do
+      expect(Bard::Ping).to receive(:call).with(target).and_return([])
 
       cli.ping
     end

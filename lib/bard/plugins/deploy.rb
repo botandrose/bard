@@ -106,7 +106,7 @@ class Bard::CLI
   desc "stage [branch=HEAD]", "pushes current branch, and stages it"
   def stage(branch = Bard::Git.current_branch)
     unless config.targets.key?(:production)
-      raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
+      raise Thor::Error.new("`bard stage` is disabled until a production target is defined. Until then, please use `bard deploy` to deploy to the staging target.")
     end
 
     run! "git push -u origin #{branch}", verbose: true

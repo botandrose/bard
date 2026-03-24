@@ -43,7 +43,7 @@ class Bard::Provision::SSH < Bard::Provision
   private
 
   def target_port
-    server.ssh_uri.port || 22
+    target.ssh_uri.port || 22
   end
 
   def ssh_available? ssh_uri, port: nil

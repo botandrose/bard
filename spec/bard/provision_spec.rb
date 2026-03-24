@@ -13,14 +13,14 @@ describe Bard::Provision do
     end
   end
 
-  describe "#server" do
-    it "returns the production server from config" do
-      expect(provision.send(:server)).to eq(config[:production])
+  describe "#target" do
+    it "returns the production target from config" do
+      expect(provision.send(:target)).to eq(config[:production])
     end
   end
 
   describe "#provision_server" do
-    it "returns server with ssh_url" do
+    it "returns target with ssh_url" do
       expect(config[:production]).to receive(:with).with(ssh: ssh_url)
       provision.send(:provision_server)
     end

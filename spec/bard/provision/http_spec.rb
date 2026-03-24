@@ -3,14 +3,14 @@ require "bard/plugins/provision/base"
 require "bard/plugins/provision/http"
 
 describe Bard::Provision::HTTP do
-  let(:server) { double("server", url: "https://example.com") }
-  let(:config) { { production: server } }
+  let(:target) { double("target", url: "https://example.com") }
+  let(:config) { { production: target } }
   let(:ssh_url) { "user@example.com" }
   let(:provision_server) { double("provision_server") }
   let(:http) { Bard::Provision::HTTP.new(config, ssh_url) }
 
   before do
-    allow(http).to receive(:server).and_return(server)
+    allow(http).to receive(:target).and_return(target)
     allow(http).to receive(:provision_server).and_return(provision_server)
     allow(provision_server).to receive_message_chain(:ssh_uri, :host).and_return("192.168.1.100")
     allow(http).to receive(:print)
