@@ -75,19 +75,6 @@ describe Bard::Config do
     end
   end
 
-  context "with target overriding default" do
-    subject { described_class.new("tracker", source: <<~SOURCE) }
-      target :staging do
-        ssh false
-      end
-    SOURCE
-
-    it "replaces the default with the new configuration" do
-      expect(subject[:staging]).to be_a(Bard::Target)
-      expect(subject[:staging].ssh).to eq false
-    end
-  end
-
   context "with remove_target" do
     subject { described_class.new("tracker", source: <<~SOURCE) }
       remove_target :staging
@@ -112,7 +99,7 @@ describe Bard::Config do
         production = subject[:production]
         expect(production).not_to be_nil
         expect(production.github_pages).to eq "example.com"
-        expect(production.ssh).to eq false
+        expect(production.ssh).to be_nil
       end
     end
   end

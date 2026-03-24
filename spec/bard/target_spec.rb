@@ -78,15 +78,13 @@ describe Bard::Target do
       end
     end
 
-    context "with false value" do
-      before { target.ssh(false) }
-
+    context "without ssh configured" do
       it "does not enable SSH capability" do
         expect(target.has_capability?(:ssh)).to be false
       end
 
-      it "sets server to nil" do
-        expect(target.server).to be_nil
+      it "returns nil from ssh getter" do
+        expect(target.ssh).to be_nil
       end
     end
   end

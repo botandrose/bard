@@ -5,7 +5,6 @@ require "bard/copy"
 module Bard
   class Target
     attr_reader :key, :config
-    attr_accessor :server
 
     def initialize(key, config)
       @key = key
@@ -13,7 +12,6 @@ module Bard
       @capabilities = []
       @url = nil
       @path = nil
-      @server = nil
     end
 
     # Capability tracking
@@ -40,41 +38,25 @@ module Bard
     end
 
     # SSH configuration
-    def ssh(uri_or_false = nil, **options)
-      if uri_or_false.nil?
-        # Getter - return false if explicitly disabled, otherwise return server
-        return @ssh_disabled ? false : @server
-      elsif uri_or_false == false
-        # Disable SSH
-        @server = nil
-        @ssh_disabled = true
-        @capabilities.delete(:ssh)
+    def ssh(uri = nil, **options)
+      if uri.nil?
+        return @server
       else
-        # Enable SSH
-        require "bard/ssh_server"
-        @server = SSHServer.new(uri_or_false, **options)
+        require "bard/ssh"
+        extend Bard::SSH
+
+        @server = SSHServer.new(uri, **options)
         @path = options[:path] if options[:path]
-        @gateway = options[:gateway] if options[:gateway]
-        @ssh_key = options[:ssh_key] if options[:ssh_key]
-        @env = options[:env] if options[:env]
         enable_capability(:ssh)
 
-        # Auto-configure url from hostname
         hostname = @server.hostname
         url("https://#{hostname}") if hostname
       end
     end
 
-    def ssh_uri
-      server&.ssh_uri
-    end
-
-    # Attribute readers
     def path
       @path || config.project_name
     end
-
-    attr_reader :gateway, :ssh_key, :env
 
     # URL configuration
     def url(value = nil)
@@ -117,21 +99,6 @@ module Bard
       require_capability!(:ssh) unless key == :local
       to.require_capability!(:ssh) unless to.key == :local
       Copy.dir(path, from: self, to: to, verbose: verbose)
-    end
-
-    # URI methods
-    def scp_uri(file_path = nil)
-      full_path = "/#{path}"
-      full_path += "/#{file_path}" if file_path
-      URI::Generic.build(scheme: "scp", userinfo: server.user, host: server.host, port: server.port.to_i, path: full_path)
-    end
-
-    def rsync_uri(file_path = nil)
-      uri = ssh_uri
-      str = "#{uri.user}@#{uri.host}"
-      str += ":#{path}"
-      str += "/#{file_path}" if file_path
-      str
     end
 
     # Utility methods

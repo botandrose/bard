@@ -55,9 +55,7 @@ module Bard
     private
 
     def load_defaults
-      target :local do
-        ssh false
-      end
+      target :local
 
       target :gubs do
         ssh "botandrose@cloud.hackett.world:22022"

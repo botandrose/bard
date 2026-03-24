@@ -9,7 +9,6 @@ class Bard::Config
 
     target :production do
       github_pages url
-      ssh false
       url(hostname) if hostname
     end
 
