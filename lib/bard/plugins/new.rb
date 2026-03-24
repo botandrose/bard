@@ -1,102 +1,99 @@
-require "bard/plugin"
 require "bard/github"
 
-class Bard::CLI::New < Bard::Plugin::Command
-  RAILS_REQUIREMENT = "~> 8.0.0"
+class Bard::CLI
+  NEW_RAILS_REQUIREMENT = "~> 8.0.0"
+
   desc "new <project-name>", "creates new bard app named <project-name>"
-  def new project_name
-    @project_name = project_name
-    validate
-    create_project
-    push_to_github
-    stage
-    puts green("Project #{project_name} created!")
-    puts "Please cd ../#{project_name}"
+  def new(project_name)
+    @new_project_name = project_name
+    new_validate
+    new_create_project
+    new_push_to_github
+    new_stage
+    puts green("Project #{@new_project_name} created!")
+    puts "Please cd ../#{@new_project_name}"
   end
 
-  attr_accessor :project_name
-
-  private
-
-  def validate
-    if project_name !~ /^[a-z][a-z0-9]*\Z/
-      puts red("!!! ") + "Invalid project name: #{yellow(project_name)}."
-      puts "The first character must be a lowercase letter, and all following characters must be a lowercase letter or number."
-      exit 1
+  no_commands do
+    def new_validate
+      if @new_project_name !~ /^[a-z][a-z0-9]*\Z/
+        puts red("!!! ") + "Invalid project name: #{yellow(@new_project_name)}."
+        puts "The first character must be a lowercase letter, and all following characters must be a lowercase letter or number."
+        exit 1
+      end
     end
-  end
 
-  def create_project
-    run! build_create_project_script
-  end
-
-  def build_create_project_script
-    build_bash_env do
-      build_rvm_setup +
-      build_gem_install("rails", RAILS_REQUIREMENT) +
-      build_rails_new
+    def new_create_project
+      run! new_build_create_project_script
     end
-  end
 
-  def build_bash_env
-    script = yield
-    <<~SH
-      env -i bash -lc '
-        export HOME=~
-        source ~/.rvm/scripts/rvm
-        #{script}
-      '
-    SH
-  end
+    def new_build_create_project_script
+      new_build_bash_env do
+        new_build_rvm_setup +
+        new_build_gem_install("rails", NEW_RAILS_REQUIREMENT) +
+        new_build_rails_new
+      end
+    end
 
-  def build_rvm_setup
-    <<~SH
-      cd ..
-      rvm use --create #{ruby_version}@#{project_name}
-    SH
-  end
+    def new_build_bash_env
+      script = yield
+      <<~SH
+        env -i bash -lc '
+          export HOME=~
+          source ~/.rvm/scripts/rvm
+          #{script}
+        '
+      SH
+    end
 
-  def build_gem_install(gem_name, version_requirement)
-    <<~SH
-      GEM_VERSION=$(gem install #{gem_name} -v \"#{version_requirement}\" --no-document 2>&1 | grep -oP \"Successfully installed #{gem_name}-\\K[0-9.]+\")
-    SH
-  end
+    def new_build_rvm_setup
+      <<~SH
+        cd ..
+        rvm use --create #{new_ruby_version}@#{@new_project_name}
+      SH
+    end
 
-  def build_rails_new
-    <<~SH
-      rails _${GEM_VERSION}_ new #{project_name} --skip-git --skip-kamal --skip-test -m #{template_path}
-    SH
-  end
+    def new_build_gem_install(gem_name, version_requirement)
+      <<~SH
+        GEM_VERSION=$(gem install #{gem_name} -v "#{version_requirement}" --no-document 2>&1 | grep -oP "Successfully installed #{gem_name}-\\K[0-9.]+")
+      SH
+    end
 
-  def push_to_github
-    api = Bard::Github.new(project_name)
-    api.create_repo
-    run! <<~SH
-      cd ../#{project_name}
-      git init -b master
-      git add -A
-      git commit -m"initial commit."
-      git remote add origin git@github.com:botandrosedesign/#{project_name}
-      git push -u origin master
-    SH
-    api.add_master_key File.read("../#{project_name}/config/master.key")
-    api.add_master_branch_protection
-    api.patch(nil, allow_auto_merge: true)
-  end
+    def new_build_rails_new
+      <<~SH
+        rails _${GEM_VERSION}_ new #{@new_project_name} --skip-git --skip-kamal --skip-test -m #{new_template_path}
+      SH
+    end
 
-  def stage
-    run! <<~SH
-      cd ../#{project_name}
-      bard deploy --clone
-    SH
-  end
+    def new_push_to_github
+      api = Bard::Github.new(@new_project_name)
+      api.create_repo
+      run! <<~SH
+        cd ../#{@new_project_name}
+        git init -b master
+        git add -A
+        git commit -m"initial commit."
+        git remote add origin git@github.com:botandrosedesign/#{@new_project_name}
+        git push -u origin master
+      SH
+      api.add_master_key File.read("../#{@new_project_name}/config/master.key")
+      api.add_master_branch_protection
+      api.patch(nil, allow_auto_merge: true)
+    end
 
-  def ruby_version
-    "ruby-3.4.2"
-  end
+    def new_stage
+      run! <<~SH
+        cd ../#{@new_project_name}
+        bard deploy --clone
+      SH
+    end
 
-  def template_path
-    File.expand_path("new/rails_template.rb", __dir__)
+    def new_ruby_version
+      "ruby-3.4.2"
+    end
+
+    def new_template_path
+      File.expand_path("new/rails_template.rb", __dir__)
+    end
   end
 end
-

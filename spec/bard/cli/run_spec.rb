@@ -1,23 +1,10 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/run"
-require "thor"
 
-class TestRunCLI < Thor
-  Bard::CLI::Run.setup(self)
-
-  attr_reader :config
-
-  def initialize
-    super
-    @config = {}
-  end
-end
-
-describe Bard::CLI::Run do
+describe "bard run" do
   let(:server) { double("server") }
   let(:config) { { production: server } }
-  let(:cli) { TestRunCLI.new }
+  let(:cli) { Bard::CLI.new }
 
   before do
     allow(cli).to receive(:config).and_return(config)

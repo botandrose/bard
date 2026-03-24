@@ -1,27 +1,11 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/setup"
-require "thor"
 
-class TestSetupCLI < Thor
-  Bard::CLI::Setup.setup(self)
-
-  attr_reader :config
-
-  def initialize
-    super
-    @config = {}
-  end
-
-  def project_name
-    "test_project"
-  end
-end
-
-describe Bard::CLI::Setup do
-  let(:cli) { TestSetupCLI.new }
+describe "bard setup" do
+  let(:cli) { Bard::CLI.new }
 
   before do
+    allow(cli).to receive(:project_name).and_return("test_project")
     allow(Dir).to receive(:pwd).and_return("/home/user/project")
     allow(File).to receive(:exist?).and_return(false)
     allow(cli).to receive(:system)
@@ -43,7 +27,6 @@ describe Bard::CLI::Setup do
   end
 
   describe "#nginx_server_name" do
-    let(:command) { Bard::CLI::Setup.new(cli) }
     let(:production_server) { double("production", url: "https://example.com") }
 
     before do
@@ -54,7 +37,7 @@ describe Bard::CLI::Setup do
       before { allow(ENV).to receive(:[]).with("RAILS_ENV").and_return("production") }
 
       it "returns production server names with wildcard" do
-        expect(command.send(:nginx_server_name)).to eq("*.example.com _")
+        expect(cli.nginx_server_name).to eq("*.example.com _")
       end
     end
 
@@ -62,7 +45,7 @@ describe Bard::CLI::Setup do
       before { allow(ENV).to receive(:[]).with("RAILS_ENV").and_return("staging") }
 
       it "returns staging server name" do
-        expect(command.send(:nginx_server_name)).to eq("test_project.botandrose.com")
+        expect(cli.nginx_server_name).to eq("test_project.botandrose.com")
       end
     end
 
@@ -70,7 +53,7 @@ describe Bard::CLI::Setup do
       before { allow(ENV).to receive(:[]).with("RAILS_ENV").and_return("development") }
 
       it "returns localhost server name" do
-        expect(command.send(:nginx_server_name)).to eq("test_project.localhost")
+        expect(cli.nginx_server_name).to eq("test_project.localhost")
       end
     end
   end

@@ -1,25 +1,12 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/deploy"
-require "thor"
 
-class TestStageCLI < Thor
-  Bard::CLI::Stage.setup(self)
-
-  attr_reader :config
-
-  def initialize
-    super
-    @config = nil
-  end
-end
-
-describe Bard::CLI::Stage do
+describe "bard stage" do
   let(:staging_strategy) { double("staging_strategy", deploy: true) }
   let(:staging_server) { double("staging", deploy_strategy: :ssh, deploy_strategy_instance: staging_strategy) }
   let(:targets) { { production: double("production"), staging: staging_server } }
   let(:config) { double("config", targets: targets) }
-  let(:cli) { TestStageCLI.new }
+  let(:cli) { Bard::CLI.new }
 
   before do
     allow(cli).to receive(:config).and_return(config)

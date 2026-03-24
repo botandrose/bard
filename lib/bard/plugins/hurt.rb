@@ -1,8 +1,6 @@
-require "bard/plugin"
-
-class Bard::CLI::Hurt < Bard::Plugin::Command
+class Bard::CLI
   desc "hurt <command>", "reruns a command until it fails"
-  def hurt *args
+  def hurt(*args)
     (1..).each do |count|
       puts "Running attempt #{count}"
       system *args
@@ -13,4 +11,3 @@ class Bard::CLI::Hurt < Bard::Plugin::Command
     end
   end
 end
-

@@ -1,4 +1,3 @@
-require "bard/plugin"
 require "bard/plugins/ping"
 require "bard/git"
 require "bard/command"
@@ -10,14 +9,14 @@ require "bard/plugins/deploy/ci/local"
 require "bard/plugins/deploy/ci/github_actions"
 require "tmpdir"
 
-class Bard::CLI::Deploy < Bard::Plugin::Command
+class Bard::CLI
   option :"skip-ci", type: :boolean
   option :"local-ci", type: :boolean
   option :ci, type: :string
   option :clone, type: :boolean
   option :target, type: :string, default: "production"
   desc "deploy [BRANCH]", "deploys branch to target (default: current branch to production)"
-  def deploy branch=nil
+  def deploy(branch = nil)
     branch ||= Bard::Git.current_branch
 
     if branch == "master"
@@ -103,11 +102,9 @@ class Bard::CLI::Deploy < Bard::Plugin::Command
     puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
     exit 1
   end
-end
 
-class Bard::CLI::Stage < Bard::Plugin::Command
   desc "stage [branch=HEAD]", "pushes current branch, and stages it"
-  def stage branch=Bard::Git.current_branch
+  def stage(branch = Bard::Git.current_branch)
     unless config.targets.key?(:production)
       raise Thor::Error.new("`bard stage` is disabled until a production server is defined. Until then, please use `bard deploy` to deploy to the staging server.")
     end
@@ -125,15 +122,13 @@ class Bard::CLI::Stage < Bard::Plugin::Command
     puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
     exit 1
   end
-end
 
-class Bard::CLI::CI < Bard::Plugin::Command
   option :"local-ci", type: :boolean
   option :ci, type: :string
   option :status, type: :boolean
   option :resume, type: :boolean
   desc "ci [branch=HEAD]", "runs ci against BRANCH"
-  def ci branch=Bard::Git.current_branch
+  def ci(branch = Bard::Git.current_branch)
     runner_name = if options["local-ci"]
       :local
     elsif options["ci"]
@@ -189,9 +184,7 @@ class Bard::CLI::CI < Bard::Plugin::Command
       exit 1
     end
   end
-end
 
-class Bard::CLI::MasterKey < Bard::Plugin::Command
   option :from, default: "production"
   option :to, default: "local"
   desc "master_key --from=production --to=local", "copy master key from from to to"

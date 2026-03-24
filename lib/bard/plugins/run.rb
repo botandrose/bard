@@ -1,20 +1,15 @@
-require "bard/plugin"
 require "bard/command"
 
-class Bard::CLI::Run < Bard::Plugin::Command
+class Bard::CLI
+  # HACK: we don't use Thor::Base#run, so its okay to stomp on it here
+  original_verbose, $VERBOSE = $VERBOSE, nil
+  Thor::THOR_RESERVED_WORDS -= ["run"]
+  $VERBOSE = original_verbose
+
   option :target, type: :string, default: "production"
   option :home, type: :boolean
   desc "run <command>", "run the given command on the specified target"
-
-  def self.setup cli
-    # HACK: we don't use Thor::Base#run, so its okay to stomp on it here
-    original_verbose, $VERBOSE = $VERBOSE, nil
-    Thor::THOR_RESERVED_WORDS -= ["run"]
-    $VERBOSE = original_verbose
-    super
-  end
-
-  def run *args
+  def run(*args)
     target = config[options[:target].to_sym]
     target.run!(*args.join(" "), verbose: true, home: options[:home])
   rescue Bard::Command::Error => e
@@ -22,4 +17,3 @@ class Bard::CLI::Run < Bard::Plugin::Command
     exit 1
   end
 end
-

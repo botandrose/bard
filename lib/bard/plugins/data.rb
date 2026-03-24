@@ -1,7 +1,6 @@
-require "bard/plugin"
 require "bard/command"
 
-class Bard::CLI::Data < Bard::Plugin::Command
+class Bard::CLI
   option :from, default: "production"
   option :to, default: "local"
   desc "data --from=production --to=local", "copy database and assets from from to to"

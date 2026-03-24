@@ -1,33 +1,14 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/deploy"
-require "thor"
 require "ostruct"
 
-class TestCICLI < Thor
-  Bard::CLI::CI.setup(self)
-
-  attr_reader :options
-
-  def initialize
-    super
-    @options = {}
-  end
-
-  def project_name
-    "test_project"
-  end
-
-  def config
-    @config ||= OpenStruct.new(ci: nil)
-  end
-end
-
-describe Bard::CLI::CI do
-  let(:cli) { TestCICLI.new }
+describe "bard ci" do
+  let(:cli) { Bard::CLI.new }
   let(:ci_runner) { double("ci_runner") }
 
   before do
+    allow(cli).to receive(:config).and_return(OpenStruct.new(ci: nil))
+    allow(cli).to receive(:project_name).and_return("test_project")
     allow(cli).to receive(:puts)
     allow(cli).to receive(:print)
     allow(cli).to receive(:exit)

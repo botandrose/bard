@@ -1,10 +1,7 @@
-require "bard/plugin"
-
-class Bard::CLI::SSH < Bard::Plugin::Command
+class Bard::CLI
   option :home, type: :boolean
   desc "ssh [to=production]", "logs into the specified server via SSH"
-  def ssh to=:production
+  def ssh(to = :production)
     config[to].exec! "exec $SHELL -l", home: options[:home]
   end
 end
-

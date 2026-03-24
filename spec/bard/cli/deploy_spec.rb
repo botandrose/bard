@@ -1,29 +1,11 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/deploy"
-require "thor"
 
-class TestDeployCLI < Thor
-  Bard::CLI::Deploy.setup(self)
-
-  attr_reader :config, :options
-
-  def initialize
-    super
-    @config = {}
-    @options = {}
-  end
-
-  def project_name
-    "test_project"
-  end
-end
-
-describe Bard::CLI::Deploy do
+describe "bard deploy" do
   let(:deploy_strategy) { double("deploy_strategy", deploy: true) }
   let(:production_server) { double("production", run!: true, path: "/var/www/test_project", deploy_strategy: :ssh, deploy_strategy_instance: deploy_strategy) }
   let(:config) { { production: production_server } }
-  let(:cli) { TestDeployCLI.new }
+  let(:cli) { Bard::CLI.new }
 
   before do
     allow(config).to receive(:ci).and_return(nil)
@@ -34,6 +16,7 @@ describe Bard::CLI::Deploy do
     allow(cli).to receive(:run!)
     allow(cli).to receive(:invoke)
     allow(cli).to receive(:ping)
+    allow(cli).to receive(:project_name).and_return("test_project")
     allow(cli).to receive(:green).and_return("")
     allow(cli).to receive(:red).and_return("")
     allow(cli).to receive(:yellow).and_return("")

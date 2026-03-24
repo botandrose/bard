@@ -1,7 +1,6 @@
-require "bard/plugin"
 require "uri"
 
-class Bard::CLI::Setup < Bard::Plugin::Command
+class Bard::CLI
   desc "setup", "installs app in nginx"
   def setup
     system "sudo tee /etc/nginx/snippets/common.conf >/dev/null <<-EOF
@@ -35,15 +34,14 @@ EOF"
     system "sudo service nginx restart"
   end
 
-  private
-
-  def nginx_server_name
-    case ENV["RAILS_ENV"]
-    when "production"
-      "*.#{URI.parse(config[:production].url).host} _"
-    when "staging" then "#{project_name}.botandrose.com"
-    else "#{project_name}.localhost"
+  no_commands do
+    def nginx_server_name
+      case ENV["RAILS_ENV"]
+      when "production"
+        "*.#{URI.parse(config[:production].url).host} _"
+      when "staging" then "#{project_name}.botandrose.com"
+      else "#{project_name}.localhost"
+      end
     end
   end
 end
-

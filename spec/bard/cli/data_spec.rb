@@ -1,28 +1,8 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/data"
 
-require "thor"
-
-require "term/ansicolor"
-
-class TestDataCLI < Thor
-  Bard::CLI::Data.setup(self)
-  include Term::ANSIColor
-
-  attr_reader :config
-
-  def initialize
-    @config = {}
-  end
-
-  def options
-    {}
-  end
-end
-
-describe Bard::CLI::Data do
-  let(:cli) { TestDataCLI.new }
+describe "bard data" do
+  let(:cli) { Bard::CLI.new }
 
   it "should have a data command" do
     expect(cli).to respond_to(:data)
@@ -42,6 +22,7 @@ describe Bard::CLI::Data do
     before do
       allow(cli).to receive(:config).and_return(config)
       allow(cli).to receive(:options).and_return({from: "production", to: "local"})
+      allow(cli).to receive(:puts)
     end
 
     it "should run the data command" do

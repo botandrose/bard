@@ -38,6 +38,6 @@ module Bard
       end
     end
 
-    Plugin.load!(self)
+    Plugin.load!
   end
 end

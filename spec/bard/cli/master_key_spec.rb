@@ -1,25 +1,11 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/deploy"
-require "thor"
 
-class TestMasterKeyCLI < Thor
-  Bard::CLI::MasterKey.setup(self)
-
-  attr_reader :config, :options
-
-  def initialize
-    super
-    @config = {}
-    @options = {}
-  end
-end
-
-describe Bard::CLI::MasterKey do
+describe "bard master_key" do
   let(:from_server) { double("production") }
   let(:to_server) { double("local") }
   let(:config) { { production: from_server, local: to_server } }
-  let(:cli) { TestMasterKeyCLI.new }
+  let(:cli) { Bard::CLI.new }
 
   before do
     allow(cli).to receive(:config).and_return(config)

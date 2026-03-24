@@ -1,14 +1,8 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/hurt"
-require "thor"
 
-class TestHurtCLI < Thor
-  Bard::CLI::Hurt.setup(self)
-end
-
-describe Bard::CLI::Hurt do
-  let(:cli) { TestHurtCLI.new }
+describe "bard hurt" do
+  let(:cli) { Bard::CLI.new }
 
   before do
     allow(cli).to receive(:puts)

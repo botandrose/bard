@@ -1,31 +1,15 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/open"
-require "thor"
 
-class TestOpenCLI < Thor
-  Bard::CLI::Open.setup(self)
-
-  attr_reader :config
-
-  def initialize
-    super
-    @config = {}
-  end
-
-  def project_name
-    "test_project"
-  end
-end
-
-describe Bard::CLI::Open do
+describe "bard open" do
   let(:server) { double("server", url: "https://example.com") }
   let(:config) { { production: server } }
-  let(:cli) { TestOpenCLI.new }
+  let(:cli) { Bard::CLI.new }
 
   before do
     allow(cli).to receive(:config).and_return(config)
-    allow_any_instance_of(Bard::CLI::Open).to receive(:exec)
+    allow(cli).to receive(:project_name).and_return("test_project")
+    allow(cli).to receive(:exec)
   end
 
   describe "#open" do
@@ -34,7 +18,7 @@ describe Bard::CLI::Open do
     end
 
     it "should open production server URL by default" do
-      expect_any_instance_of(Bard::CLI::Open).to receive(:exec).with("xdg-open https://example.com")
+      expect(cli).to receive(:exec).with("xdg-open https://example.com")
 
       cli.open
     end
@@ -43,13 +27,13 @@ describe Bard::CLI::Open do
       staging_server = double("staging", url: "https://staging.example.com")
       allow(config).to receive(:[]).with(:staging).and_return(staging_server)
 
-      expect_any_instance_of(Bard::CLI::Open).to receive(:exec).with("xdg-open https://staging.example.com")
+      expect(cli).to receive(:exec).with("xdg-open https://staging.example.com")
 
       cli.open(:staging)
     end
 
     it "should open CI URL when server is ci" do
-      expect_any_instance_of(Bard::CLI::Open).to receive(:exec).with("xdg-open https://github.com/botandrosedesign/test_project/actions/workflows/ci.yml")
+      expect(cli).to receive(:exec).with("xdg-open https://github.com/botandrosedesign/test_project/actions/workflows/ci.yml")
 
       cli.open(:ci)
     end
@@ -57,13 +41,11 @@ describe Bard::CLI::Open do
 
   describe "#open_url" do
     it "returns CI URL for ci server" do
-      command = Bard::CLI::Open.new(cli)
-      expect(command.send(:open_url, :ci)).to eq("https://github.com/botandrosedesign/test_project/actions/workflows/ci.yml")
+      expect(cli.open_url(:ci)).to eq("https://github.com/botandrosedesign/test_project/actions/workflows/ci.yml")
     end
 
     it "returns server url for other servers" do
-      command = Bard::CLI::Open.new(cli)
-      expect(command.send(:open_url, :production)).to eq("https://example.com")
+      expect(cli.open_url(:production)).to eq("https://example.com")
     end
   end
 end

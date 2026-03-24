@@ -1,27 +1,14 @@
 require "spec_helper"
 require "bard/cli"
-require "bard/plugins/ssh"
-require "thor"
 
-class TestSSHCLI < Thor
-  Bard::CLI::SSH.setup(self)
-
-  attr_reader :config, :options
-
-  def initialize
-    super
-    @config = {}
-    @options = {}
-  end
-end
-
-describe Bard::CLI::SSH do
+describe "bard ssh" do
   let(:server) { double("server") }
   let(:config) { { production: server } }
-  let(:cli) { TestSSHCLI.new }
+  let(:cli) { Bard::CLI.new }
 
   before do
     allow(cli).to receive(:config).and_return(config)
+    allow(cli).to receive(:options).and_return({ home: false })
   end
 
   describe "#ssh" do
@@ -30,7 +17,6 @@ describe Bard::CLI::SSH do
     end
 
     it "should execute shell on production server by default" do
-      allow(cli).to receive(:options).and_return({ home: false })
       expect(server).to receive(:exec!).with("exec $SHELL -l", home: false)
 
       cli.ssh
@@ -46,7 +32,6 @@ describe Bard::CLI::SSH do
     it "should connect to specified server" do
       staging_server = double("staging")
       allow(config).to receive(:[]).with(:staging).and_return(staging_server)
-      allow(cli).to receive(:options).and_return({ home: false })
       expect(staging_server).to receive(:exec!).with("exec $SHELL -l", home: false)
 
       cli.ssh(:staging)
