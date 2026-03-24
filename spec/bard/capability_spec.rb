@@ -55,31 +55,12 @@ describe "Capability System" do
 
   describe "capability dependency checking" do
     context "SSH-dependent methods" do
-      it "run! requires SSH capability" do
-        expect { target.run!("ls") }
-          .to raise_error(/SSH not configured/)
+      it "copy_file is not available without SSH" do
+        expect(target).not_to respond_to(:copy_file)
       end
 
-      it "run requires SSH capability" do
-        expect { target.run("ls") }
-          .to raise_error(/SSH not configured/)
-      end
-
-      it "exec! requires SSH capability" do
-        expect { target.exec!("ls") }
-          .to raise_error(/SSH not configured/)
-      end
-
-      it "copy_file requires SSH capability" do
-        other_target = Bard::Target.new(:staging, config)
-        expect { target.copy_file("test.txt", to: other_target) }
-          .to raise_error(/SSH not configured/)
-      end
-
-      it "copy_dir requires SSH capability" do
-        other_target = Bard::Target.new(:staging, config)
-        expect { target.copy_dir("test/", to: other_target) }
-          .to raise_error(/SSH not configured/)
+      it "copy_dir is not available without SSH" do
+        expect(target).not_to respond_to(:copy_dir)
       end
     end
 

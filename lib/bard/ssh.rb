@@ -1,5 +1,7 @@
 require "uri"
 require "bard/ssh_server"
+require "bard/command"
+require "bard/copy"
 
 module Bard
   module SSH
@@ -35,6 +37,27 @@ module Bard
       str += ":#{path}"
       str += "/#{file_path}" if file_path
       str
+    end
+
+    def run!(command, home: false, verbose: false, quiet: false, capture: false)
+      result = Command.run!(command, on: self, home: home, verbose: verbose, quiet: quiet)
+      result if capture
+    end
+
+    def run(command, home: false, verbose: false, quiet: false)
+      Command.run(command, on: self, home: home, verbose: verbose, quiet: quiet)
+    end
+
+    def exec!(command, home: false)
+      Command.exec!(command, on: self, home: home)
+    end
+
+    def copy_file(path, to:, verbose: false)
+      Copy.file(path, from: self, to: to, verbose: verbose)
+    end
+
+    def copy_dir(path, to:, verbose: false)
+      Copy.dir(path, from: self, to: to, verbose: verbose)
     end
   end
 end

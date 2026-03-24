@@ -142,44 +142,30 @@ describe Bard::Target do
     end
   end
 
-  describe "remote command execution" do
-    before do
-      target.ssh("deploy@example.com:22", path: "/app")
-    end
-
-    describe "#run!" do
-      it "requires SSH capability" do
-        target_without_ssh = described_class.new(:staging, config)
-        expect { target_without_ssh.run!("ls") }
-          .to raise_error(/SSH not configured/)
-      end
-
-      it "executes command on remote server" do
+  describe "command execution" do
+    describe "local (base)" do
+      it "runs commands locally" do
         expect(Bard::Command).to receive(:run!)
-          .with("ls", on: target, home: false, verbose: false, quiet: false)
+          .with("ls", home: false, verbose: false, quiet: false)
         target.run!("ls")
       end
     end
 
-    describe "#run" do
-      it "requires SSH capability" do
-        target_without_ssh = described_class.new(:staging, config)
-        expect { target_without_ssh.run("ls") }
-          .to raise_error(/SSH not configured/)
+    describe "remote (SSH)" do
+      before do
+        target.ssh("deploy@example.com:22", path: "/app")
       end
 
-      it "executes command on remote server without raising" do
+      it "runs commands on remote server" do
+        expect(Bard::Command).to receive(:run!)
+          .with("ls", on: target, home: false, verbose: false, quiet: false)
+        target.run!("ls")
+      end
+
+      it "runs commands without raising on remote server" do
         expect(Bard::Command).to receive(:run)
           .with("ls", on: target, home: false, verbose: false, quiet: false)
         target.run("ls")
-      end
-    end
-
-    describe "#exec!" do
-      it "requires SSH capability" do
-        target_without_ssh = described_class.new(:staging, config)
-        expect { target_without_ssh.exec!("ls") }
-          .to raise_error(/SSH not configured/)
       end
 
       it "replaces process with remote command" do
@@ -204,18 +190,6 @@ describe Bard::Target do
     end
 
     describe "#copy_file" do
-      it "requires SSH capability on source" do
-        target_without_ssh = described_class.new(:staging, config)
-        expect { target_without_ssh.copy_file("test.txt", to: dest_target) }
-          .to raise_error(/SSH not configured/)
-      end
-
-      it "requires SSH capability on destination" do
-        target_without_ssh = described_class.new(:staging, config)
-        expect { source_target.copy_file("test.txt", to: target_without_ssh) }
-          .to raise_error(/SSH not configured/)
-      end
-
       it "copies file via SCP" do
         expect(Bard::Copy).to receive(:file)
           .with("test.txt", from: source_target, to: dest_target, verbose: false)
@@ -224,18 +198,6 @@ describe Bard::Target do
     end
 
     describe "#copy_dir" do
-      it "requires SSH capability on source" do
-        target_without_ssh = described_class.new(:staging, config)
-        expect { target_without_ssh.copy_dir("test/", to: dest_target) }
-          .to raise_error(/SSH not configured/)
-      end
-
-      it "requires SSH capability on destination" do
-        target_without_ssh = described_class.new(:staging, config)
-        expect { source_target.copy_dir("test/", to: target_without_ssh) }
-          .to raise_error(/SSH not configured/)
-      end
-
       it "syncs directory via rsync" do
         expect(Bard::Copy).to receive(:dir)
           .with("test/", from: source_target, to: dest_target, verbose: false)
