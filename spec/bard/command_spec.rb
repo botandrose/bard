@@ -23,7 +23,7 @@ describe Bard::Command do
 
   describe ".exec!" do
     it "should exec a command locally" do
-      expect_any_instance_of(Bard::Command).to receive(:exec).with("ls -l")
+      expect(Kernel).to receive(:exec).with("ls -l")
       Bard::Command.exec! "ls -l"
     end
   end

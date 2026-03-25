@@ -1,28 +1,16 @@
 require "open3"
 
 module Bard
-  class Command < Struct.new(:command)
+  module Command
     class Error < RuntimeError; end
 
     def self.run!(command, verbose: false, quiet: false)
-      new(command).run!(verbose:, quiet:)
-    end
-
-    def self.run(command, verbose: false, quiet: false)
-      new(command).run(verbose:, quiet:)
-    end
-
-    def self.exec!(command)
-      new(command).exec!
-    end
-
-    def run!(verbose: false, quiet: false)
-      result = run(verbose:, quiet:)
+      result = run(command, verbose:, quiet:)
       raise Error.new(command) unless result
       result
     end
 
-    def run(verbose: false, quiet: false)
+    def self.run(command, verbose: false, quiet: false)
       if verbose
         system command
       else
@@ -36,8 +24,8 @@ module Bard
       end
     end
 
-    def exec!
-      exec command
+    def self.exec!(command)
+      Kernel.exec command
     end
   end
 end
