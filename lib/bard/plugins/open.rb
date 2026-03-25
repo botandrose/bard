@@ -9,7 +9,9 @@ class Bard::CLI
       if target.to_sym == :ci
         "https://github.com/botandrosedesign/#{project_name}/actions/workflows/ci.yml"
       else
-        config[target].url
+        t = config[target]
+        t.require_capability!(:url)
+        t.url
       end
     end
   end

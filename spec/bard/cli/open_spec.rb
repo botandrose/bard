@@ -2,7 +2,7 @@ require "spec_helper"
 require "bard/cli"
 
 describe "bard open" do
-  let(:target) { double("target", url: "https://example.com") }
+  let(:target) { double("target", url: "https://example.com", require_capability!: nil) }
   let(:config) { { production: target } }
   let(:cli) { Bard::CLI.new }
 
@@ -24,7 +24,7 @@ describe "bard open" do
     end
 
     it "should open specified target URL" do
-      staging_server = double("staging", url: "https://staging.example.com")
+      staging_server = double("staging", url: "https://staging.example.com", require_capability!: nil)
       allow(config).to receive(:[]).with(:staging).and_return(staging_server)
 
       expect(cli).to receive(:exec).with("xdg-open https://staging.example.com")

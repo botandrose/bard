@@ -8,6 +8,9 @@ class Bard::CLI
     from = config[options[:from]]
     to = config[options[:to]]
 
+    from.require_capability!(:ssh) unless from.key == :local
+    to.require_capability!(:ssh) unless to.key == :local
+
     if to.key == :production
       url = to.url
       puts yellow "WARNING: You are about to push data to production, overwriting everything that is there!"

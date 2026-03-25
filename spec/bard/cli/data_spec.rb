@@ -9,7 +9,7 @@ describe "bard data" do
   end
 
   context "data" do
-    let(:from) { double("from", key: :production, run!: nil, copy_file: nil, copy_dir: nil) }
+    let(:from) { double("from", key: :production, run!: nil, copy_file: nil, copy_dir: nil, require_capability!: nil) }
     let(:to) { double("to", key: :local, run!: nil) }
 
     let(:config) do
@@ -33,7 +33,7 @@ describe "bard data" do
     end
 
     context "pushing to production" do
-      let(:to) { double("to", key: :production, url: "https://example.com") }
+      let(:to) { double("to", key: :production, url: "https://example.com", run!: nil, require_capability!: nil) }
 
       before do
         allow(cli).to receive(:options).and_return({from: "local", to: "production"})
