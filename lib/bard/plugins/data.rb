@@ -1,5 +1,6 @@
 require "bard/command"
 require "bard/plugins/ssh"
+require "bard/plugins/url"
 
 class Bard::CLI
   option :from, default: "production"

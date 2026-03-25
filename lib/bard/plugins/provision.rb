@@ -1,4 +1,5 @@
 require "bard/plugins/provision/base"
+require "bard/plugins/ssh"
 
 class Bard::CLI
   PROVISION_STEPS = %w[

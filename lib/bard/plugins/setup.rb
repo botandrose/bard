@@ -1,4 +1,5 @@
 require "uri"
+require "bard/plugins/url"
 
 class Bard::CLI
   desc "setup", "installs app in nginx"

@@ -1,3 +1,5 @@
+require "bard/plugins/url"
+
 class Bard::CLI
   desc "open [target=production]", "opens the url in the web browser."
   def open(target = :production)
