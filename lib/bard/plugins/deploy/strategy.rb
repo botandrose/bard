@@ -39,7 +39,7 @@ module Bard
       @target = target
     end
 
-    def deploy
+    def deploy(clone: nil)
       raise NotImplementedError, "Subclasses must implement #deploy"
     end
 

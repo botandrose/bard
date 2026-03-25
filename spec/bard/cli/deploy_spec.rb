@@ -150,12 +150,10 @@ describe "bard deploy" do
     end
 
     context "with clone option" do
-      it "clones repository and sets up application" do
+      it "deploys with clone option to strategy" do
         allow(cli).to receive(:options).and_return({ clone: true, target: "production" })
 
-        expect(production_server).to receive(:run!).with("git clone git@github.com:botandrosedesign/test_project /var/www/test_project", home: true)
-        expect(cli).to receive(:invoke).with(:master_key, [], from: "local", to: :production)
-        expect(production_server).to receive(:run!).with("bin/setup && bard setup")
+        expect(deploy_strategy).to receive(:deploy).with(clone: "test_project")
 
         cli.deploy
       end

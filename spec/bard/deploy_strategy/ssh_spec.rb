@@ -48,6 +48,54 @@ describe Bard::DeployStrategy::SSH do
 
       strategy.deploy
     end
+
+    context "with clone" do
+      let(:local_target) { double("local") }
+
+      before do
+        allow(config).to receive(:[]).with(:local).and_return(local_target)
+      end
+
+      it "clones the repository" do
+        expect(target).to receive(:run!)
+          .with("git clone git@github.com:botandrosedesign/testapp /app", home: true)
+        allow(local_target).to receive(:copy_file)
+        allow(target).to receive(:run!).with("bin/setup")
+        allow(target).to receive(:run!).with("bard setup")
+
+        strategy.deploy(clone: "testapp")
+      end
+
+      it "copies master key from local" do
+        allow(target).to receive(:run!).with(/git clone/, home: true)
+        expect(local_target).to receive(:copy_file)
+          .with("config/master.key", to: target)
+        allow(target).to receive(:run!).with("bin/setup")
+        allow(target).to receive(:run!).with("bard setup")
+
+        strategy.deploy(clone: "testapp")
+      end
+
+      it "runs bin/setup and bard setup" do
+        allow(target).to receive(:run!).with(/git clone/, home: true)
+        allow(local_target).to receive(:copy_file)
+        expect(target).to receive(:run!).with("bin/setup")
+        expect(target).to receive(:run!).with("bard setup")
+
+        strategy.deploy(clone: "testapp")
+      end
+
+      it "does not run git pull" do
+        allow(target).to receive(:run!).with(/git clone/, home: true)
+        allow(local_target).to receive(:copy_file)
+        allow(target).to receive(:run!).with("bin/setup")
+        allow(target).to receive(:run!).with("bard setup")
+
+        expect(target).not_to receive(:run!).with(/git pull/)
+
+        strategy.deploy(clone: "testapp")
+      end
+    end
   end
 
   describe "auto-registration" do

@@ -4,16 +4,19 @@ require "bard/plugins/ssh"
 module Bard
   class DeployStrategy
     class SSH < DeployStrategy
-      def deploy
-        # Require SSH capability
+      def deploy(clone: nil)
         target.require_capability!(:ssh)
 
-        # Determine branch
-        branch = target.instance_variable_get(:@branch) || "master"
+        if clone
+          target.run! "git clone git@github.com:botandrosedesign/#{clone} #{target.path}", home: true
+          target.config[:local].copy_file "config/master.key", to: target
+        else
+          branch = target.instance_variable_get(:@branch) || "master"
+          target.run! "git pull origin #{branch}"
+        end
 
-        # Run git pull and setup on remote server
-        target.run! "git pull origin #{branch}"
         target.run! "bin/setup"
+        target.run! "bard setup" if clone
       end
     end
   end

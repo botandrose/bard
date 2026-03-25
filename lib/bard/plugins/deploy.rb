@@ -74,13 +74,11 @@ class Bard::CLI
 
     to = options[:target].to_sym
 
+    target = config[to]
+    strategy = target.deploy_strategy_instance
     if options[:clone]
-      config[to].run! "git clone git@github.com:botandrosedesign/#{project_name} #{config[to].path}", home: true
-      invoke :master_key, [], from: "local", to: to
-      config[to].run! "bin/setup && bard setup"
+      strategy.deploy(clone: project_name)
     else
-      target = config[to]
-      strategy = target.deploy_strategy_instance
       strategy.deploy
     end
 
