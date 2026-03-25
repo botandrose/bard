@@ -40,17 +40,7 @@ describe "Capability System" do
 
     it "raises an error if capability is not enabled" do
       expect { target.require_capability!(:ssh) }
-        .to raise_error(/SSH not configured for this target/)
-    end
-
-    it "provides custom error message for url capability" do
-      expect { target.require_capability!(:url) }
-        .to raise_error(/URL not configured for this target/)
-    end
-
-    it "provides generic error message for unknown capabilities" do
-      expect { target.require_capability!(:unknown) }
-        .to raise_error(/unknown capability not configured for this target/)
+        .to raise_error(/ssh capability not configured for this target/)
     end
   end
 
@@ -68,7 +58,7 @@ describe "Capability System" do
     context "URL-dependent methods" do
       it "ping! requires url capability" do
         expect { target.ping! }
-          .to raise_error(/URL not configured/)
+          .to raise_error(/url capability not configured/)
       end
     end
   end

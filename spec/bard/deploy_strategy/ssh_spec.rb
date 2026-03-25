@@ -17,7 +17,7 @@ describe Bard::DeployStrategy::SSH do
       strategy_without_ssh = described_class.new(target_without_ssh)
 
       expect { strategy_without_ssh.deploy }
-        .to raise_error(/SSH not configured/)
+        .to raise_error(/ssh capability not configured/)
     end
 
     it "runs git pull on remote server" do

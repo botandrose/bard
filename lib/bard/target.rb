@@ -24,15 +24,7 @@ module Bard
 
     def require_capability!(capability)
       unless has_capability?(capability)
-        error_message = case capability
-        when :ssh
-          "SSH not configured for this target"
-        when :url
-          "URL not configured for this target"
-        else
-          "#{capability} capability not configured for this target"
-        end
-        raise error_message
+        raise "#{capability} capability not configured for this target"
       end
     end
 
