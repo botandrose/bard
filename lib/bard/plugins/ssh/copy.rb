@@ -2,7 +2,8 @@ require "uri"
 require "bard/command"
 
 module Bard
-  class Copy < Struct.new(:path, :from, :to, :verbose)
+  module SSH
+    class Copy < Struct.new(:path, :from, :to, :verbose)
     def self.file path, from:, to:, verbose: false
       new(path, from, to, verbose).scp
     end
@@ -91,6 +92,7 @@ module Bard
 
       command = %(ssh -A #{from_str} 'rsync -e \"ssh -A -p#{to_uri.port || 22} -o StrictHostKeyChecking=no -o LogLevel=ERROR\" --delete --info=progress2 -az #{from.path}/#{path} #{to_str}')
       Bard::Command.run! command, verbose: verbose
+    end
     end
   end
 end

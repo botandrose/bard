@@ -24,7 +24,7 @@ describe Bard::Provision::MasterKey do
         allow(provision_server).to receive(:run).with("[ -f config/master.key ]", quiet: true).and_return(false)
 
         copy_double = double("copy")
-        expect(Bard::Copy).to receive(:new).with("config/master.key").and_return(copy_double)
+        expect(Bard::SSH::Copy).to receive(:new).with("config/master.key").and_return(copy_double)
         expect(copy_double).to receive(:scp_using_local).with(:to, provision_server)
 
         master_key.call
@@ -33,7 +33,7 @@ describe Bard::Provision::MasterKey do
       it "skips upload if master.key already exists on server" do
         allow(provision_server).to receive(:run).with("[ -f config/master.key ]", quiet: true).and_return(true)
 
-        expect(Bard::Copy).not_to receive(:new)
+        expect(Bard::SSH::Copy).not_to receive(:new)
 
         master_key.call
       end
@@ -45,7 +45,7 @@ describe Bard::Provision::MasterKey do
       end
 
       it "skips the upload" do
-        expect(Bard::Copy).not_to receive(:new)
+        expect(Bard::SSH::Copy).not_to receive(:new)
 
         master_key.call
       end

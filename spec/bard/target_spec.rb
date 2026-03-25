@@ -197,7 +197,7 @@ describe Bard::Target do
 
     describe "#copy_file" do
       it "copies file via SCP" do
-        expect(Bard::Copy).to receive(:file)
+        expect(Bard::SSH::Copy).to receive(:file)
           .with("test.txt", from: source_target, to: dest_target, verbose: false)
         source_target.copy_file("test.txt", to: dest_target)
       end
@@ -205,7 +205,7 @@ describe Bard::Target do
 
     describe "#copy_dir" do
       it "syncs directory via rsync" do
-        expect(Bard::Copy).to receive(:dir)
+        expect(Bard::SSH::Copy).to receive(:dir)
           .with("test/", from: source_target, to: dest_target, verbose: false)
         source_target.copy_dir("test/", to: dest_target)
       end
