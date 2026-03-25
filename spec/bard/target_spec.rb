@@ -1,4 +1,5 @@
 require "spec_helper"
+require "shellwords"
 require "bard/target"
 require "bard/plugins/url/target_methods"
 require "bard/plugins/ssh/target_methods"
@@ -148,7 +149,7 @@ describe Bard::Target do
     describe "local (base)" do
       it "runs commands locally" do
         expect(Bard::Command).to receive(:run!)
-          .with("ls", home: false, verbose: false, quiet: false)
+          .with("ls", verbose: false, quiet: false)
         target.run!("ls")
       end
     end
@@ -159,20 +160,23 @@ describe Bard::Target do
       end
 
       it "runs commands on remote server" do
+        expected_cmd = "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR deploy@example.com #{Shellwords.shellescape("cd /app && ls")}"
         expect(Bard::Command).to receive(:run!)
-          .with("ls", on: target, home: false, verbose: false, quiet: false)
+          .with(expected_cmd, verbose: false, quiet: false)
         target.run!("ls")
       end
 
       it "runs commands without raising on remote server" do
+        expected_cmd = "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR deploy@example.com #{Shellwords.shellescape("cd /app && ls")}"
         expect(Bard::Command).to receive(:run)
-          .with("ls", on: target, home: false, verbose: false, quiet: false)
+          .with(expected_cmd, verbose: false, quiet: false)
         target.run("ls")
       end
 
       it "replaces process with remote command" do
+        expected_cmd = "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR deploy@example.com #{Shellwords.shellescape("cd /app && ls")}"
         expect(Bard::Command).to receive(:exec!)
-          .with("ls", on: target, home: false)
+          .with(expected_cmd)
         target.exec!("ls")
       end
     end

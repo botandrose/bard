@@ -1,4 +1,5 @@
 require "uri"
+require "shellwords"
 require "bard/plugins/ssh/server"
 require "bard/command"
 require "bard/copy"
@@ -40,16 +41,16 @@ module Bard
     end
 
     def run!(command, home: false, verbose: false, quiet: false, capture: false)
-      result = Command.run!(command, on: self, home: home, verbose: verbose, quiet: quiet)
+      result = Command.run!(ssh_command(command, home:), verbose:, quiet:)
       result if capture
     end
 
     def run(command, home: false, verbose: false, quiet: false)
-      Command.run(command, on: self, home: home, verbose: verbose, quiet: quiet)
+      Command.run(ssh_command(command, home:), verbose:, quiet:)
     end
 
     def exec!(command, home: false)
-      Command.exec!(command, on: self, home: home)
+      Command.exec!(ssh_command(command, home:))
     end
 
     def copy_file(path, to:, verbose: false)
@@ -58,6 +59,26 @@ module Bard
 
     def copy_dir(path, to:, verbose: false)
       Copy.dir(path, from: self, to: to, verbose: verbose)
+    end
+
+    private
+
+    def ssh_command(command, home: false)
+      cmd = command
+      cmd = "#{env} #{command}" if env
+
+      unless home
+        cmd = "cd #{path} && #{cmd}" if path
+      end
+
+      ssh_opts = ["-tt", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=ERROR"]
+      ssh_opts << "-i #{ssh_key}" if ssh_key
+      ssh_opts << "-p #{server.port}" if server.port && server.port != "22"
+      ssh_opts << "-o ProxyJump=#{gateway}" if gateway
+
+      ssh_target = "#{server.user}@#{server.host}"
+
+      "ssh #{ssh_opts.join(" ")} #{ssh_target} #{Shellwords.shellescape(cmd)}"
     end
   end
 end

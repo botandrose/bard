@@ -31,16 +31,16 @@ module Bard
     end
 
     def run!(command, home: false, verbose: false, quiet: false, capture: false)
-      result = Command.run!(command, home: home, verbose: verbose, quiet: quiet)
+      result = Command.run!(command, verbose:, quiet:)
       result if capture
     end
 
     def run(command, home: false, verbose: false, quiet: false)
-      Command.run(command, home: home, verbose: verbose, quiet: quiet)
+      Command.run(command, verbose:, quiet:)
     end
 
     def exec!(command, home: false)
-      Command.exec!(command, home: home)
+      Command.exec!(command)
     end
 
     # Utility methods

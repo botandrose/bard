@@ -1,21 +1,11 @@
 require "spec_helper"
 require "bard/command"
-require "shellwords"
 
 describe Bard::Command do
-  let(:ssh_server) { double("ssh_server", user: "user", host: "example.com", port: "22") }
-  let(:remote) { double("remote", to_sym: :remote, server: ssh_server, env: nil, path: "/path/to", ssh_key: nil, gateway: nil) }
-
   describe ".run" do
     it "should run a command locally" do
       expect(Open3).to receive(:capture3).with("ls -l").and_return(["output", "", 0])
       Bard::Command.run "ls -l"
-    end
-
-    it "should run a command on a remote server" do
-      expected_cmd = "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR user@example.com #{Shellwords.shellescape("cd /path/to && ls -l")}"
-      expect(Open3).to receive(:capture3).with(expected_cmd).and_return(["output", "", 0])
-      Bard::Command.run "ls -l", on: remote
     end
   end
 
