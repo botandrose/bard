@@ -1,5 +1,5 @@
 require "bard/plugins/deploy/strategy"
-require "bard/git"
+require "bard/plugins/git"
 require "fileutils"
 require "uri"
 

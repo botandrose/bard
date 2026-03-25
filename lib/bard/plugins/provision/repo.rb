@@ -1,4 +1,4 @@
-require "bard/github"
+require "bard/plugins/github"
 
 # generate and install ssh public key into deploy keys
 # add repo to known hosts

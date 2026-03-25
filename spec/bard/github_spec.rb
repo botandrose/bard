@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/github"
+require "bard/plugins/github"
 
 describe Bard::Github do
   let(:github) { Bard::Github.new("test-project") }

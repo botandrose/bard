@@ -1,4 +1,4 @@
-require "bard/github"
+require "bard/plugins/github"
 
 class Bard::CLI
   NEW_RAILS_REQUIREMENT = "~> 8.0.0"

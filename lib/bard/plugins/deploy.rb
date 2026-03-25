@@ -1,5 +1,5 @@
 require "bard/plugins/ping"
-require "bard/git"
+require "bard/plugins/git"
 require "bard/command"
 require "bard/plugins/deploy/strategy"
 require "bard/plugins/deploy/ssh_strategy"

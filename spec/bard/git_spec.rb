@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/git"
+require "bard/plugins/git"
 
 describe Bard::Git do
   describe ".current_branch" do

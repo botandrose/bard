@@ -1,5 +1,5 @@
 require "time"
-require "bard/github"
+require "bard/plugins/github"
 require "bard/plugins/deploy/ci/runner"
 
 module Bard
