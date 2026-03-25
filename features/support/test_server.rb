@@ -207,10 +207,10 @@ end
 
 World(TestServerWorld)
 
-Before do
+Before("@server") do
   start_test_server
 end
 
-After do
+After("@server") do
   stop_test_server
 end

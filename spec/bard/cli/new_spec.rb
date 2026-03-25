@@ -15,6 +15,20 @@ describe "bard new" do
   end
 
   describe "#new" do
+    context "with --skip-github and --skip-stage" do
+      let(:cli) { Bard::CLI.new([], skip_github: true, skip_stage: true) }
+
+      before do
+        allow(cli).to receive(:new_create_project)
+      end
+
+      it "skips github and stage steps" do
+        expect(cli).not_to receive(:new_push_to_github)
+        expect(cli).not_to receive(:new_stage)
+        cli.new("testproject")
+      end
+    end
+
     context "with invalid project name" do
       before do
         allow(cli).to receive(:new_create_project)
@@ -47,7 +61,7 @@ describe "bard new" do
 
   describe "#new_ruby_version" do
     it "returns the ruby version" do
-      expect(cli.send(:new_ruby_version)).to eq("ruby-3.4.2")
+      expect(cli.send(:new_ruby_version)).to eq("ruby-4.0.2")
     end
   end
 

@@ -1,3 +1,4 @@
+@server
 Feature: bard deploy
   Deploy code changes to a remote server.
 

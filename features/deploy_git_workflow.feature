@@ -1,3 +1,4 @@
+@server
 Feature: bard deploy git workflow
   Git workflow behaviors during deploy.
 

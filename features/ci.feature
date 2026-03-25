@@ -1,3 +1,4 @@
+@server
 Feature: bard ci
   Run continuous integration tests.
 

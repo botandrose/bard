@@ -1,3 +1,4 @@
+@server
 Feature: bard data
   Copy database from a remote server to local.
 

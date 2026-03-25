@@ -1,3 +1,4 @@
+@server
 Feature: bard run
   Execute commands on a remote server.
 

@@ -1,15 +1,17 @@
 require "bard/plugins/github"
 
 class Bard::CLI
-  NEW_RAILS_REQUIREMENT = "~> 8.0.0"
+  NEW_RAILS_REQUIREMENT = "~> 8.1.0"
 
   desc "new <project-name>", "creates new bard app named <project-name>"
+  method_option :skip_github, type: :boolean, default: false
+  method_option :skip_stage, type: :boolean, default: false
   def new(project_name)
     @new_project_name = project_name
     new_validate
     new_create_project
-    new_push_to_github
-    new_stage
+    new_push_to_github unless options[:skip_github]
+    new_stage unless options[:skip_stage]
     puts green("Project #{@new_project_name} created!")
     puts "Please cd ../#{@new_project_name}"
   end
@@ -89,7 +91,7 @@ class Bard::CLI
     end
 
     def new_ruby_version
-      "ruby-3.4.2"
+      "ruby-4.0.2"
     end
 
     def new_template_path
