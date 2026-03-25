@@ -10,8 +10,8 @@ describe "bard install" do
     end
 
     it "should copy install files to bin directory" do
-      expect(cli).to receive(:system).with(/cp -R .*install_files\/\* bin\//)
-      expect(cli).to receive(:system).with(/cp -R .*install_files\/\.github \.\//)
+      expect(cli).to receive(:system).with(/cp -R .*plugins\/install\/\* bin\//)
+      expect(cli).to receive(:system).with(/cp -R .*plugins\/install\/\.github \.\//)
 
       cli.install
     end
