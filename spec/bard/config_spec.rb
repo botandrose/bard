@@ -1,4 +1,5 @@
 require "bard/config"
+require "bard/plugins/ssh/target_methods"
 require "bard/plugins/data"
 require "bard/plugins/github_pages"
 

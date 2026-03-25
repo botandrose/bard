@@ -36,23 +36,6 @@ module Bard
       end
     end
 
-    # SSH configuration
-    def ssh(uri = nil, **options)
-      if uri.nil?
-        return @server
-      else
-        require "bard/ssh"
-        extend Bard::SSH
-
-        @server = SSHServer.new(uri, **options)
-        @path = options[:path] if options[:path]
-        enable_capability(:ssh)
-
-        hostname = @server.hostname
-        url("https://#{hostname}") if hostname
-      end
-    end
-
     def path
       @path || config.project_name
     end

@@ -1,5 +1,5 @@
 require "spec_helper"
-require "bard/ssh_server"
+require "bard/plugins/ssh/server"
 
 describe Bard::SSHServer do
   describe "#initialize" do

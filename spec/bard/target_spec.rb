@@ -1,5 +1,6 @@
 require "spec_helper"
 require "bard/target"
+require "bard/plugins/ssh/target_methods"
 require "bard/plugins/ping/target_methods"
 
 describe Bard::Target do

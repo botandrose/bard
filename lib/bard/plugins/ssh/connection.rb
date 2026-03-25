@@ -1,5 +1,5 @@
 require "uri"
-require "bard/ssh_server"
+require "bard/plugins/ssh/server"
 require "bard/command"
 require "bard/copy"
 
