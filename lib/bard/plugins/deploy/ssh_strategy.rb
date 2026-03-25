@@ -1,4 +1,5 @@
 require "bard/plugins/deploy/strategy"
+require "bard/plugins/ssh"
 
 module Bard
   class DeployStrategy
