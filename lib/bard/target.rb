@@ -1,4 +1,3 @@
-require "uri"
 require "bard/command"
 
 module Bard
@@ -9,7 +8,6 @@ module Bard
       @key = key
       @config = config
       @capabilities = []
-      @url = nil
       @path = nil
     end
 
@@ -30,19 +28,6 @@ module Bard
 
     def path
       @path || config.project_name
-    end
-
-    # URL configuration
-    def url(value = nil)
-      if value.nil?
-        @url
-      elsif value == false
-        @url = nil
-        @capabilities.delete(:url)
-      else
-        @url = normalize_url(value)
-        enable_capability(:url)
-      end
     end
 
     def run!(command, home: false, verbose: false, quiet: false, capture: false)
@@ -73,14 +58,6 @@ module Bard
           t.send(key, value)
         end
       end
-    end
-
-    private
-
-    def normalize_url(value)
-      normalized = value.to_s
-      normalized = "https://#{normalized}" unless normalized.start_with?("http")
-      normalized
     end
   end
 end

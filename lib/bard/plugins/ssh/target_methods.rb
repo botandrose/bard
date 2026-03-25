@@ -1,4 +1,5 @@
 require "bard/target"
+require "bard/plugins/url/target_methods"
 require "bard/plugins/ssh/connection"
 
 class Bard::Target
