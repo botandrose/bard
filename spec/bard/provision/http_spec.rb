@@ -48,7 +48,7 @@ describe Bard::Provision::HTTP do
     end
 
     it "tests the correct URL" do
-      expected_command = /curl -s --resolve example\.com:80:192\.168\.1\.100 http:\/\/example\.com/
+      expected_command = /curl -sf --resolve example\.com:80:192\.168\.1\.100 http:\/\/example\.com -o \/dev\/null/
       expect(http).to receive(:system).with(expected_command)
 
       http.call

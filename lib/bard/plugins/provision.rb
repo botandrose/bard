@@ -13,14 +13,14 @@ class Bard::CLI
     MasterKey
     RVM
     App
-    Passenger
+    Nginx
+    Deploy
     HTTP
     LogRotation
     Data
-    Deploy
   ]
 
-  desc "provision [ssh_url] --steps=all", "takes an optional ssh url to a raw ubuntu 22.04 install, and readies it in the shape of :production"
+  desc "provision [ssh_url] --steps=all", "takes an optional ssh url to a raw ubuntu 24.04 install, and readies it in the shape of :production"
   option :steps, type: :array, default: PROVISION_STEPS
   def provision(ssh_url = config[:production].ssh&.to_s)
     ssh_url = ssh_url.dup

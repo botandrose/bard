@@ -6,7 +6,7 @@ class Bard::Provision::HTTP < Bard::Provision
   def call
     print "HTTP:"
     target_host = URI.parse(target.url).host
-    if system "curl -s --resolve #{target_host}:80:#{provision_server.ssh_uri.host} http://#{target_host} -I | grep -i \"x-powered-by: phusion passenger\" >/dev/null 2>&1"
+    if system "curl -sf --resolve #{target_host}:80:#{provision_server.ssh_uri.host} http://#{target_host} -o /dev/null"
       puts " ✓"
     else
       puts " !!! not serving a rails app from #{provision_server.ssh_uri.host}"

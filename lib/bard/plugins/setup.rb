@@ -4,28 +4,34 @@ require "bard/plugins/url"
 class Bard::CLI
   desc "setup", "installs app in nginx"
   def setup
-    system "sudo tee /etc/nginx/snippets/common.conf >/dev/null <<-EOF
-listen 80;
+    path = "/etc/nginx/sites-available/#{project_name}"
+    system "sudo tee #{path} >/dev/null <<-'EOF'
+upstream puma {
+    server 127.0.0.1:3000 fail_timeout=5;
+}
 
-passenger_enabled on;
+server {
+    listen 80;
+    server_name #{nginx_server_name};
+    root #{Dir.pwd}/public;
 
-location ~* \\.(ico|css|js|gif|jp?g|png|webp) {
-    access_log off;
-    if (\\$request_filename ~ \"-[0-9a-f]{32,}\\.\") {
+    try_files $uri @app;
+
+    location @app {
+        proxy_pass http://puma;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~* \\-[0-9a-f]{64}\\.(ico|css|js|gif|jpe?g|png|webp)$ {
+        access_log off;
         expires max;
         add_header Cache-Control public;
     }
-}
 
-gzip_static on;
-EOF"
-
-    path = "/etc/nginx/sites-available/#{project_name}"
-    system "sudo tee #{path} >/dev/null <<-EOF
-server {
-    include /etc/nginx/snippets/common.conf;
-    server_name #{nginx_server_name};
-    root #{Dir.pwd}/public;
+    gzip_static on;
 }
 EOF"
 

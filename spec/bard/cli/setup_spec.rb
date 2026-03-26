@@ -16,9 +16,8 @@ describe "bard setup" do
       expect(cli).to respond_to(:setup)
     end
 
-    it "should create nginx common config" do
-      expect(cli).to receive(:system).with(/sudo tee \/etc\/nginx\/snippets\/common\.conf/)
-      expect(cli).to receive(:system).with(/sudo tee \/etc\/nginx\/sites-available\/test_project/)
+    it "should create nginx reverse proxy config" do
+      expect(cli).to receive(:system).with(/sudo tee \/etc\/nginx\/sites-available\/test_project.*proxy_pass http:\/\/puma/m)
       expect(cli).to receive(:system).with(/sudo ln -sf/)
       expect(cli).to receive(:system).with("sudo service nginx restart")
 
