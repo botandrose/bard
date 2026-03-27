@@ -36,7 +36,7 @@ class Bard::Provision::User < Bard::Provision
   end
 
   def ssh_with_user? ssh_uri, user: ssh_uri.user
-    ssh_opts = "-o ConnectTimeout=2 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+    ssh_opts = "-o ConnectTimeout=2 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes"
     ssh_opts += " -i #{provision_server.ssh_key}" if provision_server.respond_to?(:ssh_key) && provision_server.ssh_key
     system "ssh #{ssh_opts} -p#{ssh_uri.port || 22} #{user}@#{ssh_uri.host} : >/dev/null 2>&1"
   end
