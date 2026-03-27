@@ -72,9 +72,12 @@ module ProvisionServerWorld
 
     @container = Docker::Container.create(
       "Image" => "localhost/bard-test-provision:latest",
-      "ExposedPorts" => { "22/tcp" => {} },
+      "ExposedPorts" => { "22/tcp" => {}, "80/tcp" => {} },
       "HostConfig" => {
-        "PortBindings" => { "22/tcp" => [{ "HostPort" => "" }] },
+        "PortBindings" => {
+          "22/tcp" => [{ "HostPort" => "" }],
+          "80/tcp" => [{ "HostPort" => "" }],
+        },
         "PublishAllPorts" => true,
         "Privileged" => true,
       }
@@ -83,6 +86,7 @@ module ProvisionServerWorld
     @container.refresh!
 
     @ssh_port = @container.info["NetworkSettings"]["Ports"]["22/tcp"].first["HostPort"].to_i
+    @http_port = @container.info["NetworkSettings"]["Ports"]["80/tcp"].first["HostPort"].to_i
     @container_ip = "127.0.0.1"
 
     wait_for_systemd
@@ -219,6 +223,24 @@ BARDCONFIG
     run_provision_ssh_as("www", <<~SH)
       git clone --bare ~/testproject ~/repos/testproject.git && \
       cd ~/testproject && git remote add origin ~/repos/testproject.git
+    SH
+
+    # Create a simple HTTP backend on port 3000 via systemd (survives SSH disconnect)
+    run_provision_ssh_as("www", "echo 'hello from testproject' > ~/testproject/public/index.html")
+    run_provision_ssh_as("root", <<~SH)
+      cat > /etc/systemd/system/testproject-web.service << 'UNIT'
+[Unit]
+Description=Test project web server
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 3000 -d /home/www/testproject/public
+User=www
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+      systemctl daemon-reload
+      systemctl enable --now testproject-web
     SH
   end
 

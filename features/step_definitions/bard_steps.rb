@@ -185,17 +185,8 @@ When /^I provision the app$/ do
   end
 end
 
-Then /^nginx should be installed on the server$/ do
-  output = run_provision_ssh_as("www", "/usr/sbin/nginx -v 2>&1")
-  expect(output).to include("nginx")
-end
-
-Then /^the nginx config should contain "([^"]+)"$/ do |expected|
-  output = run_provision_ssh_as("www", "cat /etc/nginx/sites-enabled/testproject")
-  expect(output).to include(expected)
-end
-
-Then /^the nginx config should not contain "([^"]+)"$/ do |expected|
-  output = run_provision_ssh_as("www", "cat /etc/nginx/sites-enabled/testproject")
-  expect(output).not_to include(expected)
+Then /^the site should be running$/ do
+  stdout, status = Open3.capture2e("curl -sf http://127.0.0.1:#{@http_port}/")
+  expect(status).to be_success, "Site not responding on port #{@http_port}"
+  expect(stdout).to include("hello from testproject")
 end

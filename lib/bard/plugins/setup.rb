@@ -25,7 +25,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location ~* \\-[0-9a-f]{64}\\.(ico|css|js|gif|jpe?g|png|webp)$ {
+    location ~* \\-[0-9a-f]\\{64\\}\\.(ico|css|js|gif|jpe?g|png|webp)$ {
         access_log off;
         expires max;
         add_header Cache-Control public;

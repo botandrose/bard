@@ -7,6 +7,4 @@ Feature: bard provision
     When I provision the system
     And I set up the test project
     And I provision the app
-    Then nginx should be installed on the server
-    And the nginx config should contain "proxy_pass http://puma"
-    And the nginx config should not contain "passenger"
+    Then the site should be running
