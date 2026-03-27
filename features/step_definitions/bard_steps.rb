@@ -161,3 +161,41 @@ Then /^the project "([^"]+)" should respond to http:\/\/(.+)$/ do |project_name,
   expect(status).to be_success, "HTTP request to #{hostname} failed:\n#{stdout}"
   expect(stdout).to include(project_name)
 end
+
+# bard provision steps
+Given /^a provision server is running$/ do
+  raise "Provision server failed to start" unless @container && @ssh_port
+end
+
+When /^I provision the system$/ do
+  run_provision_phase1
+  unless @status.success?
+    raise "Provision phase 1 failed:\n#{@stdout}"
+  end
+end
+
+When /^I set up the test project$/ do
+  setup_test_project
+end
+
+When /^I provision the app$/ do
+  run_provision_phase2
+  unless @status.success?
+    raise "Provision phase 2 failed:\n#{@stdout}"
+  end
+end
+
+Then /^nginx should be installed on the server$/ do
+  output = run_provision_ssh_as("www", "/usr/sbin/nginx -v 2>&1")
+  expect(output).to include("nginx")
+end
+
+Then /^the nginx config should contain "([^"]+)"$/ do |expected|
+  output = run_provision_ssh_as("www", "cat /etc/nginx/sites-enabled/testproject")
+  expect(output).to include(expected)
+end
+
+Then /^the nginx config should not contain "([^"]+)"$/ do |expected|
+  output = run_provision_ssh_as("www", "cat /etc/nginx/sites-enabled/testproject")
+  expect(output).not_to include(expected)
+end

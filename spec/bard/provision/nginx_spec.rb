@@ -64,8 +64,8 @@ describe Bard::Provision::Nginx do
   end
 
   describe "#http_responding?" do
-    it "checks if port 80 is responding" do
-      expect(nginx).to receive(:system).with("nc -zv 192.168.1.100 80 2>/dev/null")
+    it "checks if port 80 is responding on the remote" do
+      expect(provision_server).to receive(:run).with("nc -zv localhost 80 2>/dev/null", home: true, quiet: true)
 
       nginx.http_responding?
     end

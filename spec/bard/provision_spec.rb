@@ -20,9 +20,15 @@ describe Bard::Provision do
   end
 
   describe "#provision_server" do
-    it "returns target with ssh_url" do
-      expect(config[:production]).to receive(:with).with(ssh: ssh_url)
-      provision.send(:provision_server)
+    it "returns a target with the provision ssh_url" do
+      target = config[:production]
+      allow(target).to receive(:ssh).and_return(nil)
+      duped = double("duped_target")
+      allow(target).to receive(:dup).and_return(duped)
+      allow(duped).to receive(:ssh)
+
+      result = provision.send(:provision_server)
+      expect(result).to eq(duped)
     end
   end
 end

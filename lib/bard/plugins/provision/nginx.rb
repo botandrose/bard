@@ -22,7 +22,7 @@ class Bard::Provision::Nginx < Bard::Provision
   end
 
   def http_responding?
-    system "nc -zv #{provision_server.ssh_uri.host} 80 2>/dev/null"
+    provision_server.run "nc -zv localhost 80 2>/dev/null", home: true, quiet: true
   end
 
   def app_configured?

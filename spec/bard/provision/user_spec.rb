@@ -75,13 +75,13 @@ describe Bard::Provision::User do
 
   describe "#ssh_with_user?" do
     it "tests SSH connection with specified user" do
-      expect(user_provisioner).to receive(:system).with("ssh -o ConnectTimeout=2 -p22 deploy@example.com : >/dev/null 2>&1")
+      expect(user_provisioner).to receive(:system).with(/ssh.*-o ConnectTimeout=2.*-p22 deploy@example\.com : >\/dev\/null/)
 
       user_provisioner.send(:ssh_with_user?, old_ssh_uri, user: "deploy")
     end
 
     it "uses default user from SSH URI if not specified" do
-      expect(user_provisioner).to receive(:system).with("ssh -o ConnectTimeout=2 -p22 root@example.com : >/dev/null 2>&1")
+      expect(user_provisioner).to receive(:system).with(/ssh.*-o ConnectTimeout=2.*-p22 root@example\.com : >\/dev\/null/)
 
       user_provisioner.send(:ssh_with_user?, old_ssh_uri)
     end

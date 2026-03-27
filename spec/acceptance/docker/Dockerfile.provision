@@ -1,0 +1,41 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Minimal packages: systemd + SSH + git
+RUN apt-get update && \
+    apt-get install -y \
+    systemd systemd-sysv \
+    openssh-server \
+    git \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable SSH via systemd
+RUN systemctl enable ssh
+
+# Root SSH setup (password auth left enabled so SSH step can disable it)
+RUN mkdir -p /root/.ssh
+COPY test_key.pub /root/.ssh/authorized_keys
+RUN chmod 700 /root/.ssh && \
+    chmod 600 /root/.ssh/authorized_keys
+
+RUN sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+
+# Prevent interactive prompts during apt-get install via SSH
+RUN echo 'DEBIAN_FRONTEND=noninteractive' >> /etc/environment
+
+# Systemd cleanup for container use, then re-enable SSH
+RUN (cd /lib/systemd/system/sysinit.target.wants/; \
+    for i in *; do [ $i != systemd-tmpfiles-setup.service ] && rm -f $i; done); \
+    rm -f /lib/systemd/system/multi-user.target.wants/*; \
+    rm -f /etc/systemd/system/*.wants/*; \
+    rm -f /lib/systemd/system/local-fs.target.wants/*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+    rm -f /lib/systemd/system/basic.target.wants/*
+RUN systemctl enable ssh
+
+EXPOSE 22
+
+CMD ["/sbin/init"]
