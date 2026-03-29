@@ -36,7 +36,7 @@ jobs:
 
       - name: Build test container image
         run: |
-          sudo podman pull ubuntu:22.04
+          sudo podman pull ubuntu:24.04
           sudo podman build -t bard-test-server -f spec/acceptance/docker/Dockerfile spec/acceptance/docker
 
       - name: Run tests

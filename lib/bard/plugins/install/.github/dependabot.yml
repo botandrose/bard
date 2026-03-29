@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     allow:
       - dependency-type: "all"
     rebase-strategy: "disabled"
@@ -14,4 +16,3 @@ updates:
         update-types:
           - "minor"
           - "patch"
-

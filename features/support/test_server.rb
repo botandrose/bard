@@ -53,7 +53,7 @@ module TestServerWorld
       return
     end
 
-    system("podman pull ubuntu:22.04 >/dev/null 2>&1")
+    system("podman pull ubuntu:24.04 >/dev/null 2>&1")
 
     docker_dir = File.join(ROOT, "spec/acceptance/docker")
     unless system("podman build -t bard-test-server -f #{docker_dir}/Dockerfile #{docker_dir} 2>&1")
