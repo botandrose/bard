@@ -37,13 +37,7 @@ module Bard
       end
     end
 
-    # load builtin plugins
-    Dir[File.join(__dir__, "plugins", "*.rb")].sort.each { |f| require f }
-
-    # load external plugins
-    Dir[File.join(Dir.pwd, "lib", "bard", "plugins", "*.rb")].sort.each { |f| require f }
-
-    # load gem-based plugins (e.g., bard-new)
-    Gem.find_files("bard/*/plugin.rb").each { |path| require path }
+    # load plugins from bard and other gems
+    Gem.find_files("bard/plugins/*.rb").sort.each { |path| require path }
   end
 end

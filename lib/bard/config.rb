@@ -27,7 +27,7 @@ module Bard
         source = File.read(path)
       end
       if source
-        instance_eval(source)
+        instance_eval(source, path)
       end
     end
 
