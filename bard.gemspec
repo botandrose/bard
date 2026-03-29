@@ -15,6 +15,7 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = ["bard"]
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.required_ruby_version = ">= 3.3"
   spec.require_paths = ["lib"]
 
   spec.add_dependency "thor", ">= 0.19.0"
@@ -28,4 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "debug"
   spec.add_development_dependency "cucumber"
   spec.add_development_dependency "testcontainers"
+  spec.add_development_dependency "ostruct"
 end
