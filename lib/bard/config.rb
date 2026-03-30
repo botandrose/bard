@@ -58,7 +58,8 @@ module Bard
       target :local
 
       target :gubs do
-        ssh "botandrose@cloud.hackett.world:22022"
+        ssh "botandrose@cloud.hackett.world:22022",
+          path: "Sites/#{config.project_name}"
         url false
       end
 
