@@ -1,4 +1,5 @@
 require "bard/plugins/ssh/target_methods"
+require "bard/plugins/ssh/copy"
 
 class Bard::CLI
   option :home, type: :boolean
