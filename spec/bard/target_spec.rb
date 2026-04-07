@@ -182,36 +182,6 @@ describe Bard::Target do
     end
   end
 
-  describe "file transfer" do
-    let(:source_target) do
-      t = described_class.new(:source, config)
-      t.ssh("source@example.com:22", path: "/source")
-      t
-    end
-
-    let(:dest_target) do
-      t = described_class.new(:dest, config)
-      t.ssh("dest@example.com:22", path: "/dest")
-      t
-    end
-
-    describe "#copy_file" do
-      it "copies file via SCP" do
-        expect(Bard::SSH::Copy).to receive(:file)
-          .with("test.txt", from: source_target, to: dest_target, verbose: false)
-        source_target.copy_file("test.txt", to: dest_target)
-      end
-    end
-
-    describe "#copy_dir" do
-      it "syncs directory via rsync" do
-        expect(Bard::SSH::Copy).to receive(:dir)
-          .with("test/", from: source_target, to: dest_target, verbose: false)
-        source_target.copy_dir("test/", to: dest_target)
-      end
-    end
-  end
-
   describe "#to_s" do
     it "returns the target key as string" do
       expect(target.to_s).to eq("production")

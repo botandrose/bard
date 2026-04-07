@@ -9,7 +9,7 @@ describe "bard data" do
   end
 
   context "data" do
-    let(:from) { double("from", key: :production, run!: nil, copy_file: nil, copy_dir: nil, require_capability!: nil) }
+    let(:from) { double("from", key: :production, run!: nil, require_capability!: nil) }
     let(:to) { double("to", key: :local, run!: nil) }
 
     let(:config) do
@@ -27,7 +27,7 @@ describe "bard data" do
 
     it "should run the data command" do
       expect(from).to receive(:run!).with("bin/rake db:dump")
-      expect(from).to receive(:copy_file).with("db/data.sql.gz", to: to, verbose: true)
+      expect(Bard::Copy).to receive(:file).with("db/data.sql.gz", from: from, to: to, verbose: true)
       expect(to).to receive(:run!).with("bin/rake db:load")
       cli.data
     end
@@ -49,7 +49,7 @@ describe "bard data" do
       it "should allow pushing to production if the user confirms" do
         expect(cli).to receive(:ask).and_return("https://example.com")
         expect(from).to receive(:run!).with("bin/rake db:dump")
-        expect(from).to receive(:copy_file).with("db/data.sql.gz", to: to, verbose: true)
+        expect(Bard::Copy).to receive(:file).with("db/data.sql.gz", from: from, to: to, verbose: true)
         expect(to).to receive(:run!).with("bin/rake db:load")
         cli.data
       end

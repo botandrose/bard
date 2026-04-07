@@ -189,7 +189,7 @@ class Bard::CLI
   def master_key
     from = config[options[:from]]
     to = config[options[:to]]
-    from.copy_file "config/master.key", to:
+    Bard::Copy.file "config/master.key", from: from, to: to
   end
 end
 

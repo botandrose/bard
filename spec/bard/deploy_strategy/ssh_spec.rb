@@ -54,12 +54,12 @@ describe Bard::DeployStrategy::SSH do
 
       before do
         allow(config).to receive(:[]).with(:local).and_return(local_target)
+        allow(Bard::Copy).to receive(:file)
       end
 
       it "clones the repository" do
         expect(target).to receive(:run!)
           .with("git clone git@github.com:botandrosedesign/testapp /app", home: true)
-        allow(local_target).to receive(:copy_file)
         allow(target).to receive(:run!).with("bin/setup")
         allow(target).to receive(:run!).with("bard setup")
 
@@ -68,8 +68,8 @@ describe Bard::DeployStrategy::SSH do
 
       it "copies master key from local" do
         allow(target).to receive(:run!).with(/git clone/, home: true)
-        expect(local_target).to receive(:copy_file)
-          .with("config/master.key", to: target)
+        expect(Bard::Copy).to receive(:file)
+          .with("config/master.key", from: local_target, to: target)
         allow(target).to receive(:run!).with("bin/setup")
         allow(target).to receive(:run!).with("bard setup")
 
@@ -78,7 +78,6 @@ describe Bard::DeployStrategy::SSH do
 
       it "runs bin/setup and bard setup" do
         allow(target).to receive(:run!).with(/git clone/, home: true)
-        allow(local_target).to receive(:copy_file)
         expect(target).to receive(:run!).with("bin/setup")
         expect(target).to receive(:run!).with("bard setup")
 
@@ -87,7 +86,6 @@ describe Bard::DeployStrategy::SSH do
 
       it "does not run git pull" do
         allow(target).to receive(:run!).with(/git clone/, home: true)
-        allow(local_target).to receive(:copy_file)
         allow(target).to receive(:run!).with("bin/setup")
         allow(target).to receive(:run!).with("bard setup")
 

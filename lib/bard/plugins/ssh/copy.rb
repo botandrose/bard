@@ -1,18 +1,15 @@
 require "uri"
+require "bard/copy"
 require "bard/command"
 
 module Bard
   module SSH
-    class Copy < Struct.new(:path, :from, :to, :verbose)
-    def self.file path, from:, to:, verbose: false
-      new(path, from, to, verbose).scp
+    class Copy < Bard::Copy
+    def self.can_handle?(from, to)
+      from.has_capability?(:ssh) || to.has_capability?(:ssh)
     end
 
-    def self.dir path, from:, to:, verbose: false
-      new(path, from, to, verbose).rsync
-    end
-
-    def scp
+    def file
       if from.key == :local
         scp_using_local :to, to
       elsif to.key == :local
@@ -50,7 +47,7 @@ module Bard
       Bard::Command.run! command, verbose: verbose
     end
 
-    def rsync
+    def dir
       if from.key == :local
         rsync_using_local :to, to
       elsif to.key == :local

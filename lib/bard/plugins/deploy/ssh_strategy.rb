@@ -1,4 +1,5 @@
 require "bard/plugins/deploy/strategy"
+require "bard/copy"
 require "bard/plugins/ssh"
 
 module Bard
@@ -9,7 +10,7 @@ module Bard
 
         if clone
           target.run! "git clone git@github.com:botandrosedesign/#{clone} #{target.path}", home: true
-          target.config[:local].copy_file "config/master.key", to: target
+          Bard::Copy.file "config/master.key", from: target.config[:local], to: target
         else
           branch = target.instance_variable_get(:@branch) || "master"
           target.run! "git pull origin #{branch}"

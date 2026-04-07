@@ -2,7 +2,6 @@ require "uri"
 require "shellwords"
 require "bard/plugins/ssh/server"
 require "bard/command"
-require "bard/plugins/ssh/copy"
 
 module Bard
   module SSH
@@ -51,14 +50,6 @@ module Bard
 
     def exec!(command, home: false)
       Command.exec!(ssh_command(command, home:))
-    end
-
-    def copy_file(path, to:, verbose: false)
-      SSH::Copy.file(path, from: self, to: to, verbose: verbose)
-    end
-
-    def copy_dir(path, to:, verbose: false)
-      SSH::Copy.dir(path, from: self, to: to, verbose: verbose)
     end
 
     private

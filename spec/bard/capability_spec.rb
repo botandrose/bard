@@ -45,16 +45,6 @@ describe "Capability System" do
   end
 
   describe "capability dependency checking" do
-    context "SSH-dependent methods" do
-      it "copy_file is not available without SSH" do
-        expect(target).not_to respond_to(:copy_file)
-      end
-
-      it "copy_dir is not available without SSH" do
-        expect(target).not_to respond_to(:copy_dir)
-      end
-    end
-
     context "URL-dependent methods" do
       it "ping! requires url capability" do
         expect { target.ping! }

@@ -1,4 +1,5 @@
 require "bard/command"
+require "bard/copy"
 require "bard/plugins/ssh"
 require "bard/plugins/url"
 
@@ -27,14 +28,14 @@ class Bard::CLI
     from.run! "bin/rake db:dump"
 
     puts "Transfering file from #{from.key} to #{to.key}..."
-    from.copy_file "db/data.sql.gz", to: to, verbose: true
+    Bard::Copy.file "db/data.sql.gz", from: from, to: to, verbose: true
 
     puts "Loading file into #{to.key} database..."
     to.run! "bin/rake db:load"
 
     config.data.each do |path|
       puts "Synchronizing files in #{path}..."
-      from.copy_dir path, to: to, verbose: true
+      Bard::Copy.dir path, from: from, to: to, verbose: true
     end
   rescue Bard::Command::Error => e
     puts red("!!! ") + "Running command failed: #{yellow(e.message)}"

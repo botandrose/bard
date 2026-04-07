@@ -20,7 +20,7 @@ describe "bard master_key" do
       allow(config).to receive(:[]).with("production").and_return(from_server)
       allow(config).to receive(:[]).with("local").and_return(to_server)
       allow(cli).to receive(:options).and_return({ from: "production", to: "local" })
-      expect(from_server).to receive(:copy_file).with("config/master.key", to: to_server)
+      expect(Bard::Copy).to receive(:file).with("config/master.key", from: from_server, to: to_server)
 
       cli.master_key
     end
@@ -30,7 +30,7 @@ describe "bard master_key" do
       allow(config).to receive(:[]).with("production").and_return(staging_server)
       allow(config).to receive(:[]).with("local").and_return(to_server)
       allow(cli).to receive(:options).and_return({ from: "production", to: "local" })
-      expect(staging_server).to receive(:copy_file).with("config/master.key", to: to_server)
+      expect(Bard::Copy).to receive(:file).with("config/master.key", from: staging_server, to: to_server)
 
       cli.master_key
     end
