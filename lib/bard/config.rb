@@ -1,4 +1,5 @@
 require "bard/target"
+require "bard/plugins/ssh/target_methods"
 
 module Bard
   class Config
