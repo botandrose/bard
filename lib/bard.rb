@@ -1,2 +1,1 @@
-module Bard
-end
+require "bard/cli"
