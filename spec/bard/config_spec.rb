@@ -4,6 +4,48 @@ require "bard/plugins/data"
 require "bard/plugins/github_pages"
 
 describe Bard::Config do
+  describe ".detect_project_name" do
+    let(:tmpdir) { Dir.mktmpdir("bard-detect-test") }
+    after { FileUtils.rm_rf(tmpdir) }
+
+    def init_repo(path)
+      FileUtils.mkdir_p(path)
+      Dir.chdir(path) do
+        system("git init -q")
+        system("git commit --allow-empty -q -m init")
+      end
+    end
+
+    it "returns the repo dir basename when run from the main checkout" do
+      repo = File.join(tmpdir, "myproject")
+      init_repo(repo)
+
+      Dir.chdir(repo) do
+        expect(described_class.detect_project_name).to eq("myproject")
+      end
+    end
+
+    it "returns the main repo basename when run from a sibling worktree" do
+      repo = File.join(tmpdir, "myproject")
+      init_repo(repo)
+      Dir.chdir(repo) { system("git worktree add -q ../wt-feature -b feature") }
+
+      Dir.chdir(File.join(tmpdir, "wt-feature")) do
+        expect(described_class.detect_project_name).to eq("myproject")
+      end
+    end
+
+    it "returns the main repo basename when run from a nested worktree" do
+      repo = File.join(tmpdir, "myproject")
+      init_repo(repo)
+      Dir.chdir(repo) { system("git worktree add -q tmp/worktrees/wt-feature -b feature") }
+
+      Dir.chdir(File.join(repo, "tmp/worktrees/wt-feature")) do
+        expect(described_class.detect_project_name).to eq("myproject")
+      end
+    end
+  end
+
   context "empty" do
     subject { described_class.new("tracker") }
 
