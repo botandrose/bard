@@ -64,7 +64,7 @@ class Bard::CLI
       if Bard::Git.current_branch != "master"
         run! "git fetch origin master:master"
       else
-        run! "git pull origin master"
+        run! "git pull --ff-only origin master"
       end
     end
 

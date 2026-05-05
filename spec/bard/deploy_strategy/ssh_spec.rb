@@ -22,7 +22,7 @@ describe Bard::DeployStrategy::SSH do
 
     it "runs git pull on remote server" do
       expect(target).to receive(:run!)
-        .with(/git pull origin master/)
+        .with("git pull --ff-only origin master")
 
       allow(target).to receive(:run!).with(/bin\/setup/)
 
@@ -42,7 +42,7 @@ describe Bard::DeployStrategy::SSH do
       target.instance_variable_set(:@branch, "main")
 
       expect(target).to receive(:run!)
-        .with(/git pull origin main/)
+        .with("git pull --ff-only origin main")
 
       allow(target).to receive(:run!).with(/bin\/setup/)
 

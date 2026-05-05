@@ -13,7 +13,7 @@ module Bard
           Bard::Copy.file "config/master.key", from: target.config[:local], to: target
         else
           branch = target.instance_variable_get(:@branch) || "master"
-          target.run! "git pull origin #{branch}"
+          target.run! "git pull --ff-only origin #{branch}"
         end
 
         target.run! "bin/setup"
