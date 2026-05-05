@@ -49,6 +49,17 @@ describe Bard::DeployStrategy::SSH do
       strategy.deploy
     end
 
+    context "with force: true" do
+      it "force-checks-out the given branch on the remote server" do
+        expect(target).to receive(:run!).with("git fetch origin feature-x").ordered
+        expect(target).to receive(:run!).with("git checkout -f origin/feature-x").ordered
+
+        allow(target).to receive(:run!).with(/bin\/setup/)
+
+        strategy.deploy(branch: "feature-x", force: true)
+      end
+    end
+
     context "with clone" do
       let(:local_target) { double("local") }
 

@@ -111,7 +111,7 @@ class Bard::CLI
 
     target = config[:staging]
     strategy = target.deploy_strategy_instance
-    strategy.deploy
+    strategy.deploy(branch: branch, force: true)
 
     puts green("Stage Succeeded")
 
