@@ -23,6 +23,7 @@ describe "bard deploy" do
     allow(Bard::Git).to receive(:current_branch).and_return("feature-branch")
     allow(Bard::Git).to receive(:up_to_date_with_remote?).and_return(true)
     allow(Bard::Git).to receive(:fast_forward_merge?).and_return(true)
+    allow(Bard::Git).to receive(:in_linked_worktree?).and_return(false)
     allow(cli).to receive(:`).and_return("")
   end
 
@@ -107,6 +108,27 @@ describe "bard deploy" do
           expect(cli).to receive(:run!).with("git push --delete origin feature-branch")
           expect(cli).to receive(:run!).with("git checkout master")
           expect(cli).to receive(:run!).with("git branch -D feature-branch")
+
+          cli.deploy
+        end
+      end
+
+      context "when run from a linked worktree" do
+        before do
+          allow(Bard::Git).to receive(:in_linked_worktree?).and_return(true)
+          allow(cli).to receive(:`).with("git rev-parse --git-common-dir").and_return("/main/checkout/.git\n")
+          allow(Dir).to receive(:pwd).and_return("/main/checkout/tmp/worktrees/feature-branch")
+          allow(Dir).to receive(:chdir).with("/main/checkout")
+        end
+
+        it "skips writes to local master, removes the worktree, and reports where to cd back" do
+          expect(cli).not_to receive(:run!).with("git fetch origin master:master")
+          expect(cli).not_to receive(:run!).with("git checkout master")
+          expect(cli).to receive(:run!).with("git fetch origin master")
+          expect(Dir).to receive(:chdir).with("/main/checkout")
+          expect(cli).to receive(:run!).with("git worktree remove /main/checkout/tmp/worktrees/feature-branch")
+          expect(cli).to receive(:run!).with("git branch -D feature-branch")
+          expect(cli).to receive(:puts).with("Worktree removed. Run: cd /main/checkout")
 
           cli.deploy
         end

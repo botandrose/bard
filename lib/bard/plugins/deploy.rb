@@ -27,7 +27,7 @@ class Bard::CLI
 
     else
       run! "git fetch origin"
-      if Bard::Git.current_branch != "master"
+      if Bard::Git.current_branch != "master" && !Bard::Git.in_linked_worktree?
         run! "git fetch origin master:master"
       end
 
@@ -61,10 +61,12 @@ class Bard::CLI
       invoke :ci, [branch], options.slice("local-ci", "ci") unless options["skip-ci"] || config.ci == false
 
       run! "git push origin #{branch}:master"
-      if Bard::Git.current_branch != "master"
-        run! "git fetch origin master:master"
-      else
+      if Bard::Git.current_branch == "master"
         run! "git pull --ff-only origin master"
+      elsif Bard::Git.in_linked_worktree?
+        run! "git fetch origin master"
+      else
+        run! "git fetch origin master:master"
       end
     end
 
@@ -88,11 +90,19 @@ class Bard::CLI
       puts "Deleting branch: #{branch}"
       run! "git push --delete origin #{branch}"
 
-      if branch == Bard::Git.current_branch
-        run! "git checkout master"
+      if branch == Bard::Git.current_branch && Bard::Git.in_linked_worktree?
+        worktree_path = Dir.pwd
+        main_checkout = File.dirname(File.expand_path(`git rev-parse --git-common-dir`.chomp))
+        Dir.chdir(main_checkout)
+        run! "git worktree remove #{worktree_path}"
+        run! "git branch -D #{branch}"
+        puts "Worktree removed. Run: cd #{main_checkout}"
+      else
+        if branch == Bard::Git.current_branch
+          run! "git checkout master"
+        end
+        run! "git branch -D #{branch}"
       end
-
-      run! "git branch -D #{branch}"
     end
 
     ping to

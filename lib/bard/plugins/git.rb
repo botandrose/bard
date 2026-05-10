@@ -24,6 +24,13 @@ module Bard
       return sha if $?.success?
       nil # Branch doesn't exist
     end
+
+    def in_linked_worktree?
+      git_dir = `git rev-parse --git-dir 2>/dev/null`.chomp
+      common_dir = `git rev-parse --git-common-dir 2>/dev/null`.chomp
+      return false if git_dir.empty? || common_dir.empty?
+      File.expand_path(git_dir) != File.expand_path(common_dir)
+    end
   end
 end
 
