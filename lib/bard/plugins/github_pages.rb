@@ -7,6 +7,7 @@ class Bard::Config
     uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
     hostname = uri.hostname.sub(/^www\./, "")
 
+    remove_target :production
     target :production do
       github_pages url
       url(hostname) if hostname

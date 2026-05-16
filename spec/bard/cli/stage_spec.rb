@@ -4,7 +4,8 @@ require "bard/cli"
 describe "bard stage" do
   let(:staging_strategy) { double("staging_strategy", deploy: true) }
   let(:staging_server) { double("staging", deploy_strategy: :ssh, deploy_strategy_instance: staging_strategy) }
-  let(:targets) { { production: double("production"), staging: staging_server } }
+  let(:production_server) { double("production") }
+  let(:targets) { { production: production_server, staging: staging_server } }
   let(:config) { double("config", targets: targets) }
   let(:cli) { Bard::CLI.new }
 
@@ -19,6 +20,7 @@ describe "bard stage" do
     allow(cli).to receive(:yellow).and_return("")
     allow(Bard::Git).to receive(:current_branch).and_return("main")
     allow(config).to receive(:[]).with(:staging).and_return(staging_server)
+    allow(config).to receive(:[]).with(:production).and_return(production_server)
   end
 
   describe "#stage" do
@@ -56,8 +58,10 @@ describe "bard stage" do
       end
     end
 
-    context "when production server is not defined" do
-      let(:targets) { { staging: staging_server } }
+    context "when production target is equivalent to staging" do
+      before do
+        allow(config).to receive(:[]).with(:production).and_return(staging_server)
+      end
 
       it "raises an error" do
         expect { cli.stage }.to raise_error(Thor::Error, /bard stage.*is disabled/)

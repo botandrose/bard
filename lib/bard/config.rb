@@ -47,11 +47,7 @@ module Bard
     end
 
     def [](key)
-      key = key.to_sym
-      if @targets[key].nil? && key == :production
-        key = :staging
-      end
-      @targets[key]
+      @targets[key.to_sym]
     end
 
     private
@@ -71,10 +67,13 @@ module Bard
         url false
       end
 
-      target :staging do
+      staging_defaults = proc do
         ssh "www@staging.botandrose.com:22022"
         url "#{config.project_name}.botandrose.com"
       end
+
+      target :staging, &staging_defaults
+      target :production, &staging_defaults
     end
   end
 end

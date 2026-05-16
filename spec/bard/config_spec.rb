@@ -57,7 +57,7 @@ describe Bard::Config do
 
     describe "#targets" do
       it "is prefilled with default targets" do
-        expect(subject.targets.keys).to eq %i[local gubs ci staging]
+        expect(subject.targets.keys).to eq %i[local gubs ci staging production]
       end
 
       it "creates Target instances for defaults" do
@@ -68,8 +68,9 @@ describe Bard::Config do
     end
 
     describe "#[]" do
-      it "promotes staging to production when production doesn't exist" do
+      it "defines a default production target equivalent to staging" do
         expect(subject[:production]).to eq subject[:staging]
+        expect(subject[:production]).not_to equal subject[:staging]
       end
     end
 

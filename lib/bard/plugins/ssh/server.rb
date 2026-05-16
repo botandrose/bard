@@ -37,6 +37,22 @@ module Bard
       "#{user}@#{host}"
     end
 
+    def ==(other)
+      return false unless other.is_a?(Bard::SSHServer)
+      state == other.state
+    end
+    alias_method :eql?, :==
+
+    def hash
+      state.hash
+    end
+
+    protected
+
+    def state
+      [user, host, port, path, gateway, ssh_key, env]
+    end
+
     private
 
     def parse_uri(uri_string)

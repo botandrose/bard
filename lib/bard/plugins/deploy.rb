@@ -113,7 +113,7 @@ class Bard::CLI
 
   desc "stage [branch=HEAD]", "pushes current branch, and stages it"
   def stage(branch = Bard::Git.current_branch)
-    unless config.targets.key?(:production)
+    if config[:production] == config[:staging]
       raise Thor::Error.new("`bard stage` is disabled until a production target is defined. Until then, please use `bard deploy` to deploy to the staging target.")
     end
 

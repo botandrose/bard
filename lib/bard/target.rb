@@ -59,5 +59,23 @@ module Bard
         end
       end
     end
+
+    def ==(other)
+      return false unless other.is_a?(Bard::Target)
+      comparable_state == other.comparable_state
+    end
+    alias_method :eql?, :==
+
+    def hash
+      comparable_state.hash
+    end
+
+    protected
+
+    def comparable_state
+      (instance_variables - [:@key, :@config]).sort.map do |ivar|
+        [ivar, instance_variable_get(ivar)]
+      end
+    end
   end
 end
