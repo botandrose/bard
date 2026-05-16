@@ -4,12 +4,9 @@ require "thor"
 require "bard/version"
 require "bard/config"
 require "bard/command"
-require "term/ansicolor"
 
 module Bard
   class CLI < Thor
-    include Term::ANSIColor
-
     class_option :verbose, type: :boolean, aliases: :v
 
     map "--version" => :version
@@ -21,6 +18,10 @@ module Bard
     def self.exit_on_failure? = true
 
     no_commands do
+      def red(text)    = "\e[31m#{text}\e[0m"
+      def yellow(text) = "\e[33m#{text}\e[0m"
+      def green(text)  = "\e[32m#{text}\e[0m"
+
       def run!(...)
         Bard::Command.run!(...)
       rescue Bard::Command::Error => e
