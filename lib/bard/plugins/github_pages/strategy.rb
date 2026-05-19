@@ -1,6 +1,7 @@
 require "bard/plugins/deploy/strategy"
 require "bard/plugins/git"
 require "fileutils"
+require "socket"
 require "uri"
 
 module Bard
@@ -19,6 +20,7 @@ module Bard
         @build_dir = "tmp/github-build-#{@sha}"
         @branch = "gh-pages"
         @domain = extract_domain
+        @port = pick_free_port
 
         puts "Starting deployment to GitHub Pages..."
 
@@ -37,27 +39,46 @@ module Bard
         domain
       end
 
+      def pick_free_port
+        server = TCPServer.new("127.0.0.1", 0)
+        port = server.addr[1]
+        server.close
+        port
+      end
+
       def build_site
         system "rm -rf #{@build_dir.sub(@sha, "*")}"
         run! <<~SH
           set -e
-          RAILS_ENV=production bundle exec rails s -p 3000 -d --pid tmp/pids/server.pid
+          PORT=#{@port}
+
           OUTPUT=$(bundle exec rake assets:clean assets:precompile 2>&1) || echo "$OUTPUT"
 
-          # Create the output directory and enter it
           BUILD=#{@build_dir}
           rm -rf $BUILD
           mkdir -p $BUILD
           cp -R public/assets $BUILD/
-          cd $BUILD
 
-          # wait until server responds
+          # Start rails in the foreground, backgrounded — NOT as a daemon —
+          # so a port-bind failure surfaces instead of being swallowed by fork.
+          rm -f tmp/pids/server.pid
+          RAILS_ENV=production bundle exec rails s -p $PORT -P tmp/pids/server.pid >tmp/pids/server.log 2>&1 &
+          RAILS_PID=$!
+
           echo waiting...
-          curl -s --retry 5 --retry-delay 2 http://localhost:3000 >/dev/null 2>&1
+          for i in $(seq 1 30); do
+            if ! kill -0 $RAILS_PID 2>/dev/null; then
+              echo "Rails server failed to start on port $PORT:"
+              cat tmp/pids/server.log
+              exit 1
+            fi
+            curl -sf http://localhost:$PORT >/dev/null 2>&1 && break
+            sleep 1
+          done
 
+          cd $BUILD
           echo copying...
-          # Mirror the site to the build folder, ignoring links with query params
-          wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:3000/ 2>&1
+          wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:$PORT/ 2>&1
 
           echo #{@domain} > CNAME
         SH
