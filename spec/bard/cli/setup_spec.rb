@@ -12,16 +12,40 @@ describe "bard setup" do
   end
 
   describe "#setup" do
+    before { allow(cli).to receive(:nginx_server_name).and_return("test_project.localhost") }
+
     it "should have a setup command" do
       expect(cli).to respond_to(:setup)
     end
 
-    it "should create nginx reverse proxy config" do
-      expect(cli).to receive(:system).with(/sudo tee \/etc\/nginx\/sites-available\/test_project.*proxy_pass http:\/\/puma/m)
-      expect(cli).to receive(:system).with(/sudo ln -sf/)
-      expect(cli).to receive(:system).with("sudo service nginx restart")
+    context "in production" do
+      before do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("RAILS_ENV").and_return("production")
+      end
 
-      cli.setup
+      it "creates an nginx reverse proxy config" do
+        expect(cli).to receive(:system).with(/sudo tee \/etc\/nginx\/sites-available\/test_project.*proxy_pass http:\/\/puma/m)
+        expect(cli).to receive(:system).with(/sudo ln -sf/)
+        expect(cli).to receive(:system).with("sudo service nginx restart")
+
+        cli.setup
+      end
+    end
+
+    context "in development" do
+      before do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("RAILS_ENV").and_return("development")
+      end
+
+      it "creates an nginx config that includes the shared dev snippet" do
+        expect(cli).to receive(:system).with(/sudo tee \/etc\/nginx\/sites-available\/test_project.*include \/etc\/nginx\/snippets\/common\.conf/m)
+        expect(cli).to receive(:system).with(/sudo ln -sf/)
+        expect(cli).to receive(:system).with("sudo service nginx restart")
+
+        cli.setup
+      end
     end
   end
 
