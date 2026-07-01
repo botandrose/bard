@@ -16,7 +16,7 @@ class Bard::CLI
   no_commands do
     def nginx_config
       case ENV["RAILS_ENV"]
-      when "production", "staging" then nginx_production_config
+      when "production" then nginx_production_config
       else nginx_development_config
       end
     end

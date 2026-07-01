@@ -33,6 +33,22 @@ describe "bard setup" do
       end
     end
 
+    context "in staging" do
+      before do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("RAILS_ENV").and_return("staging")
+      end
+
+      it "creates a Passenger nginx config, not a puma reverse proxy" do
+        expect(cli).to receive(:system).with(/sudo tee \/etc\/nginx\/sites-available\/test_project.*include \/etc\/nginx\/snippets\/common\.conf/m)
+        expect(cli).not_to receive(:system).with(/proxy_pass http:\/\/puma/m)
+        expect(cli).to receive(:system).with(/sudo ln -sf/)
+        expect(cli).to receive(:system).with("sudo service nginx restart")
+
+        cli.setup
+      end
+    end
+
     context "in development" do
       before do
         allow(ENV).to receive(:[]).and_call_original
