@@ -104,6 +104,28 @@ describe Bard::DeployStrategy::SSH do
 
         strategy.deploy(clone: "testapp")
       end
+
+      it "checks out the requested branch after cloning when provisioning from scratch" do
+        allow(target).to receive(:run!).with(/git clone/, home: true)
+        allow(target).to receive(:run!).with("bin/setup")
+        allow(target).to receive(:run!).with("bard setup")
+
+        expect(target).to receive(:run!).with("git fetch origin feature-x").ordered
+        expect(target).to receive(:run!).with("git checkout -f origin/feature-x").ordered
+
+        strategy.deploy(clone: "testapp", branch: "feature-x")
+      end
+
+      it "stays on master when cloning without a branch" do
+        allow(target).to receive(:run!).with(/git clone/, home: true)
+        allow(target).to receive(:run!).with("bin/setup")
+        allow(target).to receive(:run!).with("bard setup")
+
+        expect(target).not_to receive(:run!).with(/git fetch/)
+        expect(target).not_to receive(:run!).with(/git checkout/)
+
+        strategy.deploy(clone: "testapp", branch: "master")
+      end
     end
   end
 

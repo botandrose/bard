@@ -121,14 +121,34 @@ class Bard::CLI
 
     target = config[:staging]
     strategy = target.deploy_strategy_instance
-    strategy.deploy(branch: branch, force: true)
 
-    puts green("Stage Succeeded")
+    if staging_provisioned?(target)
+      strategy.deploy(branch: branch, force: true)
+      puts green("Stage Succeeded")
+
+    else # clone from scratch
+      puts yellow("Staging site for #{project_name} not found — provisioning it from scratch…")
+      strategy.deploy(clone: project_name, branch: branch)
+      puts green("Stage Succeeded")
+
+      puts "#{project_name} was rebuilt from scratch; its database and files are empty."
+      if $stdin.tty? && !no?("Restore #{project_name}'s data from production now? (bard data --from production --to staging) [Y/n]")
+        invoke :data, [], from: "production", to: "staging"
+      else
+        puts "Run #{yellow("bard data --from production --to staging")} to restore its data."
+      end
+    end
 
     ping :staging
   rescue Bard::Command::Error => e
     puts red("!!! ") + "Running command failed: #{yellow(e.message)}"
     exit 1
+  end
+
+  no_commands do
+    def staging_provisioned?(target)
+      !!target.run("test -e #{target.path}/.git", home: true)
+    end
   end
 
   option :"local-ci", type: :boolean

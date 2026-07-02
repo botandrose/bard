@@ -17,15 +17,60 @@ describe "bard stage" do
     allow(cli).to receive(:ping)
     allow(cli).to receive(:green).and_return("")
     allow(cli).to receive(:red).and_return("")
-    allow(cli).to receive(:yellow).and_return("")
+    allow(cli).to receive(:yellow) { |s| s }
     allow(Bard::Git).to receive(:current_branch).and_return("main")
     allow(config).to receive(:[]).with(:staging).and_return(staging_server)
     allow(config).to receive(:[]).with(:production).and_return(production_server)
+    allow(cli).to receive(:project_name).and_return("acme")
+    allow(cli).to receive(:staging_provisioned?).and_return(true)
   end
 
   describe "#stage" do
     it "should have a stage command" do
       expect(cli).to respond_to(:stage)
+    end
+
+    context "when the staging site has been reaped" do
+      before do
+        allow(cli).to receive(:staging_provisioned?).and_return(false)
+        allow(cli).to receive(:invoke)
+        allow($stdin).to receive(:tty?).and_return(false)
+      end
+
+      it "provisions from scratch by cloning and checking out the branch" do
+        expect(staging_strategy).to receive(:deploy).with(clone: "acme", branch: "main")
+        cli.stage
+      end
+
+      it "restores data from production by default (Enter/no decline)" do
+        allow(staging_strategy).to receive(:deploy)
+        allow($stdin).to receive(:tty?).and_return(true)
+        allow(cli).to receive(:no?).and_return(false)
+        expect(cli).to receive(:invoke).with(:data, [], from: "production", to: "staging")
+        cli.stage
+      end
+
+      it "skips the restore when the user declines" do
+        allow(staging_strategy).to receive(:deploy)
+        allow($stdin).to receive(:tty?).and_return(true)
+        allow(cli).to receive(:no?).and_return(true)
+        expect(cli).not_to receive(:invoke)
+        cli.stage
+      end
+
+      it "prints restore instructions when non-interactive" do
+        allow(staging_strategy).to receive(:deploy)
+        expect(cli).to receive(:puts).with(/bard data --from production --to staging/)
+        cli.stage
+      end
+    end
+
+    context "when the staging site already exists" do
+      it "does not prompt to restore data" do
+        allow($stdin).to receive(:tty?).and_return(true)
+        expect(cli).not_to receive(:invoke)
+        cli.stage
+      end
     end
 
     context "when production server is defined" do

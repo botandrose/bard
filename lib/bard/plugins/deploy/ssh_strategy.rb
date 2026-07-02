@@ -11,6 +11,10 @@ module Bard
         if clone
           target.run! "git clone git@github.com:botandrosedesign/#{clone} #{target.path}", home: true
           Bard::Copy.file "config/master.key", from: target.config[:local], to: target
+          if branch && branch != "master"
+            target.run! "git fetch origin #{branch}"
+            target.run! "git checkout -f origin/#{branch}"
+          end
         elsif force
           target.run! "git fetch origin #{branch}"
           target.run! "git checkout -f origin/#{branch}"
