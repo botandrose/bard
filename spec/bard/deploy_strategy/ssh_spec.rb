@@ -38,15 +38,13 @@ describe Bard::DeployStrategy::SSH do
       strategy.deploy
     end
 
-    it "uses configured branch if specified" do
-      target.instance_variable_set(:@branch, "main")
-
+    it "pulls the given branch when one is specified" do
       expect(target).to receive(:run!)
         .with("git pull --ff-only origin main")
 
       allow(target).to receive(:run!).with(/bin\/setup/)
 
-      strategy.deploy
+      strategy.deploy(branch: "main")
     end
 
     context "with force: true" do
@@ -68,9 +66,9 @@ describe Bard::DeployStrategy::SSH do
         allow(Bard::Copy).to receive(:file)
       end
 
-      it "clones the repository" do
+      it "clones the repository, defaulting to master" do
         expect(target).to receive(:run!)
-          .with("git clone git@github.com:botandrosedesign/testapp /app", home: true)
+          .with("git clone --branch master git@github.com:botandrosedesign/testapp /app", home: true)
         allow(target).to receive(:run!).with("bin/setup")
         allow(target).to receive(:run!).with("bard setup")
 
@@ -105,26 +103,16 @@ describe Bard::DeployStrategy::SSH do
         strategy.deploy(clone: "testapp")
       end
 
-      it "checks out the requested branch after cloning when provisioning from scratch" do
-        allow(target).to receive(:run!).with(/git clone/, home: true)
+      it "clones the requested branch directly when provisioning from scratch" do
         allow(target).to receive(:run!).with("bin/setup")
         allow(target).to receive(:run!).with("bard setup")
 
-        expect(target).to receive(:run!).with("git fetch origin feature-x").ordered
-        expect(target).to receive(:run!).with("git checkout -f origin/feature-x").ordered
-
-        strategy.deploy(clone: "testapp", branch: "feature-x")
-      end
-
-      it "stays on master when cloning without a branch" do
-        allow(target).to receive(:run!).with(/git clone/, home: true)
-        allow(target).to receive(:run!).with("bin/setup")
-        allow(target).to receive(:run!).with("bard setup")
-
+        expect(target).to receive(:run!)
+          .with("git clone --branch feature-x git@github.com:botandrosedesign/testapp /app", home: true)
         expect(target).not_to receive(:run!).with(/git fetch/)
         expect(target).not_to receive(:run!).with(/git checkout/)
 
-        strategy.deploy(clone: "testapp", branch: "master")
+        strategy.deploy(clone: "testapp", branch: "feature-x")
       end
     end
   end
