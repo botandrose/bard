@@ -61,5 +61,41 @@ describe Bard::Git do
       expect(Bard::Git.sha_of("ref")).to be_nil
     end
   end
+
+  describe ".github_pages_url" do
+    def stub_origin(remote)
+      allow(Bard::Git).to receive(:`).with("git remote get-url origin").and_return("#{remote}\n")
+    end
+
+    it "derives a project pages url from an ssh remote" do
+      stub_origin("git@github.com:botandrose/bard")
+      expect(Bard::Git.github_pages_url).to eq("https://botandrose.github.io/bard/")
+    end
+
+    it "derives a project pages url from an https remote with a .git suffix" do
+      stub_origin("https://github.com/botandrose/bard.git")
+      expect(Bard::Git.github_pages_url).to eq("https://botandrose.github.io/bard/")
+    end
+
+    it "lowercases the owner in the pages host" do
+      stub_origin("git@github.com:BotAndRose/Bard.git")
+      expect(Bard::Git.github_pages_url).to eq("https://botandrose.github.io/Bard/")
+    end
+
+    it "uses the root url for a user/org pages repo" do
+      stub_origin("git@github.com:botandrose/botandrose.github.io")
+      expect(Bard::Git.github_pages_url).to eq("https://botandrose.github.io/")
+    end
+
+    it "raises for a non-github remote" do
+      stub_origin("git@gitlab.com:botandrose/bard.git")
+      expect { Bard::Git.github_pages_url }.to raise_error(/not a github\.com repository/)
+    end
+
+    it "raises when there is no origin remote" do
+      allow(Bard::Git).to receive(:`).with("git remote get-url origin").and_return("\n")
+      expect { Bard::Git.github_pages_url }.to raise_error(/not a github\.com repository/)
+    end
+  end
 end
 

@@ -31,6 +31,15 @@ module Bard
       return false if git_dir.empty? || common_dir.empty?
       File.expand_path(git_dir) != File.expand_path(common_dir)
     end
+
+    def github_pages_url
+      remote = `git remote get-url origin`.chomp
+      match = remote.match(%r{github\.com[:/]+([^/]+?)/(.+?)(?:\.git)?/?\z})
+      raise "Could not derive a github.io URL: origin remote #{remote.inspect} is not a github.com repository" unless match
+      owner, repo = match[1], match[2]
+      host = "#{owner.downcase}.github.io"
+      repo.casecmp?(host) ? "https://#{host}/" : "https://#{host}/#{repo}/"
+    end
   end
 end
 

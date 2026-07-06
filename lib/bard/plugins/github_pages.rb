@@ -1,16 +1,21 @@
 require "bard/plugins/github_pages/strategy"
+require "bard/plugins/git"
 require "bard/config"
 require "bard/target"
 
 class Bard::Config
-  def github_pages(url)
-    uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
-    hostname = uri.hostname.sub(/^www\./, "")
+  def github_pages(url = nil)
+    hostname = if url
+      uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
+      uri.hostname.sub(/^www\./, "")
+    else 
+      Bard::Git.github_pages_url
+    end
 
     remove_target :production
     target :production do
       github_pages url
-      url(hostname) if hostname
+      url hostname
     end
 
     backup(false) if respond_to?(:backup)
@@ -18,12 +23,12 @@ class Bard::Config
 end
 
 class Bard::Target
-  def github_pages(url = nil)
-    if url.nil?
+  def github_pages(*args)
+    if args.empty?
       @github_pages_url
     else
       @deploy_strategy = :github_pages
-      @github_pages_url = url
+      @github_pages_url = args.first
       enable_capability(:github_pages)
     end
   end

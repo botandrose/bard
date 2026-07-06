@@ -147,4 +147,26 @@ describe Bard::Config do
       end
     end
   end
+
+  context "with github_pages directive and no domain" do
+    subject { described_class.new("test", source: "github_pages") }
+
+    before do
+      allow(Bard::Git).to receive(:github_pages_url).and_return("https://acme.github.io/widgets/")
+    end
+
+    describe "#target" do
+      it "creates a production target with github_pages enabled and no custom domain" do
+        production = subject[:production]
+        expect(production).not_to be_nil
+        expect(production.has_capability?(:github_pages)).to be true
+        expect(production.github_pages).to be_nil
+        expect(production.ssh).to be_nil
+      end
+
+      it "uses the derived github.io url for pinging" do
+        expect(subject[:production].url).to eq "https://acme.github.io/widgets/"
+      end
+    end
+  end
 end

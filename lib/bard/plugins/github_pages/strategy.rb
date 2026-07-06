@@ -47,6 +47,12 @@ module Bard
       end
 
       def build_site
+        # No custom domain => the site serves under /<repo>/, so make the mirror relocatable:
+        # -k rewrites absolute links to relative, and the sed strips the localhost prefix wget
+        # bakes into any links it couldn't crawl.
+        convert_links = @domain ? "" : "-k"
+        relocate_step = @domain ? "" : %(find . -type f \\( -name '*.html' -o -name '*.css' \\) -exec sed -i "s#http://localhost:$PORT/#/#g" {} +)
+        cname_step = @domain ? "echo #{@domain} > CNAME" : ""
         system "rm -rf #{@build_dir.sub(@sha, "*")}"
         run! <<~SH
           set -e
@@ -78,9 +84,10 @@ module Bard
 
           cd $BUILD
           echo copying...
-          wget -nv -r -l inf --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:$PORT/ 2>&1
+          wget -nv -r -l inf #{convert_links} --no-remove-listing -FEnH --reject-regex "(\\.*)\\?(.*)" http://localhost:$PORT/ 2>&1
 
-          echo #{@domain} > CNAME
+          #{relocate_step}
+          #{cname_step}
         SH
       ensure
         # cleanup
