@@ -44,12 +44,4 @@ describe "Capability System" do
     end
   end
 
-  describe "capability dependency checking" do
-    context "URL-dependent methods" do
-      it "ping! requires url capability" do
-        expect { target.ping! }
-          .to raise_error(/url capability not configured/)
-      end
-    end
-  end
 end

@@ -145,42 +145,7 @@ describe Bard::Target do
     end
   end
 
-  describe "command execution" do
-    describe "local (base)" do
-      it "runs commands locally" do
-        expect(Bard::Command).to receive(:run!)
-          .with("ls", verbose: false, quiet: false)
-        target.run!("ls")
-      end
-    end
-
-    describe "remote (SSH)" do
-      before do
-        target.ssh("deploy@example.com:22", path: "/app")
-      end
-
-      it "runs commands on remote server" do
-        expected_cmd = "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR deploy@example.com #{Shellwords.shellescape("cd /app && ls")}"
-        expect(Bard::Command).to receive(:run!)
-          .with(expected_cmd, verbose: false, quiet: false)
-        target.run!("ls")
-      end
-
-      it "runs commands without raising on remote server" do
-        expected_cmd = "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR deploy@example.com #{Shellwords.shellescape("cd /app && ls")}"
-        expect(Bard::Command).to receive(:run)
-          .with(expected_cmd, verbose: false, quiet: false)
-        target.run("ls")
-      end
-
-      it "replaces process with remote command" do
-        expected_cmd = "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR deploy@example.com #{Shellwords.shellescape("cd /app && ls")}"
-        expect(Bard::Command).to receive(:exec!)
-          .with(expected_cmd)
-        target.exec!("ls")
-      end
-    end
-  end
+  # command execution (run!/run/exec!) lives in bard-cli now; covered by its target_spec.
 
   describe "#to_s" do
     it "returns the target key as string" do

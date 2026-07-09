@@ -1,5 +1,3 @@
-require "bard/command"
-
 module Bard
   class Target
     attr_reader :key, :config
@@ -28,19 +26,6 @@ module Bard
 
     def path
       @path || config.project_name
-    end
-
-    def run!(command, home: false, verbose: false, quiet: false, capture: false)
-      result = Command.run!(command, verbose:, quiet:)
-      result if capture
-    end
-
-    def run(command, home: false, verbose: false, quiet: false)
-      Command.run(command, verbose:, quiet:)
-    end
-
-    def exec!(command, home: false)
-      Command.exec!(command)
     end
 
     # Utility methods

@@ -1,8 +1,8 @@
 require "uri"
-require "shellwords"
 require "bard/plugins/ssh/server"
-require "bard/command"
 
+# Data-only SSH mixin: enough for the parser to hold a target's connection details and
+# derive its url. The command-running methods (run!/ssh_command) live in bard-cli.
 module Bard
   module SSH
     def server
@@ -37,39 +37,6 @@ module Bard
       str += ":#{path}"
       str += "/#{file_path}" if file_path
       str
-    end
-
-    def run!(command, home: false, verbose: false, quiet: false, capture: false)
-      result = Command.run!(ssh_command(command, home:), verbose:, quiet:)
-      result if capture
-    end
-
-    def run(command, home: false, verbose: false, quiet: false)
-      Command.run(ssh_command(command, home:), verbose:, quiet:)
-    end
-
-    def exec!(command, home: false)
-      Command.exec!(ssh_command(command, home:))
-    end
-
-    private
-
-    def ssh_command(command, home: false)
-      cmd = command
-      cmd = "#{env} #{command}" if env
-
-      unless home
-        cmd = "cd #{path} && #{cmd}" if path
-      end
-
-      ssh_opts = ["-tt", "-o StrictHostKeyChecking=no", "-o UserKnownHostsFile=/dev/null", "-o LogLevel=ERROR"]
-      ssh_opts << "-i #{ssh_key}" if ssh_key
-      ssh_opts << "-p #{server.port}" if server.port && server.port != "22"
-      ssh_opts << "-o ProxyJump=#{gateway}" if gateway
-
-      ssh_target = "#{server.user}@#{server.host}"
-
-      "ssh #{ssh_opts.join(" ")} #{ssh_target} #{Shellwords.shellescape(cmd)}"
     end
   end
 end
