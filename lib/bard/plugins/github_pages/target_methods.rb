@@ -1,5 +1,4 @@
-require "bard/plugins/github_pages/strategy"
-require "bard/plugins/git"
+require "uri"
 require "bard/config"
 require "bard/target"
 
@@ -8,7 +7,7 @@ class Bard::Config
     hostname = if url
       uri = url.start_with?("http") ? URI.parse(url) : URI.parse("https://#{url}")
       uri.hostname.sub(/^www\./, "")
-    else 
+    elsif defined?(Bard::Git)
       Bard::Git.github_pages_url
     end
 

@@ -4,6 +4,10 @@ require "bard/plugins/ping/target_methods"
 
 module Bard
   class Config
+    class << self
+      attr_accessor :default_targets
+    end
+
     def self.current
       new(detect_project_name, path: "bard.rb")
     end
@@ -50,30 +54,29 @@ module Bard
       @targets[key.to_sym]
     end
 
+    def data(*paths)
+      if paths.empty?
+        @data_paths ||= []
+      else
+        @data_paths = paths
+      end
+    end
+
+    def ci(system = nil)
+      if system.nil?
+        @ci_system
+      else
+        @ci_system = system
+      end
+    end
+
     private
 
     def load_defaults
       target :local
-
-      target :gubs do
-        ssh "botandrose@cloud.hackett.world:22022",
-          path: "Sites/#{config.project_name}"
-        url false
-      end
-
-      target :ci do
-        ssh "jenkins@staging.botandrose.com:22022",
-          path: "jobs/#{config.project_name}/workspace"
-        url false
-      end
-
-      staging_defaults = proc do
-        ssh "www@staging.botandrose.com:22022"
-        url "#{config.project_name}.botandrose.com"
-      end
-
-      target :staging, &staging_defaults
-      target :production, &staging_defaults
+      Bard::Config.default_targets&.call(self)
     end
   end
 end
+
+require "bard/plugins/github_pages/target_methods"

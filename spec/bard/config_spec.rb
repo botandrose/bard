@@ -1,7 +1,7 @@
+require "tmpdir"
+require "fileutils"
 require "bard/config"
 require "bard/plugins/ssh/target_methods"
-require "bard/plugins/data"
-require "bard/plugins/github_pages"
 
 describe Bard::Config do
   describe ".detect_project_name" do
@@ -56,21 +56,14 @@ describe Bard::Config do
     end
 
     describe "#targets" do
-      it "is prefilled with default targets" do
-        expect(subject.targets.keys).to eq %i[local gubs ci staging production]
+      it "is prefilled with the generic local target" do
+        expect(subject.targets.keys).to eq %i[local]
       end
 
       it "creates Target instances for defaults" do
         subject.targets.each_value do |target|
           expect(target).to be_a(Bard::Target)
         end
-      end
-    end
-
-    describe "#[]" do
-      it "defines a default production target equivalent to staging" do
-        expect(subject[:production]).to eq subject[:staging]
-        expect(subject[:production]).not_to equal subject[:staging]
       end
     end
 
@@ -98,13 +91,13 @@ describe Bard::Config do
     end
 
     describe "#targets" do
-      it "contains the defined target" do
-        expect(subject.targets.keys).to eq %i[local gubs ci staging production]
+      it "contains the defined target alongside the local default" do
+        expect(subject.targets.keys).to eq %i[local production]
       end
     end
 
     describe "#target" do
-      it "can overwrite existing definition" do
+      it "can define a target" do
         subject.target :staging do
           ssh "www@tracker-staging.botandrose.com:22022"
         end
@@ -119,54 +112,18 @@ describe Bard::Config do
     end
   end
 
-  context "with remove_target" do
-    subject { described_class.new("tracker", source: <<~SOURCE) }
-      remove_target :staging
-      target :staging do
+  describe "#remove_target" do
+    subject { described_class.new("tracker") }
+
+    it "removes a defined target" do
+      subject.target :staging do
         ssh "deploy@new-host.com"
       end
-    SOURCE
+      expect(subject[:staging].ssh.to_s).to eq "deploy@new-host.com"
+      expect(subject[:staging].url).to eq "https://new-host.com"
 
-    it "replaces the default with a fresh target" do
-      staging = subject[:staging]
-      expect(staging).to be_a(Bard::Target)
-      expect(staging.ssh.to_s).to eq "deploy@new-host.com"
-      expect(staging.url).to eq "https://new-host.com"
-    end
-  end
-
-  context "with github_pages directive" do
-    subject { described_class.new("test", source: "github_pages 'example.com'") }
-
-    describe "#target" do
-      it "creates a production target with github_pages enabled" do
-        production = subject[:production]
-        expect(production).not_to be_nil
-        expect(production.github_pages).to eq "example.com"
-        expect(production.ssh).to be_nil
-      end
-    end
-  end
-
-  context "with github_pages directive and no domain" do
-    subject { described_class.new("test", source: "github_pages") }
-
-    before do
-      allow(Bard::Git).to receive(:github_pages_url).and_return("https://acme.github.io/widgets/")
-    end
-
-    describe "#target" do
-      it "creates a production target with github_pages enabled and no custom domain" do
-        production = subject[:production]
-        expect(production).not_to be_nil
-        expect(production.has_capability?(:github_pages)).to be true
-        expect(production.github_pages).to be_nil
-        expect(production.ssh).to be_nil
-      end
-
-      it "uses the derived github.io url for pinging" do
-        expect(subject[:production].url).to eq "https://acme.github.io/widgets/"
-      end
+      subject.remove_target :staging
+      expect(subject[:staging]).to be_nil
     end
   end
 end

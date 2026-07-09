@@ -1,4 +1,0 @@
-# Ignore generated test keys (if you regenerate them)
-# But keep the example ones in the repo
-# docker/test_key
-# docker/test_key.pub

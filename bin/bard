@@ -1,4 +1,0 @@
-#!/usr/bin/env ruby
-require_relative "../lib/bard/cli"
-Bard::CLI.start ARGV
-

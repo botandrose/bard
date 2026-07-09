@@ -1,1 +1,2 @@
-require "bard/cli"
+require "bard/version"
+require "bard/config"

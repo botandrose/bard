@@ -8,25 +8,16 @@ Gem::Specification.new do |spec|
   spec.version       = Bard::VERSION
   spec.authors       = ["Micah Geisel"]
   spec.email         = ["micah@botandrose.com"]
-  spec.summary       = "CLI to automate common development tasks."
+  spec.summary       = "Config core for bard."
   spec.homepage      = "http://github.com/botandrose/bard"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
-  spec.executables   = ["bard"]
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.test_files    = spec.files.grep(%r{^(test|spec)/})
   spec.required_ruby_version = ">= 3.3"
   spec.require_paths = ["lib"]
-
-  spec.add_dependency "thor", ">= 0.19.0"
-  spec.add_dependency "rvm"
-  spec.add_dependency "rbnacl"
-  spec.add_dependency "base64"
 
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "debug"
-  spec.add_development_dependency "cucumber"
-  spec.add_development_dependency "testcontainers"
-  spec.add_development_dependency "ostruct"
 end
