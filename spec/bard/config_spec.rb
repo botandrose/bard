@@ -66,12 +66,6 @@ describe Bard::Config do
         end
       end
     end
-
-    describe "#data" do
-      it "return an empty array" do
-        expect(subject.data).to eq []
-      end
-    end
   end
 
   context "with production definition" do
@@ -80,8 +74,6 @@ describe Bard::Config do
         ssh "www@ssh.botandrose.com:22022"
         url "tracker.botandrose.com"
       end
-
-      data "public/system", "public/ckeditor"
     SOURCE
 
     describe "#project_name" do
@@ -104,11 +96,25 @@ describe Bard::Config do
         expect(subject[:staging].server.to_s).to eq "www@tracker-staging.botandrose.com:22022"
       end
     end
+  end
 
-    describe "#data" do
-      it "returns the data setting" do
-        expect(subject.data).to eq ["public/system", "public/ckeditor"]
-      end
+  describe "unknown DSL (plugin-contributed)" do
+    after { Bard::Config.strict = false }
+
+    it "is tolerated as an attribute by default (server/test parsing)" do
+      config = described_class.new("tracker", source: <<~SOURCE)
+        ci :github_actions
+        data "public/system", "public/ckeditor"
+      SOURCE
+      expect(config.ci).to eq :github_actions
+      expect(config.data).to eq ["public/system", "public/ckeditor"]
+    end
+
+    it "raises in strict mode (CLI parsing) so typos surface" do
+      Bard::Config.strict = true
+      expect {
+        described_class.new("tracker", source: "typoed_directive :oops")
+      }.to raise_error(NoMethodError)
     end
   end
 

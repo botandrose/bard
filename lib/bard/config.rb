@@ -6,6 +6,7 @@ module Bard
   class Config
     class << self
       attr_accessor :default_targets
+      attr_accessor :strict
     end
 
     def self.current
@@ -54,20 +55,20 @@ module Bard
       @targets[key.to_sym]
     end
 
-    def data(*paths)
-      if paths.empty?
-        @data_paths ||= []
+    # A bard.rb may use DSL contributed by plugins. When the owning plugin is loaded it defines
+    # a real method that wins over this; otherwise we tolerate the declaration as a plain
+    # attribute so the file still parses — notably server-side, where bard-cli is absent.
+    def method_missing(name, *args, &block)
+      return super if self.class.strict
+      if args.empty? && block.nil?
+        (@attributes ||= {})[name]
       else
-        @data_paths = paths
+        (@attributes ||= {})[name] = args.length == 1 ? args.first : args
       end
     end
 
-    def ci(system = nil)
-      if system.nil?
-        @ci_system
-      else
-        @ci_system = system
-      end
+    def respond_to_missing?(name, include_private = false)
+      !self.class.strict || super
     end
 
     private
@@ -78,5 +79,3 @@ module Bard
     end
   end
 end
-
-require "bard/plugins/github_pages/target_methods"
