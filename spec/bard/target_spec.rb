@@ -4,6 +4,7 @@ require "bard/target"
 require "bard/plugins/url/target_methods"
 require "bard/plugins/ssh/target_methods"
 require "bard/plugins/ping/target_methods"
+require "bard/plugins/deploy_url/target_methods"
 
 describe Bard::Target do
   let(:config) { double("config", project_name: "testapp") }
@@ -131,6 +132,39 @@ describe Bard::Target do
       target.ping("https://example.com")
       target.ping(false)
       expect(target.ping).to be_empty
+    end
+  end
+
+  describe "#deploy_url" do
+    it "builds the /bard/deploy endpoint from an ssh-derived url" do
+      target.ssh("www@example.com:22022")
+      expect(target.deploy_url).to eq("https://example.com/bard/deploy")
+    end
+
+    it "prefers the ping host over the ssh-derived url" do
+      target.ssh("www@ssh.example.com:22022")
+      target.ping("example.com")
+      expect(target.deploy_url).to eq("https://example.com/bard/deploy")
+    end
+
+    it "anchors to the host root, dropping any ping path" do
+      target.ping("admin.example.com/up")
+      expect(target.deploy_url).to eq("https://admin.example.com/bard/deploy")
+    end
+
+    it "uses the first ping when several are configured" do
+      target.ping("primary.example.com", "secondary.example.com")
+      expect(target.deploy_url).to eq("https://primary.example.com/bard/deploy")
+    end
+
+    it "falls back to url when ping is disabled" do
+      target.url("example.com")
+      target.ping(false)
+      expect(target.deploy_url).to eq("https://example.com/bard/deploy")
+    end
+
+    it "returns nil when the target has no web address" do
+      expect(target.deploy_url).to be_nil
     end
   end
 
